@@ -1,3 +1,6 @@
+dbdiagram.io 문법
+
+```
 // 사용자
 Table User {
   id int [pk, increment]
@@ -120,7 +123,7 @@ Table Enrollment {
   enrolled_at timestamp [default: `now()`]
   last_activity_at timestamp
   completed_at timestamp
-  
+
   indexes {
     (user_id, course_id) [unique]
   }
@@ -201,3 +204,4 @@ Table CartItem {
   course_id int [ref: > Course.id, not null]
   created_at timestamp [default: `now()`]
 }
+```
