@@ -4,334 +4,335 @@
 {% block title %}스킬브릿지 - 회원가입{% endblock %}
 
 {% block content %}
-<div class="signup-container">
-  <div class="logo">
-    <div class="logo-text">스킬브릿지</div>
+  <div class="signup-container">
+    <div class="logo">
+      <div class="logo-text">스킬브릿지</div>
+    </div>
+
+    <h1>회원가입</h1>
+    <p class="subtitle">스킬브릿지에서 새로운 지식을 찾아보세요</p>
+
+    <!-- 메시지 표시 -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="id_username">아이디</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="error-message">{{ form.username.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_email">이메일</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="error-message">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_password1">비밀번호</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+          <div class="error-message">{{ form.password1.errors }}</div>
+        {% endif %}
+        <small class="form-text text-muted">
+          비밀번호는 최소 8자 이상이어야 하며, 숫자와 문자를 포함해야 합니다.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="id_password2">비밀번호 확인</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+          <div class="error-message">{{ form.password2.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="id_first_name">이름</label>
+          {{ form.first_name }}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="id_last_name">성</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_phone_number">전화번호</label>
+        {{ form.phone_number }}
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="id_birth_date">생년월일</label>
+          {{ form.birth_date }}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="id_gender">성별</label>
+          {{ form.gender }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_profile_image">프로필 이미지</label>
+        {{ form.profile_image }}
+      </div>
+
+      <button type="submit" class="submit-button">회원가입</button>
+    </form>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">또는</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="social-login">
+      <button class="social-button google">G</button>
+      <button class="social-button kakao">K</button>
+    </div>
+
+    <p class="login-link">
+      이미 계정이 있으신가요?
+      <a href="{% url 'login' %}">로그인</a>
+    </p>
   </div>
-  
-  <h1>회원가입</h1>
-  <p class="subtitle">스킬브릿지에서 새로운 지식을 찾아보세요</p>
-  
-  <!-- 메시지 표시 -->
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-  
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    
-    <div class="form-group">
-      <label for="id_username">아이디</label>
-      {{ form.username }}
-      {% if form.username.errors %}
-        <div class="error-message">{{ form.username.errors }}</div>
-      {% endif %}
-    </div>
-    
-    <div class="form-group">
-      <label for="id_email">이메일</label>
-      {{ form.email }}
-      {% if form.email.errors %}
-        <div class="error-message">{{ form.email.errors }}</div>
-      {% endif %}
-    </div>
-    
-    <div class="form-group">
-      <label for="id_password1">비밀번호</label>
-      {{ form.password1 }}
-      {% if form.password1.errors %}
-        <div class="error-message">{{ form.password1.errors }}</div>
-      {% endif %}
-      <small class="form-text text-muted">
-        비밀번호는 최소 8자 이상이어야 하며, 숫자와 문자를 포함해야 합니다.
-      </small>
-    </div>
-    
-    <div class="form-group">
-      <label for="id_password2">비밀번호 확인</label>
-      {{ form.password2 }}
-      {% if form.password2.errors %}
-        <div class="error-message">{{ form.password2.errors }}</div>
-      {% endif %}
-    </div>
-    
-    <div class="form-row">
-      <div class="form-group col-md-6">
-        <label for="id_first_name">이름</label>
-        {{ form.first_name }}
-      </div>
-      <div class="form-group col-md-6">
-        <label for="id_last_name">성</label>
-        {{ form.last_name }}
-      </div>
-    </div>
-    
-    <div class="form-group">
-      <label for="id_phone_number">전화번호</label>
-      {{ form.phone_number }}
-    </div>
-    
-    <div class="form-row">
-      <div class="form-group col-md-6">
-        <label for="id_birth_date">생년월일</label>
-        {{ form.birth_date }}
-      </div>
-      <div class="form-group col-md-6">
-        <label for="id_gender">성별</label>
-        {{ form.gender }}
-      </div>
-    </div>
-    
-    <div class="form-group">
-      <label for="id_profile_image">프로필 이미지</label>
-      {{ form.profile_image }}
-    </div>
-    
-    <button type="submit" class="submit-button">회원가입</button>
-  </form>
-  
-  <div class="divider">
-    <div class="divider-line"></div>
-    <span class="divider-text">또는</span>
-    <div class="divider-line"></div>
-  </div>
-  
-  <div class="social-login">
-    <button class="social-button google">G</button>
-    <button class="social-button kakao">K</button>
-  </div>
-  
-  <p class="login-link">
-    이미 계정이 있으신가요? <a href="{% url 'login' %}">로그인</a>
-  </p>
-</div>
 {% endblock %}
 
 {% block extra_css %}
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
-  body {
-    background-color: #f0f2f5;
-    padding: 20px;
-  }
-  
-  .signup-container {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-    padding: 30px 25px;
-    margin: 0 auto;
-    margin-top: 40px;
-    margin-bottom: 40px;
-  }
-  
-  .logo {
-    text-align: center;
-    margin-bottom: 25px;
-  }
-  
-  .logo-text {
-    font-size: 28px;
-    font-weight: 700;
-    color: #4f46e5;
-  }
-  
-  h1 {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 8px;
-  }
-  
-  .subtitle {
-    text-align: center;
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 24px;
-  }
-  
-  form {
-    margin-bottom: 20px;
-  }
-  
-  .form-group {
-    margin-bottom: 16px;
-  }
-  
-  .form-row {
-    display: flex;
-    margin-left: -8px;
-    margin-right: -8px;
-    margin-bottom: 16px;
-  }
-  
-  .form-row .form-group {
-    padding-left: 8px;
-    padding-right: 8px;
-    margin-bottom: 0;
-    flex: 1;
-  }
-  
-  label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 6px;
-  }
-  
-  input, select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #111827;
-    transition: border-color 0.15s ease;
-  }
-  
-  input:focus, select:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-  }
-  
-  .form-text {
-    display: block;
-    margin-top: 4px;
-    font-size: 12px;
-    color: #6b7280;
-  }
-  
-  .submit-button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    background-color: #4f46e5;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    margin-top: 10px;
-  }
-  
-  .submit-button:hover {
-    background-color: #4338ca;
-  }
-  
-  .divider {
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-  }
-  
-  .divider-line {
-    flex-grow: 1;
-    height: 1px;
-    background-color: #e5e7eb;
-  }
-  
-  .divider-text {
-    padding: 0 12px;
-    font-size: 13px;
-    color: #6b7280;
-  }
-  
-  .social-login {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-  
-  .social-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background-color: #f3f4f6;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-  }
-  
-  .social-button:hover {
-    background-color: #e5e7eb;
-  }
-  
-  .google {
-    color: #ea4335;
-    font-weight: bold;
-    font-size: 16px;
-  }
-  
-  .naver {
-    background-color: #03c75a;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-  }
-  
-  .kakao {
-    background-color: #fee500;
-    color: #3c1e1e;
-    font-weight: bold;
-    font-size: 14px;
-  }
-  
-  .login-link {
-    text-align: center;
-    font-size: 14px;
-    color: #6b7280;
-  }
-  
-  .login-link a {
-    color: #4f46e5;
-    text-decoration: none;
-    font-weight: 500;
-  }
-  
-  .login-link a:hover {
-    text-decoration: underline;
-  }
-  
-  .error-message {
-    color: #ef4444;
-    font-size: 14px;
-    margin-top: 4px;
-  }
-  
-  @media (max-width: 600px) {
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f0f2f5;
+      padding: 20px;
+    }
+
     .signup-container {
-      padding: 25px 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      padding: 30px 25px;
+      margin: 40px auto;
     }
-    
-    .form-row {
-      flex-direction: column;
+
+    .logo {
+      text-align: center;
+      margin-bottom: 25px;
     }
-    
-    .form-row .form-group {
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #4f46e5;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    .form-group {
       margin-bottom: 16px;
     }
-  }
-</style>
+
+    .form-row {
+      display: flex;
+      margin-left: -8px;
+      margin-right: -8px;
+      margin-bottom: 16px;
+    }
+
+    .form-row .form-group {
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-bottom: 0;
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #111827;
+      transition: border-color 0.15s ease;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .form-text {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .submit-button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      margin-top: 10px;
+    }
+
+    .submit-button:hover {
+      background-color: #4338ca;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    .divider-line {
+      flex-grow: 1;
+      height: 1px;
+      background-color: #e5e7eb;
+    }
+
+    .divider-text {
+      padding: 0 12px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .social-login {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .social-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background-color: #f3f4f6;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .social-button:hover {
+      background-color: #e5e7eb;
+    }
+
+    .google {
+      color: #ea4335;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .naver {
+      background-color: #03c75a;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .kakao {
+      background-color: #fee500;
+      color: #3c1e1e;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .login-link {
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .login-link a {
+      color: #4f46e5;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .signup-container {
+        padding: 25px 20px;
+      }
+
+      .form-row {
+        flex-direction: column;
+      }
+
+      .form-row .form-group {
+        margin-bottom: 16px;
+      }
+    }
+  </style>
 {% endblock %}
