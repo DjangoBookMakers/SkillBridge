@@ -55,7 +55,7 @@ class Command(BaseCommand):
                 "short_description": "웹 개발의 핵심 기술을 한번에!",
                 "difficulty_level": "beginner",
                 "target_audience": "웹 개발을 처음 시작하는 분들을 위한 과정입니다.",
-                "estimated_time": 1800,  # 30시간
+                "estimated_time": 30,  # 30시간
                 "credit": 3,
                 "price": 49900.00,
             },
@@ -65,7 +65,7 @@ class Command(BaseCommand):
                 "short_description": "파이썬으로 백엔드 개발 역량 키우기",
                 "difficulty_level": "intermediate",
                 "target_audience": "Python 기초 지식이 있는 개발자, 백엔드 개발에 관심 있는 분들",
-                "estimated_time": 2400,  # 40시간
+                "estimated_time": 40,  # 40시간
                 "credit": 4,
                 "price": 69900.00,
             },
