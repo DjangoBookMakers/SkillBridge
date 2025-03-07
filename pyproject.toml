@@ -1,0 +1,21 @@
+[project]
+name = "SkillBridge"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "SeungminAhn", email = "smahn9123@gmail.com"},
+]
+dependencies = [
+    "asgiref==3.8.1",
+    "django==5.1.6",
+    "pillow==11.1.0",
+    "sqlparse==0.5.3",
+    "tzdata==2025.1",
+]
+requires-python = ">=3.13"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
