@@ -4,11 +4,15 @@ from .models import User
 
 class LoginForm(forms.Form):
     username = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '아이디'}),
+        widget=forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+            'placeholder': '아이디'
+            }),
         label='아이디'
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '비밀번호'}),
+        widget=forms.PasswordInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+            'placeholder': '비밀번호'
+        }),
         label='비밀번호'
     )
 

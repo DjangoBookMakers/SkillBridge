@@ -18,13 +18,7 @@ def login_view(request):
                 login(request, user)
                 user.login_at = timezone.now()  
                 user.save()
-            
-            if user.is_admin:
-                return redirect('admin_dashboard')  # 관리자 대시보드(보류)
-            elif user.is_instructor:
-                return redirect('instructor_dashboard')  # 강사 대시보드(보류)
-            else:
-                return redirect('home')  # 사용자 -> 메인 화면
+            return redirect('home')  # 사용자 -> 메인 화면
         else:
             messages.error(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
     else:
@@ -50,7 +44,3 @@ def signup_view(request):
         form = SignupForm()
     
     return render(request, 'accounts/signup.html', {'form': form})
-
-@login_required
-def student_dashboard(request):
-    return render(request, '')
