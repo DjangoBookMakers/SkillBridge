@@ -6,7 +6,6 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, blank=True)
-    is_instructor = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     login_at = models.DateTimeField(null=True, blank=True)
     logout_at = models.DateTimeField(null=True, blank=True)
@@ -19,7 +18,6 @@ class InstructorProfile(models.Model):
     bio = models.TextField(blank=True)
     experience = models.TextField(blank=True)
     qualification = models.TextField(blank=True)
-    is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
