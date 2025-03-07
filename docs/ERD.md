@@ -13,7 +13,6 @@ Table User {
   birth_date date
   gender varchar
   profile_image varchar
-  is_instructor boolean [default: false]
   is_admin boolean [default: false]
   created_at timestamp [default: `now()`]
   login_at timestamp
@@ -27,7 +26,6 @@ Table InstructorProfile {
   bio text
   experience text
   qualification text
-  is_approved boolean [default: false]
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`]
 }
