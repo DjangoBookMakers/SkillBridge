@@ -1,0 +1,51 @@
+<!-- 세부 정보 섹션 -->
+<section id="info" class="py-8 hidden">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">세부 정보</h2>
+
+  <div class="prose max-w-none">
+    <h3 class="text-xl font-semibold mb-3">과정 소개</h3>
+    <div class="mb-6">
+      {{ course.description|linebreaks }}
+    </div>
+
+    <h3 class="text-xl font-semibold mb-3">수강 대상</h3>
+    <div class="mb-6">
+      {{ course.target_audience|linebreaks }}
+    </div>
+
+    <!-- TODO: 강사 정보를 넣지 않을 수도 있음 -->
+    {% comment %}
+    <h3 class="text-xl font-semibold mb-3">강사 정보</h3>
+    <div class="flex items-start">
+      <div class="flex-shrink-0 mr-4">
+        {% if course.instructor.user.profile_image %}
+          <img src="{{ course.instructor.user.profile_image.url }}" alt="{{ course.instructor.user.username }}" class="w-24 h-24 rounded-full object-cover">
+        {% else %}
+          <div class="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
+            <span class="text-gray-600 text-2xl">{{ course.instructor.user.username|first|upper }}</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div>
+        <h4 class="text-lg font-medium">{{ course.instructor.user.username }}</h4>
+
+        {% if course.instructor.qualification %}
+          <p class="text-sm text-gray-600 mb-2">{{ course.instructor.qualification }}</p>
+        {% endif %}
+
+        {% if course.instructor.bio %}
+          <p class="text-sm text-gray-800">{{ course.instructor.bio }}</p>
+        {% endif %}
+
+        {% if course.instructor.experience %}
+          <div class="mt-3">
+            <h5 class="text-sm font-medium text-gray-700">경력</h5>
+            <p class="text-sm text-gray-800">{{ course.instructor.experience }}</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endcomment %}
+  </div>
+</section>
