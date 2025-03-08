@@ -1,0 +1,21 @@
+<!-- 네비게이션 바 -->
+<nav class="bg-white shadow-md">
+  <div class="container mx-auto px-4">
+    <div class="flex justify-between items-center py-4">
+      <div class="flex items-center">
+        <a href="{% url 'home' %}" class="text-xl font-bold text-blue-600">스킬브릿지</a>
+      </div>
+      <div class="flex items-center space-x-4">
+        {% if user.is_authenticated %}
+          <span class="text-gray-700">{{ user.username }}님</span>
+          <a href="{% url 'logout' %}" class="text-sm px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition duration-200">로그아웃</a>
+        {% else %}
+          {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}
+            <a href="{% url 'login' %}" class="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition duration-200">로그인</a>
+            <a href="{% url 'signup' %}" class="text-sm px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition duration-200">회원가입</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
