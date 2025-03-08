@@ -202,7 +202,7 @@ class Command(BaseCommand):
                                 "description": f"{subject.title}의 {i}번째 강의입니다.",
                                 "order_index": i,
                                 "lecture_type": "video",
-                                "duration": random.randint(600, 1800),  # 10분~30분
+                                "duration": random.randint(10, 60),  # 10분~60분
                             }
                         )
 
