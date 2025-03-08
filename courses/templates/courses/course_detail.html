@@ -113,11 +113,13 @@
                     <li class="py-3">
                       <div class="flex items-center">
                         {% if lecture.lecture_type == 'video' %}
+                          <!-- TODO: 아이콘을 클릭하면 강의 재생 화면으로 이동해야 함-->
                           <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
                         {% elif lecture.lecture_type == 'mission' %}
+                          <!-- TODO: 아이콘을 클릭하면 미션 수행 화면으로 이동해야 함-->
                           <svg class="w-5 h-5 text-blue-500 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
@@ -125,7 +127,7 @@
 
                         <div>
                           <h4 class="text-sm font-medium text-gray-900">{{ lecture.title }}</h4>
-                          {% if lecture.lecture_type == 'video' and lecture.duration %}
+                          {% if lecture.lecture_type == 'video' %}
                             <!-- 분 단위로 표시 (minute) -->
                             <p class="text-xs text-gray-500">{{ lecture.duration }}분</p>
                           {% elif lecture.lecture_type == 'mission' %}
@@ -157,7 +159,8 @@
             {{ course.target_audience|linebreaks }}
           </div>
 
-          <h3 class="text-xl font-semibold mb-3">강사 정보</h3>
+          <!-- TODO: 강사 정보를 넣지 않을 수도 있음 -->
+          {% comment %} <h3 class="text-xl font-semibold mb-3">강사 정보</h3>
           <div class="flex items-start">
             <div class="flex-shrink-0 mr-4">
               {% if course.instructor.user.profile_image %}
@@ -187,7 +190,7 @@
                 </div>
               {% endif %}
             </div>
-          </div>
+          </div> {% endcomment %}
         </div>
       </section>
 
