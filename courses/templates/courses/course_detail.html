@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }}
+  | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <!-- 과정 개요 헤더 -->
+  <div class="bg-gray-100 py-8">
+    <div class="container mx-auto px-4">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between gap-8">
+          <div class="md:w-2/3">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ course.title }}</h1>
+            <p class="text-gray-600 mb-4">{{ course.short_description }}</p>
+
+            <div class="flex items-center mb-4">
+              <div class="flex items-center mr-6">
+                <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewbox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>
+                <span class="ml-1 text-gray-700">{{ course.average_rating|floatformat:1 }}
+                  평점</span>
+              </div>
+
+              <div class="flex items-center mr-6">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="ml-1 text-gray-700">{{ course.estimated_time }}시간</span>
+              </div>
+
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="ml-1 text-gray-700">{{ course.credit }}학점</span>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <span class="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                {{ course.get_difficulty_level_display }}
+              </span>
+            </div>
+          </div>
+
+          <div class="md:w-1/3 flex flex-col justify-center">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <div class="text-2xl font-bold text-gray-900 mb-4">{{ course.price|floatformat:0 }}원</div>
+
+              {% if is_enrolled %}
+                <a href="#" class="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
+                  이어서 학습하기
+                </a>
+              {% else %}
+                <a href="#" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
+                  장바구니에 담기
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭 네비게이션 -->
+  <div class="container mx-auto px-4 py-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="border-b border-gray-200">
+        <nav class="flex -mb-px">
+          <a href="#curriculum" class="text-blue-600 border-b-2 border-blue-600 py-4 px-6 font-medium text-sm">
+            과정 구성
+          </a>
+          <a href="#info" class="text-gray-500 hover:text-gray-700 py-4 px-6 font-medium text-sm">
+            세부 정보
+          </a>
+          <a href="#reviews" class="text-gray-500 hover:text-gray-700 py-4 px-6 font-medium text-sm">
+            수강평
+          </a>
+        </nav>
+      </div>
+
+      <!-- 커리큘럼 섹션 -->
+      <section id="curriculum" class="py-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">커리큘럼</h2>
+
+        <div class="space-y-4">
+          {% for subject in subjects %}
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <div class="bg-gray-50 px-6 py-4">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-medium text-gray-900">
+                    {% if subject.subject_type == 'midterm' %}
+                      <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded mr-2">중간고사</span>
+                    {% elif subject.subject_type == 'final' %}
+                      <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded mr-2">기말고사</span>
+                    {% endif %}
+                    {{ subject.title }}
+                  </h3>
+                  <button class="text-blue-600 hover:text-blue-800 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+                </div>
+                <p class="mt-1 text-sm text-gray-600">{{ subject.description }}</p>
+              </div>
+
+              <div class="px-6 py-3">
+                <ul class="divide-y divide-gray-200">
+                  {% for lecture in subject.lecture_list %}
+                    <li class="py-3">
+                      <div class="flex items-center">
+                        {% if lecture.lecture_type == 'video' %}
+                          <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        {% elif lecture.lecture_type == 'mission' %}
+                          <svg class="w-5 h-5 text-blue-500 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        {% endif %}
+
+                        <div>
+                          <h4 class="text-sm font-medium text-gray-900">{{ lecture.title }}</h4>
+                          {% if lecture.lecture_type == 'video' and lecture.duration %}
+                            <!-- 분 단위로 표시 (minute) -->
+                            <p class="text-xs text-gray-500">{{ lecture.duration }}분</p>
+                          {% elif lecture.lecture_type == 'mission' %}
+                            <p class="text-xs text-blue-500">미션(쪽지시험)</p>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- 세부 정보 섹션 -->
+      <section id="info" class="py-8 hidden">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">세부 정보</h2>
+
+        <div class="prose max-w-none">
+          <h3 class="text-xl font-semibold mb-3">과정 소개</h3>
+          <div class="mb-6">
+            {{ course.description|linebreaks }}
+          </div>
+
+          <h3 class="text-xl font-semibold mb-3">수강 대상</h3>
+          <div class="mb-6">
+            {{ course.target_audience|linebreaks }}
+          </div>
+
+          <h3 class="text-xl font-semibold mb-3">강사 정보</h3>
+          <div class="flex items-start">
+            <div class="flex-shrink-0 mr-4">
+              {% if course.instructor.user.profile_image %}
+                <img src="{{ course.instructor.user.profile_image.url }}" alt="{{ course.instructor.user.username }}" class="w-24 h-24 rounded-full object-cover">
+              {% else %}
+                <div class="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
+                  <span class="text-gray-600 text-2xl">{{ course.instructor.user.username|first|upper }}</span>
+                </div>
+              {% endif %}
+            </div>
+
+            <div>
+              <h4 class="text-lg font-medium">{{ course.instructor.user.username }}</h4>
+
+              {% if course.instructor.qualification %}
+                <p class="text-sm text-gray-600 mb-2">{{ course.instructor.qualification }}</p>
+              {% endif %}
+
+              {% if course.instructor.bio %}
+                <p class="text-sm text-gray-800">{{ course.instructor.bio }}</p>
+              {% endif %}
+
+              {% if course.instructor.experience %}
+                <div class="mt-3">
+                  <h5 class="text-sm font-medium text-gray-700">경력</h5>
+                  <p class="text-sm text-gray-800">{{ course.instructor.experience }}</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 수강평 섹션 -->
+      <section id="reviews" class="py-8 hidden">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">수강평</h2>
+
+          {% if is_enrolled %}
+            <button id="writeReviewBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+              수강평 작성하기
+            </button>
+          {% endif %}
+        </div>
+
+        <!-- 리뷰 작성 폼 (평소에는 숨겨져 있음) -->
+        <div id="reviewForm" class="mb-8 hidden">
+          <form method="post" action="{% url 'course_add_review' course.id %}">
+            {% csrf_token %}
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="rating">
+                평점
+              </label>
+              <div class="flex space-x-2">
+                {% for i in "12345" %}
+                  <label class="cursor-pointer">
+                    <input type="radio" name="rating" value="{{ i }}" class="hidden peer">
+                    <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400" fill="currentColor" viewbox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="content">
+                후기 내용
+              </label>
+              <textarea id="content" name="content" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required="required"></textarea>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" id="cancelReviewBtn" class="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
+                취소
+              </button>
+              <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+                등록하기
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 수강평 목록 -->
+        <div class="space-y-6">
+          {% for review in reviews %}
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <div class="flex items-center mb-1">
+                    {% for i in "12345" %}
+                      <svg class="w-5 h-5 {% if i|add:'0' <= review.rating %}text-yellow-400{% else %}text-gray-300{% endif %}" fill="currentColor" viewbox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                      </svg>
+                    {% endfor %}
+                  </div>
+                  <h3 class="font-medium text-gray-900">{{ review.user.username }}</h3>
+                </div>
+                <div class="text-sm text-gray-500">
+                  {{ review.created_at|date:"Y년 m월 d일" }}
+                </div>
+              </div>
+
+              <div class="text-gray-800">
+                {{ review.content|linebreaks }}
+              </div>
+
+              {% if review.user == request.user %}
+                <div class="mt-4 flex justify-end">
+                  <button class="text-sm text-blue-600 hover:text-blue-800">수정</button>
+                  <span class="mx-2 text-gray-300">|</span>
+                  <button class="text-sm text-red-600 hover:text-red-800">삭제</button>
+                </div>
+              {% endif %}
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+              <p class="text-gray-500">아직 작성된 수강평이 없습니다.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    // 탭 전환 기능
+    document.addEventListener('DOMContentLoaded', function () {
+      const tabs = document.querySelectorAll('nav a');
+      const sections = document.querySelectorAll('section[id]');
+
+      function showSection(sectionId) {
+        sections.forEach(section => {
+          if (section.id === sectionId) {
+            section
+              .classList
+              .remove('hidden');
+          } else {
+            section
+              .classList
+              .add('hidden');
+          }
+        });
+
+        tabs.forEach(tab => {
+          if (tab.getAttribute('href') === '#' + sectionId) {
+            tab
+              .classList
+              .add('text-blue-600', 'border-b-2', 'border-blue-600');
+            tab
+              .classList
+              .remove('text-gray-500', 'hover:text-gray-700');
+          } else {
+            tab
+              .classList
+              .remove('text-blue-600', 'border-b-2', 'border-blue-600');
+            tab
+              .classList
+              .add('text-gray-500', 'hover:text-gray-700');
+          }
+        });
+      }
+
+      // 초기 탭 설정
+      showSection('curriculum');
+
+      // 탭 클릭 이벤트
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function (e) {
+          e.preventDefault();
+          const sectionId = this
+            .getAttribute('href')
+            .substring(1);
+          showSection(sectionId);
+        });
+      });
+
+      // 리뷰 폼 토글
+      const writeReviewBtn = document.getElementById('writeReviewBtn');
+      const cancelReviewBtn = document.getElementById('cancelReviewBtn');
+      const reviewForm = document.getElementById('reviewForm');
+
+      if (writeReviewBtn && reviewForm) {
+        writeReviewBtn.addEventListener('click', function () {
+          reviewForm
+            .classList
+            .toggle('hidden');
+        });
+      }
+
+      if (cancelReviewBtn && reviewForm) {
+        cancelReviewBtn.addEventListener('click', function () {
+          reviewForm
+            .classList
+            .add('hidden');
+        });
+      }
+    });
+  </script>
+{% endblock %}
