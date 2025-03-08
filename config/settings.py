@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "accounts",
     "courses",
+    "learning",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -150,10 +151,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTHENTICATION_BACKENDS = [
     # 기본 장고 인증 백엔드
-    'django.contrib.auth.backends.ModelBackend',
-    
+    "django.contrib.auth.backends.ModelBackend",
     # allauth 특정 인증 백엔드
-    'allauth.account.auth_backends.AuthenticationBackend',
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 SITE_ID = 1
@@ -168,27 +168,18 @@ SOCIALACCOUNT_PROVIDERS = {
         "APP": {
             "client_id": os.environ.get("GOOGLE_CLIENT_ID", ""),
             "secret": os.environ.get("GOOGLE_CLIENT_SECRET", ""),
-            "key": ""
+            "key": "",
         },
-        "SCOPE": [
-            "profile", 
-            "email"
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-            'prompt': 'select_account'
-        }
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online", "prompt": "select_account"},
     },
     "kakao": {
         "APP": {
             "client_id": os.environ.get("KAKAO_CLIENT_ID", ""),
             "secret": os.environ.get("KAKAO_CLIENT_SECRET", ""),
-            "key": ""
+            "key": "",
         },
         "SCOPE": [],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-            'prompt': 'select_account'
-        }
-    }
+        "AUTH_PARAMS": {"access_type": "online", "prompt": "select_account"},
+    },
 }
