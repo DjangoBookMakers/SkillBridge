@@ -34,13 +34,12 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
-    # TODO: 과정의 평균 평점 계산
-    # def average_rating(self):
-    #     """과정의 평균 평점 계산"""
-    #     reviews = self.reviews.all()
-    #     if not reviews:
-    #         return 0
-    #     return sum(review.rating for review in reviews) / len(reviews)
+    def average_rating(self):
+        """과정의 평균 평점 계산"""
+        reviews = self.reviews.all()
+        if not reviews:
+            return 0
+        return sum(review.rating for review in reviews) / len(reviews)
 
     # TODO:
     # estimated_time을 @property로 변환
