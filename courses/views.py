@@ -1,6 +1,9 @@
+from django.contrib import messages
 from django.db.models import Avg
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
-from .models import Course, Subject, Lecture, CourseReview
+
+from .models import Course, Subject, Lecture, QnAQuestion, QnAAnswer, CourseReview
 
 
 def course_list(request):
@@ -59,6 +62,62 @@ from django.contrib.auth.decorators import login_required
 
 
 @login_required
+def add_question(request, lecture_id):
+    """강의에 질문 추가"""
+    lecture = get_object_or_404(Lecture, id=lecture_id)
+
+    if request.method == "POST":
+        content = request.POST.get("content", "").strip()
+
+        if content:
+            # 질문 생성
+            QnAQuestion.objects.create(
+                user=request.user, lecture=lecture, content=content
+            )
+            messages.success(request, "질문이 등록되었습니다.")
+        else:
+            messages.error(request, "질문 내용을 입력해주세요.")
+
+    # 요청이 온 페이지로 리다이렉트
+    referer = request.META.get("HTTP_REFERER")
+    if referer:
+        return redirect(referer)
+
+    # 기본적으로 강의 비디오 페이지로 리다이렉트
+    return redirect("learning_video_lecture", lecture_id=lecture.id)
+
+
+@login_required
+def add_answer(request, question_id):
+    """질문에 답변 추가 (관리자 전용)"""
+    question = get_object_or_404(QnAQuestion, id=question_id)
+
+    # 관리자만 답변 작성 가능
+    if not request.user.is_admin:
+        return HttpResponseForbidden("답변을 작성할 권한이 없습니다.")
+
+    if request.method == "POST":
+        content = request.POST.get("content", "").strip()
+
+        if content:
+            # 답변 생성
+            QnAAnswer.objects.create(
+                user=request.user, question=question, content=content
+            )
+            messages.success(request, "답변이 등록되었습니다.")
+        else:
+            messages.error(request, "답변 내용을 입력해주세요.")
+
+    # 요청이 온 페이지로 리다이렉트
+    referer = request.META.get("HTTP_REFERER")
+    if referer:
+        return redirect(referer)
+
+    # 기본적으로 강의 비디오 페이지로 리다이렉트
+    return redirect("learning_video_lecture", lecture_id=question.lecture.id)
+
+
+@login_required
 def add_review(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
@@ -80,4 +139,4 @@ def add_review(request, course_id):
                 user=request.user, course=course, rating=rating, content=content
             )
 
-    return redirect("courses:course_detail", course_id=course_id)
+    return redirect("course_detail", course_id=course_id)
