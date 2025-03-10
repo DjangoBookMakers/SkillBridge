@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}학습 대시보드 | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-5xl mx-auto">
+      <h1 class="text-3xl font-bold text-gray-900 mb-8">내 학습 대시보드</h1>
+
+      <!-- 진행 중인 과정 섹션 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">진행 중인 과정</h2>
+
+        {% if in_progress %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for enrollment in in_progress %}
+              <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6">
+                  <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                    {{ enrollment.course.title }}
+                  </h3>
+                  <div class="mb-4">
+                    <div class="flex items-center mb-1">
+                      <span class="text-sm text-gray-600 mr-2">진행률:</span>
+                      <span class="text-sm font-medium text-blue-600">{{ enrollment.progress_percentage }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                      <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ enrollment.progress_percentage }}%"></div>
+                    </div>
+                  </div>
+                  <div class="text-sm text-gray-500 mb-4">
+                    <p>마지막 학습:
+                      {{ enrollment.last_activity_at|date:"Y년 m월 d일 H:i" }}</p>
+                    <p>수강 시작일:
+                      {{ enrollment.enrolled_at|date:"Y년 m월 d일" }}</p>
+                  </div>
+
+                  <div class="flex space-x-2">
+                    <a href="{% url 'learning_resume_course' enrollment.course.id %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                      이어서 학습하기
+                    </a>
+                    <a href="{% url 'course_detail' enrollment.course.id %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition duration-200">
+                      과정 상세보기
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="bg-gray-50 rounded-lg p-8 text-center">
+            <p class="text-gray-600 mb-4">진행 중인 과정이 없습니다.</p>
+            <a href="{% url 'course_list' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+              과정 살펴보기
+            </a>
+          </div>
+        {% endif %}
+      </section>
+
+      <!-- 완료한 과정 섹션 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">완료한 과정</h2>
+
+        {% if completed %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for enrollment in completed %}
+              <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6">
+                  <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-semibold text-gray-900">
+                      {{ enrollment.course.title }}
+                    </h3>
+                    {% if enrollment.status == 'completed' %}
+                      <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">수료 완료</span>
+                    {% elif enrollment.status == 'certified' %}
+                      <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">수료증 발급</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="text-sm text-gray-500 mb-4">
+                    <p>완료일:
+                      {{ enrollment.completed_at|date:"Y년 m월 d일" }}</p>
+                    <p>수강 시작일:
+                      {{ enrollment.enrolled_at|date:"Y년 m월 d일" }}</p>
+                  </div>
+
+                  <div class="flex space-x-2">
+                    {% if enrollment.status == 'completed' %}
+                      <a href="{% url 'learning_issue_certificate' enrollment.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                        수료증 발급받기
+                      </a>
+                    {% elif enrollment.status == 'certified' %}
+                      <a href="{% url 'learning_view_certificate' enrollment.certificate.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                        수료증 보기
+                      </a>
+                    {% endif %}
+
+                    <a href="{% url 'course_detail' enrollment.course.id %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition duration-200">
+                      과정 상세보기
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="bg-gray-50 rounded-lg p-8 text-center">
+            <p class="text-gray-600">아직 완료한 과정이 없습니다.</p>
+          </div>
+        {% endif %}
+      </section>
+
+      <!-- 수료증 섹션 -->
+      <section>
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">내 수료증</h2>
+
+        {% if certificates %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for certificate in certificates %}
+              <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                    {{ certificate.enrollment.course.title }}
+                  </h3>
+                  <div class="text-sm text-gray-500 mb-4">
+                    <p>발급일:
+                      {{ certificate.issued_at|date:"Y년 m월 d일" }}</p>
+                    <p>인증번호:
+                      {{ certificate.certificate_number }}</p>
+                  </div>
+
+                  <div class="flex space-x-2">
+                    <a href="{% url 'learning_view_certificate' certificate.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                      수료증 보기
+                    </a>
+                    <a href="{% url 'learning_download_certificate' certificate.id %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition duration-200">
+                      PDF 다운로드
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="bg-gray-50 rounded-lg p-8 text-center">
+            <p class="text-gray-600">아직 발급받은 수료증이 없습니다.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+{% endblock %}
