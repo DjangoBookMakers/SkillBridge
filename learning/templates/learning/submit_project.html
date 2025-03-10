@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ subject.title }}
+  프로젝트 제출 | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="max-w-4xl mx-auto">
+      <!-- 상단 내비게이션 -->
+      <div class="flex items-center text-sm mb-6">
+        <a href="{% url 'course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+          {{ course.title }}
+        </a>
+        <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-900 font-medium">{{ subject.title }}
+          프로젝트 제출</span>
+      </div>
+
+      <!-- 프로젝트 설명 및 지침 카드 -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">{{ subject.title }}</h1>
+        <div class="mb-6">
+          <span class="inline-block {% if subject.subject_type == 'midterm' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %} text-xs font-medium px-2.5 py-0.5 rounded">
+            {{ subject.get_subject_type_display }}
+          </span>
+        </div>
+
+        <div class="prose max-w-none mb-6">
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">프로젝트 설명</h2>
+          <div class="text-gray-700 mb-4">
+            {{ subject.description|linebreaks }}
+          </div>
+
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">제출 지침</h2>
+          <div class="bg-blue-50 p-4 rounded-md border border-blue-200 text-blue-800 mb-4">
+            <ul class="list-disc pl-5 mb-3">
+              <li>프로젝트 파일을 압축(ZIP, RAR, 7Z)하거나 PDF 형식으로 제출해주세요.</li>
+              <li>파일 크기는 10MB를 초과할 수 없습니다.</li>
+              <li>제출한 파일은 관리자가 검토한 후 결과를 알려드립니다.</li>
+              <li>프로젝트 통과 여부는 메일 또는 대시보드에서 확인하실 수 있습니다.</li>
+            </ul>
+            <p class="font-medium">중요: 제출 후에는 수정이 불가능합니다. 제출 전 내용을 꼼꼼히 확인해주세요.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 이전 제출 내역 (있는 경우) -->
+      {% if existing_submission %}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">이전 제출 내역</h2>
+
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span class="text-gray-700">{{ existing_submission.project_file.name|slice:"9:" }}</span>
+              </div>
+              <span class="text-sm text-gray-500">{{ existing_submission.submitted_at|date:"Y년 m월 d일 H:i" }}</span>
+            </div>
+
+            <a href="{{ existing_submission.project_file.url }}" class="text-blue-600 hover:text-blue-800 text-sm inline-flex items-center">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              파일 다운로드
+            </a>
+          </div>
+
+          <div class="border-t border-gray-200 pt-4">
+            <div class="flex items-center mb-2">
+              <span class="text-gray-700 font-medium mr-2">검토 상태:</span>
+              {% if existing_submission.is_passed %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  통과
+                </span>
+              {% elif existing_submission.reviewed_at %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  미통과
+                </span>
+              {% else %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  검토 중
+                </span>
+              {% endif %}
+            </div>
+
+            {% if existing_submission.reviewed_at %}
+              <div class="bg-gray-50 p-4 rounded-md mt-2">
+                <div class="text-sm text-gray-500 mb-2">
+                  {{ existing_submission.reviewed_at|date:"Y년 m월 d일 H:i" }}
+                  검토 완료
+                </div>
+                {% if existing_submission.feedback %}
+                  <div class="text-gray-700">
+                    <span class="font-medium">피드백:</span>
+                    {{ existing_submission.feedback }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+
+          {% if not existing_submission.is_passed %}
+            <div class="mt-4 border-t border-gray-200 pt-4">
+              <p class="text-gray-700 mb-2">프로젝트가 통과되지 않았습니다. 아래에서 다시 제출할 수 있습니다.</p>
+            </div>
+          {% else %}
+            <div class="mt-4 text-center">
+              <a href="{% url 'learning:resume_course' course.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+                다음 학습 진행하기
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <!-- 새 프로젝트 제출 폼 -->
+      {% if not existing_submission or not existing_submission.is_passed %}
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">프로젝트 제출</h2>
+
+          <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {% for error in form.non_field_errors %}
+                  <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div>
+              <label for="{{ form.project_file.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ form.project_file.label }}
+              </label>
+              {{ form.project_file }}
+              {% if form.project_file.help_text %}
+                <p class="mt-1 text-sm text-gray-500">{{ form.project_file.help_text }}</p>
+              {% endif %}
+              {% if form.project_file.errors %}
+                <p class="mt-1 text-sm text-red-600">
+                  {% for error in form.project_file.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </p>
+              {% endif %}
+            </div>
+
+            <div class="mt-6 flex justify-end">
+              <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+                프로젝트 제출하기
+              </button>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

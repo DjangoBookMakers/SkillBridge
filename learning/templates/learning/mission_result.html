@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}미션 결과 | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="max-w-4xl mx-auto">
+      <!-- 상단 내비게이션 -->
+      <div class="flex items-center text-sm mb-6">
+        <a href="{% url 'course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+          {{ course.title }}
+        </a>
+        <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-600">{{ subject.title }}</span>
+        <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-900 font-medium">{{ lecture.title }}
+          결과</span>
+      </div>
+
+      <!-- 결과 요약 카드 -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div class="px-6 py-8">
+          <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">미션 결과</h1>
+
+          <div class="flex justify-center mb-8">
+            {% if attempt.is_passed %}
+              <div class="rounded-full bg-green-100 text-green-800 p-8 inline-flex items-center justify-center">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+            {% else %}
+              <div class="rounded-full bg-red-100 text-red-800 p-8 inline-flex items-center justify-center">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="text-center mb-8">
+            <div class="text-xl font-bold mb-2">
+              {% if attempt.is_passed %}
+                미션 통과!
+              {% else %}
+                미션 실패
+              {% endif %}
+            </div>
+            <p class="text-gray-600">
+              총
+              {{ total_questions }}문제 중
+              {{ correct_count }}문제 정답
+            </p>
+            <div class="mt-4 flex items-center justify-center">
+              <div class="relative w-48 h-48">
+                <svg class="w-48 h-48" viewbox="0 0 100 100">
+                  <!-- 배경 원 -->
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+
+                  <!-- 점수 원 -->
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="{% if attempt.is_passed %}#4ade80{% else %}#f87171{% endif %}" stroke-width="10" stroke-dasharray="282.6" stroke-dashoffset="calc(282.6 - ({{ attempt.score }} * 2.826))" transform="rotate(-90 50 50)"/>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="text-center">
+                    <div class="text-3xl font-bold {% if attempt.is_passed %}text-green-600{% else %}text-red-600{% endif %}">{{ attempt.score }}%</div>
+                    <div class="text-sm text-gray-500">점수</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+            {% if attempt.is_passed %}
+              <a href="{% url 'learning_next_item' lecture.id %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200 text-center">
+                다음 강의 진행하기
+              </a>
+            {% else %}
+              <a href="{% url 'learning_mission' lecture.id %}" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-md transition duration-200 text-center">
+                다시 시도하기
+              </a>
+            {% endif %}
+            <a href="{% url 'course_detail' course.id %}" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition duration-200 text-center">
+              과정으로 돌아가기
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 문제별 결과 -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b">
+          <h2 class="text-lg font-semibold text-gray-900">문제별 결과</h2>
+        </div>
+
+        <div class="divide-y">
+          {% for result in results %}
+            <div class="p-6 {% if result.is_correct %}bg-green-50{% else %}bg-red-50{% endif %}">
+              <div class="flex justify-between items-start mb-4">
+                <h3 class="text-lg font-medium">문제
+                  {{ forloop.counter }}</h3>
+                {% if result.is_correct %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    정답
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    오답
+                  </span>
+                {% endif %}
+              </div>
+
+              <p class="text-gray-700 mb-4">{{ result.question.question_text }}</p>
+
+              <!-- 선택지 목록 -->
+              <div class="space-y-2 mb-4">
+                <div class="flex items-start {% if result.user_answer == '1' and not result.is_correct %}bg-red-100 p-2 rounded{% elif result.question.correct_answer == 1 %}bg-green-100 p-2 rounded{% endif %}">
+                  <span class="inline-block w-6 text-center">1.</span>
+                  <span class="ml-2">{{ result.question.option1 }}</span>
+                  {% if result.question.correct_answer == 1 %}
+                    <svg class="w-5 h-5 text-green-600 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  {% endif %}
+                </div>
+
+                <div class="flex items-start {% if result.user_answer == '2' and not result.is_correct %}bg-red-100 p-2 rounded{% elif result.question.correct_answer == 2 %}bg-green-100 p-2 rounded{% endif %}">
+                  <span class="inline-block w-6 text-center">2.</span>
+                  <span class="ml-2">{{ result.question.option2 }}</span>
+                  {% if result.question.correct_answer == 2 %}
+                    <svg class="w-5 h-5 text-green-600 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  {% endif %}
+                </div>
+
+                <div class="flex items-start {% if result.user_answer == '3' and not result.is_correct %}bg-red-100 p-2 rounded{% elif result.question.correct_answer == 3 %}bg-green-100 p-2 rounded{% endif %}">
+                  <span class="inline-block w-6 text-center">3.</span>
+                  <span class="ml-2">{{ result.question.option3 }}</span>
+                  {% if result.question.correct_answer == 3 %}
+                    <svg class="w-5 h-5 text-green-600 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  {% endif %}
+                </div>
+
+                <div class="flex items-start {% if result.user_answer == '4' and not result.is_correct %}bg-red-100 p-2 rounded{% elif result.question.correct_answer == 4 %}bg-green-100 p-2 rounded{% endif %}">
+                  <span class="inline-block w-6 text-center">4.</span>
+                  <span class="ml-2">{{ result.question.option4 }}</span>
+                  {% if result.question.correct_answer == 4 %}
+                    <svg class="w-5 h-5 text-green-600 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  {% endif %}
+                </div>
+
+                <div class="flex items-start {% if result.user_answer == '5' and not result.is_correct %}bg-red-100 p-2 rounded{% elif result.question.correct_answer == 5 %}bg-green-100 p-2 rounded{% endif %}">
+                  <span class="inline-block w-6 text-center">5.</span>
+                  <span class="ml-2">{{ result.question.option5 }}</span>
+                  {% if result.question.correct_answer == 5 %}
+                    <svg class="w-5 h-5 text-green-600 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="text-sm">
+                <span class="font-medium text-gray-700">내 답안:</span>
+                <span class="{% if result.is_correct %}text-green-600{% else %}text-red-600{% endif %}">
+                  {{ result.user_answer|default:"선택 없음" }}
+                </span>
+                {% if not result.is_correct %}
+                  <span class="ml-2 font-medium text-gray-700">정답:</span>
+                  <span class="text-green-600">{{ result.question.correct_answer }}</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}프로젝트 제출 상세 | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="max-w-4xl mx-auto">
+      <!-- 상단 내비게이션 -->
+      <div class="flex items-center text-sm mb-6">
+        <a href="{% url 'course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+          {{ course.title }}
+        </a>
+        <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-900 font-medium">{{ subject.title }}
+          프로젝트</span>
+      </div>
+
+      <!-- 프로젝트 상세 정보 카드 -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+          <h1 class="text-xl font-bold text-gray-900">제출 상세 정보</h1>
+        </div>
+
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <span class="text-sm text-gray-500">제출일:
+                {{ submission.submitted_at|date:"Y년 m월 d일 H:i" }}</span>
+            </div>
+            <div>
+              {% if submission.is_passed %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  통과
+                </span>
+              {% elif submission.reviewed_at %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  미통과
+                </span>
+              {% else %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  검토 중
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- 파일 정보 -->
+          <div class="bg-gray-50 p-4 rounded-md mb-6">
+            <div class="flex items-center">
+              <svg class="w-10 h-10 text-gray-400 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <div>
+                <p class="font-medium">{{ submission.project_file.name|slice:"9:" }}</p>
+                <a href="{{ submission.project_file.url }}" class="text-blue-600 hover:text-blue-800 text-sm inline-flex items-center mt-1">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                  </svg>
+                  다운로드
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 피드백 -->
+          {% if submission.reviewed_at %}
+            <div class="mb-6">
+              <h2 class="text-lg font-medium text-gray-900 mb-2">검토 결과</h2>
+              <div class="text-sm text-gray-500 mb-2">
+                {{ submission.reviewed_at|date:"Y년 m월 d일 H:i" }}
+                검토 완료
+              </div>
+              {% if submission.feedback %}
+                <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                  <p class="text-gray-800">{{ submission.feedback|linebreaks }}</p>
+                </div>
+              {% else %}
+                <p class="text-gray-600">피드백이 없습니다.</p>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <!-- 버튼 -->
+          <div class="flex justify-between mt-8">
+            <a href="{% url 'learning_submit_project' subject.id %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
+              돌아가기
+            </a>
+
+            {% if submission.is_passed %}
+              <a href="{% url 'learning_next_item' lecture_id=subject.lectures.first.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+                다음 학습 진행하기
+              </a>
+            {% elif not submission.reviewed_at %}
+              <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded">검토 중입니다</span>
+            {% else %}
+              <a href="{% url 'learning_submit_project' subject.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+                다시 제출하기
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

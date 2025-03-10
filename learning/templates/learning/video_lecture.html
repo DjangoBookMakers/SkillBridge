@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lecture.title }}
+  | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="max-w-6xl mx-auto">
+      <!-- 상단 내비게이션 -->
+      <div class="flex items-center text-sm mb-4">
+        <a href="{% url 'course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+          {{ course.title }}
+        </a>
+        <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-600">{{ subject.title }}</span>
+        <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-900 font-medium">{{ lecture.title }}</span>
+      </div>
+
+      <!-- 비디오 및 컨텐츠 섹션 -->
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- 왼쪽: 비디오 플레이어 -->
+        <div class="lg:w-2/3">
+          <div class="bg-black rounded-lg overflow-hidden">
+            {% if lecture.video_url %}
+              <video id="lectureVideo" class="w-full aspect-video" controls="controls" poster="/static/images/video_poster.jpg" controlslist="nodownload" onplay="markVideoStarted()">
+                <source src="{{ lecture.video_url.url }}" type="video/mp4">
+                브라우저가 비디오 태그를 지원하지 않습니다.
+              </video>
+            {% else %}
+              <div class="w-full aspect-video bg-gray-800 flex items-center justify-center">
+                <p class="text-white">비디오를 찾을 수 없습니다.</p>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- 강의 내용 -->
+          <div class="mt-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ lecture.title }}</h1>
+            <div class="flex items-center text-sm text-gray-500 mb-4">
+              <span>{{ subject.title }}</span>
+              <span class="mx-2">•</span>
+              <span>{{ lecture.duration }}분</span>
+            </div>
+
+            <div class="prose max-w-none">
+              {{ lecture.description|linebreaks }}
+            </div>
+          </div>
+
+          <!-- 이전/다음 강의 버튼 -->
+          <div class="mt-8 flex justify-between">
+            {% if prev_lecture %}
+              <a href="{% url 'learning_video_lecture' prev_lecture.id %}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                이전 강의
+              </a>
+            {% else %}
+              <div></div>
+              <!-- 이전 강의가 없을 때 빈 div -->
+            {% endif %}
+
+            {% if next_lecture %}
+              <a href="{% if next_lecture.lecture_type == 'video' %}{% url 'learning_video_lecture' next_lecture.id %}{% else %}{% url 'learning_mission' next_lecture.id %}{% endif %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+                다음 강의
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            {% else %}
+              <a href="{% url 'course_detail' course.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
+                과정으로 돌아가기
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 오른쪽: 과정 내비게이션 및 Q&A -->
+        <div class="lg:w-1/3 mt-6 lg:mt-0">
+          <!-- 진행 상황 -->
+          <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">과정 진행 상황</h2>
+            <div class="flex items-center mb-2">
+              <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ enrollment.progress_percentage }}%"></div>
+              </div>
+              <span class="text-sm font-medium text-gray-700">{{ enrollment.progress_percentage }}%</span>
+            </div>
+            <p class="text-sm text-gray-600">{{ course.title }}</p>
+          </div>
+
+          <!-- 강의 목록 -->
+          <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">강의 목록</h2>
+            <div class="space-y-1 max-h-96 overflow-y-auto pr-2">
+              {% for subject_item in course.subjects.all %}
+                <div class="mb-3">
+                  <div class="font-medium text-gray-800 mb-1">{{ subject_item.title }}</div>
+                  <ul class="space-y-1 pl-2">
+                    {% for lecture_item in subject_item.lectures.all %}
+                      <li>
+                        <a href="{% if lecture_item.lecture_type == 'video' %}{% url 'learning_video_lecture' lecture_item.id %}{% else %}{% url 'learning_mission' lecture_item.id %}{% endif %}" class="flex items-center py-1 px-2 rounded text-sm {% if lecture_item.id == lecture.id %}bg-blue-100 text-blue-700{% else %}hover:bg-gray-100{% endif %}">
+                          {% if lecture_item.lecture_type == 'video' %}
+                            <svg class="w-4 h-4 mr-2 {% if lecture_item.id == lecture.id %}text-blue-600{% else %}text-gray-400{% endif %}" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                          {% else %}
+                            <svg class="w-4 h-4 mr-2 {% if lecture_item.id == lecture.id %}text-blue-600{% else %}text-gray-400{% endif %}" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                          {% endif %}
+
+                          <span class="flex-1 truncate">{{ lecture_item.title }}</span>
+
+                          <!-- 완료 표시 -->
+                          {% for progress in lecture_item.progresses.all %}
+                            {% if progress.user == request.user and progress.is_completed %}
+                              <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                              </svg>
+                            {% endif %}
+                          {% endfor %}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Q&A 섹션 -->
+          <div class="bg-white rounded-lg shadow-md p-4">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">질문 & 답변</h2>
+
+            <!-- 질문 폼 -->
+            <form method="post" action="{% url 'course_add_question' lecture.id %}" class="mb-6">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="question" class="block text-sm font-medium text-gray-700 mb-1">질문하기</label>
+                <textarea id="question" name="content" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="이 강의에 대해 궁금한 점을 작성해주세요." required="required"></textarea>
+              </div>
+              <div class="flex justify-end">
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition duration-200">
+                  질문 등록
+                </button>
+              </div>
+            </form>
+
+            <!-- 질문 목록 -->
+            <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+              {% for question in questions %}
+                <div class="border-t pt-4">
+                  <div class="flex justify-between items-start mb-2">
+                    <div>
+                      <div class="font-medium">{{ question.user.username }}</div>
+                      <div class="text-xs text-gray-500">{{ question.created_at|date:"Y년 m월 d일 H:i" }}</div>
+                    </div>
+                  </div>
+                  <p class="text-gray-700 text-sm mb-2">{{ question.content }}</p>
+
+                  <!-- 답변 섹션 -->
+                  {% for answer in question.answers.all %}
+                    <div class="bg-gray-50 p-3 rounded mt-2">
+                      <div class="flex justify-between items-start mb-1">
+                        <div class="font-medium text-sm">{{ answer.user.username }}</div>
+                        <div class="text-xs text-gray-500">{{ answer.created_at|date:"Y년 m월 d일 H:i" }}</div>
+                      </div>
+                      <p class="text-gray-700 text-sm">{{ answer.content }}</p>
+                    </div>
+                  {% endfor %}
+
+                  <!-- 관리자만 볼 수 있는 답변 폼 -->
+                  {% if request.user.is_admin %}
+                    <form method="post" action="{% url 'course_add_answer' question.id %}" class="mt-2">
+                      {% csrf_token %}
+                      <div class="flex">
+                        <input type="text" name="content" class="flex-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-l-md" placeholder="답변 작성..." required="required">
+                        <button type="submit" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-r-md transition duration-200">
+                          답변
+                        </button>
+                      </div>
+                    </form>
+                  {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center py-4">
+                  <p class="text-gray-500 text-sm">아직 작성된 질문이 없습니다.</p>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    function markVideoStarted() {
+      // AJAX를 통해 동영상 시청 시작을 서버에 알림
+      const lectureId = {{ lecture.id }};
+
+      fetch(`/learning/lecture/${lectureId}/mark-completed/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        credentials: 'same-origin'
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log('강의 완료 처리 성공');
+            // 필요한 경우 UI 업데이트
+          }
+        })
+        .catch(error => {
+          console.error('강의 완료 처리 중 오류:', error);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // 페이지 로드 시 동영상 재생을 자동으로 시작하지 않음
+      // 사용자가 직접 재생 버튼을 눌러야 함
+
+      // 현재 강의 항목으로 자동 스크롤
+      const currentLectureItem = document.querySelector('.bg-blue-100');
+      if (currentLectureItem) {
+        currentLectureItem.scrollIntoView({block: 'center', behavior: 'smooth'});
+      }
+    });
+  </script>
+{% endblock %}

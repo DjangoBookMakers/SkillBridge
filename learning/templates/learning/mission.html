@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lecture.title }}
+  | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="max-w-4xl mx-auto">
+      <!-- 상단 내비게이션 -->
+      <div class="flex items-center text-sm mb-6">
+        <a href="{% url 'course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+          {{ course.title }}
+        </a>
+        <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-600">{{ subject.title }}</span>
+        <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-900 font-medium">{{ lecture.title }}</span>
+      </div>
+
+      <!-- 미션 헤더 -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ lecture.title }}</h1>
+        <div class="text-gray-600 mb-4">{{ lecture.description }}</div>
+
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-500">
+            <p>과목:
+              {{ subject.title }}</p>
+            <p>문항 수:
+              {{ questions|length }}개</p>
+          </div>
+          <div class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded">
+            통과 기준: 80% 이상 정답
+          </div>
+        </div>
+      </div>
+
+      <!-- 미션 폼 -->
+      <form method="post" id="missionForm" class="bg-white rounded-lg shadow-md overflow-hidden">
+        {% csrf_token %}
+
+        <!-- 진행 상태 표시 -->
+        <div class="bg-gray-100 px-6 py-3 border-b">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-700">진행 상태:
+              <span id="currentQuestion">1</span>/{{ questions|length }}</span>
+            <div class="w-1/2 bg-gray-300 rounded-full h-2">
+              <div id="progressBar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 문제 컨테이너 -->
+        <div class="p-6">
+          <!-- 각 문제를 카드로 표시 (초기에는 첫 번째 문제만 표시) -->
+          {% for question in questions %}
+            <div id="question-{{ forloop.counter }}" class="question-card {% if forloop.first %}block{% else %}hidden{% endif %}">
+              <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                문제
+                {{ forloop.counter }}
+              </h2>
+              <div class="mb-6">
+                <p class="text-gray-700 mb-4">{{ question.question_text }}</p>
+
+                <!-- 선택지 -->
+                <div class="space-y-3">
+                  <label class="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                    <input type="radio" name="question_{{ question.id }}" value="1" class="mt-0.5 mr-3" required="required">
+                    <span>{{ question.option1 }}</span>
+                  </label>
+
+                  <label class="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                    <input type="radio" name="question_{{ question.id }}" value="2" class="mt-0.5 mr-3" required="required">
+                    <span>{{ question.option2 }}</span>
+                  </label>
+
+                  <label class="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                    <input type="radio" name="question_{{ question.id }}" value="3" class="mt-0.5 mr-3" required="required">
+                    <span>{{ question.option3 }}</span>
+                  </label>
+
+                  <label class="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                    <input type="radio" name="question_{{ question.id }}" value="4" class="mt-0.5 mr-3" required="required">
+                    <span>{{ question.option4 }}</span>
+                  </label>
+
+                  <label class="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                    <input type="radio" name="question_{{ question.id }}" value="5" class="mt-0.5 mr-3" required="required">
+                    <span>{{ question.option5 }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+
+          <!-- 네비게이션 버튼 -->
+          <div class="flex justify-between mt-8">
+            <button type="button" id="prevButton" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200 hidden">
+              이전 문제
+            </button>
+
+            <div class="flex-1"></div>
+
+            <button type="button" id="nextButton" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+              다음 문제
+            </button>
+
+            <button type="submit" id="submitButton" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200 hidden">
+              제출하기
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- 문제 페이지네이션 -->
+      <div class="mt-4 flex justify-center">
+        <div class="flex flex-wrap gap-2 justify-center">
+          {% for question in questions %}
+            <button data-question="{{ forloop.counter }}" class="question-dot w-8 h-8 rounded-full border {% if forloop.first %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-gray-700 border-gray-300{% endif %} flex items-center justify-center text-sm font-medium">
+              {{ forloop.counter }}
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const totalQuestions = {{ questions | length }};
+      let currentQuestion = 1;
+
+      // 문제 카드 요소 선택 - ID로 정확히 찾도록 수정
+      const questionCards = document.querySelectorAll('[id^="question-"]');
+      const questionDots = document.querySelectorAll('.question-dot');
+      const progressBar = document.getElementById('progressBar');
+      const currentQuestionDisplay = document.getElementById('currentQuestion');
+
+      const prevButton = document.getElementById('prevButton');
+      const nextButton = document.getElementById('nextButton');
+      const submitButton = document.getElementById('submitButton');
+
+      // 현재 문제 표시 업데이트
+      function updateCurrentQuestion(questionNum) {
+        // 모든 문제 카드 숨기기
+        questionCards.forEach(card => card.classList.add('hidden'));
+
+        // 현재 문제 카드 표시
+        const currentCard = document.getElementById(`question-${questionNum}`);
+        if (currentCard) {
+          currentCard
+            .classList
+            .remove('hidden');
+        }
+
+        // 하단 페이지네이션 업데이트
+        questionDots.forEach(dot => {
+          const dotQuestion = parseInt(dot.getAttribute('data-question'));
+
+          if (dotQuestion === questionNum) {
+            dot
+              .classList
+              .add('bg-blue-600', 'text-white', 'border-blue-600');
+            dot
+              .classList
+              .remove('bg-white', 'text-gray-700', 'border-gray-300', 'bg-green-100', 'text-green-800', 'border-green-300');
+          } else {
+            // 이미 답변한 문제는 체크 표시
+            const cardIndex = dotQuestion - 1;
+            if (cardIndex >= 0 && cardIndex < questionCards.length) {
+              const questionCard = questionCards[cardIndex];
+              const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
+              const isAnswered = Array
+                .from(radioInputs)
+                .some(input => input.checked);
+
+              if (isAnswered) {
+                dot
+                  .classList
+                  .add('bg-green-100', 'text-green-800', 'border-green-300');
+                dot
+                  .classList
+                  .remove('bg-blue-600', 'text-white', 'border-blue-600', 'bg-white', 'text-gray-700', 'border-gray-300');
+              } else {
+                dot
+                  .classList
+                  .add('bg-white', 'text-gray-700', 'border-gray-300');
+                dot
+                  .classList
+                  .remove('bg-blue-600', 'text-white', 'border-blue-600', 'bg-green-100', 'text-green-800', 'border-green-300');
+              }
+            }
+          }
+        });
+
+        // 진행 상태 업데이트
+        currentQuestionDisplay.textContent = questionNum;
+        progressBar.style.width = `${ (questionNum / totalQuestions) * 100}%`;
+
+        // 이전/다음/제출 버튼 상태 업데이트
+        prevButton
+          .classList
+          .toggle('hidden', questionNum === 1);
+        nextButton
+          .classList
+          .toggle('hidden', questionNum === totalQuestions);
+        submitButton
+          .classList
+          .toggle('hidden', questionNum !== totalQuestions);
+
+        currentQuestion = questionNum;
+      }
+
+      // 이전 문제 버튼
+      prevButton.addEventListener('click', function () {
+        if (currentQuestion > 1) {
+          updateCurrentQuestion(currentQuestion - 1);
+        }
+      });
+
+      // 다음 문제 버튼
+      nextButton.addEventListener('click', function () {
+        console.log("nextButton clicked")
+        // 현재 문제의 답변이 선택되었는지 확인
+        const currentCard = document.getElementById(`question-${currentQuestion}`);
+        const radioInputs = currentCard.querySelectorAll('input[type="radio"]');
+        const isAnswered = Array
+          .from(radioInputs)
+          .some(input => input.checked);
+
+        if (!isAnswered) {
+          alert('이 문제에 답변을 선택해주세요.');
+          return;
+        }
+
+        if (currentQuestion < totalQuestions) {
+          updateCurrentQuestion(currentQuestion + 1);
+        }
+      });
+
+      // 페이지네이션 점 클릭
+      questionDots.forEach(dot => {
+        dot.addEventListener('click', function () {
+          const questionNum = parseInt(this.getAttribute('data-question'));
+          updateCurrentQuestion(questionNum);
+        });
+      });
+
+      // 폼 제출 전 모든 문제 답변 확인
+      document
+        .getElementById('missionForm')
+        .addEventListener('submit', function (e) {
+          let allAnswered = true;
+          let firstUnanswered = null;
+
+          questionCards.forEach((card, index) => {
+            const radioInputs = card.querySelectorAll('input[type="radio"]');
+            const isAnswered = Array
+              .from(radioInputs)
+              .some(input => input.checked);
+
+            if (!isAnswered) {
+              allAnswered = false;
+              if (firstUnanswered === null) {
+                firstUnanswered = index + 1;
+              }
+            }
+          });
+
+          if (!allAnswered) {
+            e.preventDefault();
+            alert(`${firstUnanswered}번 문제에 답변을 선택해주세요.`);
+            updateCurrentQuestion(firstUnanswered);
+          } else if (!confirm('미션을 제출하시겠습니까? 제출 후에는 답변을 수정할 수 없습니다.')) {
+            e.preventDefault();
+          }
+        });
+
+      // 초기 상태 설정
+      updateCurrentQuestion(1);
+    });
+  </script>
+{% endblock %}
