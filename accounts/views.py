@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.shortcuts import render, redirect
 from django.utils import timezone
-from .forms import LoginForm, SignupForm
+from .forms import LoginForm, SignupForm, ProfileEditForm
 
 def login_view(request):
     if request.method == 'POST':
@@ -48,3 +49,26 @@ def signup_view(request):
         form = SignupForm()
     
     return render(request, 'accounts/signup.html', {'form': form})
+
+@login_required
+def profile_view(request):
+    context = {
+        'user': request.user,
+    }
+    return render(request, 'accounts/profile.html', context)
+
+@login_required
+def profile_edit_view(request):
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '프로필이 성공적으로 업데이트되었습니다.')
+            return redirect('accounts:profile')
+    else:
+        form = ProfileEditForm(instance=request.user)
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'accounts/profile_edit.html', context)
