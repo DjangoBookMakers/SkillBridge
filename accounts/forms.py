@@ -36,3 +36,17 @@ class SignupForm(UserCreationForm):
             'gender': forms.Select(attrs={'class': 'form-control'}, choices=[('', '성별 선택'), ('남성', '남성'), ('여성', '여성')]),
             'profile_image': forms.FileInput(attrs={'class': 'form-control'}),
         }
+
+class ProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'profile_image', 'phone_number', 'birth_date', 'gender']
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'}),
+            'first_name': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'}),
+            'last_name': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'}),
+            'profile_image': forms.FileInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'}),
+            'phone_number': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'}),
+            'birth_date': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md', 'type': 'date'}),
+            'gender': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'}, choices=[('', '성별 선택'), ('남성', '남성'), ('여성', '여성')]),
+        }        

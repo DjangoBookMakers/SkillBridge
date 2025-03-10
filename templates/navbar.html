@@ -9,6 +9,8 @@
       <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
         <div class="flex items-center">
+          <!-- 프로필 페이지로 이동하는 링크로 감싸기 -->
+          <a href="{% url 'accounts:profile' %}" class="flex items-center hover:text-blue-600 transition">
           {% if user.profile_image %}
             <!-- 저장된 프로필 사진 표시 (일반 업로드 또는 소셜 계정에서 가져온 이미지) -->
             <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover mr-2">
