@@ -8,12 +8,23 @@
       </div>
       <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
+        <div class="flex items-center">
+          {% if user.profile_image %}
+            <!-- 저장된 프로필 사진 표시 (일반 업로드 또는 소셜 계정에서 가져온 이미지) -->
+            <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover mr-2">
+          {% else %}
+            <!-- 프로필 사진이 없는 경우 이니셜 원 표시 -->
+            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium mr-2">
+              {{ user.username|first|upper }}
+            </div>
+          {% endif %}
           <span class="text-gray-700">{{ user.username }}님</span>
-          <a href="{% url 'logout' %}" class="text-sm px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition duration-200">로그아웃</a>
+        </div>
+          <a href="{% url 'accounts:logout' %}" class="text-sm px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition duration-200">로그아웃</a>
         {% else %}
           {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}
-            <a href="{% url 'login' %}" class="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition duration-200">로그인</a>
-            <a href="{% url 'signup' %}" class="text-sm px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition duration-200">회원가입</a>
+            <a href="{% url 'accounts:login' %}" class="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition duration-200">로그인</a>
+            <a href="{% url 'accounts:signup' %}" class="text-sm px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition duration-200">회원가입</a>
           {% endif %}
         {% endif %}
       </div>

@@ -13,14 +13,15 @@ def login_view(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             
-            
             if user is not None:
                 login(request, user)
                 user.login_at = timezone.now()  
                 user.save()
-            return redirect('home')  # 사용자 -> 메인 화면
+                return redirect('/')  # 사용자 -> 메인 화면
+            else:
+                messages.error(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
         else:
-            messages.error(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
+            messages.error(request, '입력 정보를 확인해주세요.')        
     else:
         form = LoginForm()
     
@@ -28,17 +29,21 @@ def login_view(request):
 
 def logout_view(request):
     if request.user.is_authenticated:
+        from django.contrib.messages import get_messages
+        storage = get_messages(request)
+        storage.used = True
+
         request.user.logout_at = timezone.now()
         request.user.save()
         logout(request)
-    return redirect('home')
+    return redirect('/')
 
 def signup_view(request):
     if request.method == 'POST':
         form = SignupForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
-            return redirect('login')
+            return redirect('accounts:login')
     else:
         form = SignupForm()
     

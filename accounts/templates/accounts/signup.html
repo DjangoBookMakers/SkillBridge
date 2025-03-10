@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}스킬브릿지 - 회원가입{% endblock %}
 
@@ -102,13 +103,13 @@
     </div>
 
     <div class="social-login">
-      <button class="social-button google">G</button>
-      <button class="social-button kakao">K</button>
+      <a href="{% provider_login_url 'google' %}" class="social-button google">G</a>
+      <a href="{% provider_login_url 'kakao' %}" class="social-button kakao">K</a>
     </div>
 
     <p class="login-link">
       이미 계정이 있으신가요?
-      <a href="{% url 'login' %}">로그인</a>
+      <a href="{% url 'accounts:login' %}">로그인</a>
     </p>
   </div>
 {% endblock %}
