@@ -1,6 +1,6 @@
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from .models import User
 
 class LoginForm(forms.Form):
@@ -50,3 +50,10 @@ class ProfileEditForm(forms.ModelForm):
             'birth_date': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md', 'type': 'date'}),
             'gender': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'}, choices=[('', '성별 선택'), ('남성', '남성'), ('여성', '여성')]),
         }        
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['old_password'].widget.attrs.update({'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'})
+        self.fields['new_password1'].widget.attrs.update({'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'})
+        self.fields['new_password2'].widget.attrs.update({'class': 'w-full px-3 py-2 border border-gray-300 rounded-md'})        
