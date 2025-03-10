@@ -81,6 +81,47 @@ class Enrollment(models.Model):
 
         return first_lecture
 
+    def get_next_learning_item(self):
+        """
+        다음에 수행해야 할 학습 항목을 반환합니다.
+
+        반환 형식: (유형, 객체)
+        유형은 'video_lecture', 'mission', 'project', 'completed' 중 하나입니다.
+        """
+        # 과정의 모든 과목을 순서대로 확인
+        subjects = Subject.objects.filter(course=self.course).order_by("order_index")
+
+        for subject in subjects:
+            # 중간고사/기말고사 과목인 경우
+            if subject.subject_type in ["midterm", "final"]:
+                # 이미 통과한 프로젝트가 있는지 확인
+                submission = ProjectSubmission.objects.filter(
+                    user=self.user, subject=subject, is_passed=True
+                ).first()
+
+                # 아직 통과하지 않았다면 프로젝트 제출로 반환
+                if not submission:
+                    return ("project", subject)
+
+            # 일반 과목인 경우 미완료된 강의 찾기
+            lectures = Lecture.objects.filter(subject=subject).order_by("order_index")
+
+            for lecture in lectures:
+                # 강의 진행 상태 확인
+                progress = LectureProgress.objects.filter(
+                    user=self.user, lecture=lecture, is_completed=True
+                ).exists()
+
+                # 완료하지 않은 강의가 있으면 해당 강의 반환
+                if not progress:
+                    if lecture.lecture_type == "video":
+                        return ("video_lecture", lecture)
+                    elif lecture.lecture_type == "mission":
+                        return ("mission", lecture)
+
+        # 모든 항목을 완료한 경우
+        return ("completed", self.course)
+
     def check_completion(self):
         """과정 수료 조건 확인 (최적화 버전)"""
         # 이미 완료된 과정이면 즉시 True 반환

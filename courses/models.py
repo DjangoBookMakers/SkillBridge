@@ -96,6 +96,58 @@ class Lecture(models.Model):
     def __str__(self):
         return f"{self.subject.title} - {self.title}"
 
+    def get_next_learning_item(self):
+        """
+        현재 강의 다음에 이어지는 학습 항목을 반환합니다.
+
+        반환 형식: (유형, 객체)
+        유형은 'video_lecture', 'mission', 'project', 'completed' 중 하나입니다.
+        """
+        subject = self.subject
+        course = subject.course
+
+        # 같은 과목 내 다음 강의 찾기
+        next_lecture = (
+            Lecture.objects.filter(subject=subject, order_index__gt=self.order_index)
+            .order_by("order_index")
+            .first()
+        )
+
+        if next_lecture:
+            # 같은 과목 내 다음 강의가 있으면 해당 강의 반환
+            if next_lecture.lecture_type == "video":
+                return ("video_lecture", next_lecture)
+            else:  # mission
+                return ("mission", next_lecture)
+
+        # 다음 과목 찾기
+        next_subject = (
+            Subject.objects.filter(course=course, order_index__gt=subject.order_index)
+            .order_by("order_index")
+            .first()
+        )
+
+        if next_subject:
+            # 중간고사/기말고사 과목인 경우
+            if next_subject.subject_type in ["midterm", "final"]:
+                return ("project", next_subject)
+
+            # 일반 과목인 경우 첫 번째 강의 찾기
+            first_lecture = (
+                Lecture.objects.filter(subject=next_subject)
+                .order_by("order_index")
+                .first()
+            )
+
+            if first_lecture:
+                if first_lecture.lecture_type == "video":
+                    return ("video_lecture", first_lecture)
+                else:  # mission
+                    return ("mission", first_lecture)
+
+        # 다음 학습 항목이 없으면 완료 상태로 과정 반환
+        return ("completed", course)
+
 
 class MissionQuestion(models.Model):
     """미션 문제(쪽지시험) 모델"""
