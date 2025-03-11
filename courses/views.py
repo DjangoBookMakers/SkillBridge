@@ -1,8 +1,8 @@
 from django.contrib import messages
 from django.db.models import Avg
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render
-
+import json
 from .models import Course, Subject, Lecture, QnAQuestion, QnAAnswer, CourseReview
 
 
@@ -141,3 +141,83 @@ def add_review(request, course_id):
             )
 
     return redirect("course_detail", course_id=course_id)
+
+
+@login_required
+def update_review(request, review_id):
+    """수강평 수정"""
+    review = get_object_or_404(CourseReview, id=review_id)
+
+    # 권한 체크 (본인의 리뷰만 수정 가능)
+    if review.user != request.user:
+        return JsonResponse(
+            {"success": False, "message": "수정 권한이 없습니다."}, status=403
+        )
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            rating = data.get("rating")
+            content = data.get("content")
+
+            if not rating or not content:
+                return JsonResponse(
+                    {"success": False, "message": "평점과 내용을 모두 입력해주세요."},
+                    status=400,
+                )
+
+            review.rating = rating
+            review.content = content
+            review.save()
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "수강평이 수정되었습니다.",
+                    "review": {
+                        "id": review.id,
+                        "rating": review.rating,
+                        "content": review.content,
+                        "created_at": review.created_at.strftime("%Y년 %m월 %d일"),
+                        "username": review.user.username,
+                    },
+                }
+            )
+        except Exception as e:
+            return JsonResponse(
+                {"success": False, "message": f"오류가 발생했습니다: {str(e)}"},
+                status=500,
+            )
+
+    return JsonResponse({"success": False, "message": "잘못된 요청입니다."}, status=400)
+
+
+@login_required
+def delete_review(request, review_id):
+    """수강평 삭제"""
+    review = get_object_or_404(CourseReview, id=review_id)
+
+    # 권한 체크 (본인의 리뷰만 삭제 가능)
+    if review.user != request.user:
+        return JsonResponse(
+            {"success": False, "message": "삭제 권한이 없습니다."}, status=403
+        )
+
+    if request.method == "POST":
+        try:
+            course_id = review.course.id  # 삭제 전에 course_id 저장
+            review.delete()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "수강평이 삭제되었습니다.",
+                    "course_id": course_id,
+                }
+            )
+        except Exception as e:
+            return JsonResponse(
+                {"success": False, "message": f"오류가 발생했습니다: {str(e)}"},
+                status=500,
+            )
+
+    return JsonResponse({"success": False, "message": "잘못된 요청입니다."}, status=400)
