@@ -52,8 +52,22 @@ def signup_view(request):
 
 @login_required
 def profile_view(request):
+    # 임시 구매 내역 데이터 생성 (나중에 실제 결제 모델과 연동 필요)
+    from courses.models import Course
+
+    # 사용자가 구매한 과정 목록 (임시)
+    purchases = []
+    for course in Course.objects.all()[:3]:  # 최대 3개의 과정을 가져옴
+        purchases.append({
+            'course': course,
+            'purchase_date': course.created_at,
+            'price': course.price,
+            'status': '결제 완료'
+        })
+
     context = {
         'user': request.user,
+        'purchases': purchases,
     }
     return render(request, 'accounts/profile.html', context)
 
