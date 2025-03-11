@@ -1,8 +1,11 @@
+from django.core.files import File
 from django.core.management import BaseCommand
 from django.contrib.auth import get_user_model
 from accounts.models import InstructorProfile
 from courses.models import Course, Subject, Lecture, MissionQuestion
+from pathlib import Path
 import random
+
 
 User = get_user_model()
 
@@ -241,5 +244,12 @@ class Command(BaseCommand):
                                 self.stdout.write(
                                     f"문제 생성: {question.question_text[:30]}..."
                                 )
+
+                        else:  # "video"
+                            if Path("media/videos/sample.mp4").exists():
+                                with open("media/videos/sample.mp4", "rb") as f:
+                                    lecture.video_url.save(
+                                        "sample.mp4", File(f), save=True
+                                    )
 
         self.stdout.write(self.style.SUCCESS("샘플 과정 데이터 생성 완료!"))
