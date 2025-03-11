@@ -43,7 +43,7 @@
             <div class="text-2xl font-bold text-gray-900 mb-4">{{ course.price|floatformat:0 }}원</div>
 
             {% if is_enrolled %}
-              <a href="#" class="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
+              <a href="{% url 'learning_resume_course' course.id %}" class="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
                 이어서 학습하기
               </a>
             {% else %}
