@@ -20,9 +20,9 @@
         </label>
         <div class="flex space-x-2">
           {% for i in "12345" %}
-            <label class="cursor-pointer">
+            <label class="cursor-pointer rating-label" data-rating="{{ i }}">
               <input type="radio" name="rating" value="{{ i }}" class="hidden peer">
-              <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400" fill="currentColor" viewbox="0 0 20 20">
+              <svg class="w-8 h-8 text-gray-300 rating-star" data-rating="{{ i }}" fill="currentColor" viewbox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
               </svg>
             </label>
@@ -108,6 +108,116 @@
           .add('hidden');
       });
     }
+
+    // 별점 라디오 버튼 선택 시 UI 업데이트 처리
+    const ratingStars = document.querySelectorAll('input[name="rating"]');
+
+    // 모든 별점 라디오 버튼에 이벤트 리스너 추가
+    ratingStars.forEach(star => {
+      star.addEventListener('change', function () {
+        const selectedRating = parseInt(this.value);
+
+        // 모든 별 초기화 (회색으로)
+        document
+          .querySelectorAll('.rating-star')
+          .forEach(starSvg => {
+            starSvg
+              .classList
+              .remove('text-yellow-400');
+            starSvg
+              .classList
+              .add('text-gray-300');
+          });
+
+        // 선택한 별까지 모두 노란색으로 변경
+        for (let i = 1; i <= selectedRating; i++) {
+          const starToHighlight = document.querySelector(`.rating-star[data-rating="${i}"]`);
+          if (starToHighlight) {
+            starToHighlight
+              .classList
+              .remove('text-gray-300');
+            starToHighlight
+              .classList
+              .add('text-yellow-400');
+          }
+        }
+      });
+    });
+
+    // 마우스 오버 효과 (hover 효과 구현)
+    const starLabels = document.querySelectorAll('.rating-label');
+
+    starLabels.forEach(label => {
+      // 마우스 진입 시
+      label.addEventListener('mouseenter', function () {
+        const hoverRating = parseInt(this.dataset.rating);
+
+        // 모든 별에 대해 처리
+        starLabels.forEach(label => {
+          const star = label.querySelector('.rating-star');
+          const starRating = parseInt(label.dataset.rating);
+
+          // 호버 중인 별과 그 이하 별들은 노란색으로
+          if (starRating <= hoverRating) {
+            star
+              .classList
+              .remove('text-gray-300');
+            star
+              .classList
+              .add('text-yellow-400'); // 그 이상의 별들은 회색으로
+          } else {
+            star
+              .classList
+              .remove('text-yellow-400');
+            star
+              .classList
+              .add('text-gray-300');
+          }
+        });
+      });
+
+      // 마우스 떠날 때 실제 선택된 값으로 복원
+      label.addEventListener('mouseleave', function () {
+        const checkedStar = document.querySelector('input[name="rating"]:checked');
+        if (checkedStar) {
+          const selectedRating = parseInt(checkedStar.value);
+
+          // 모든 별 초기화
+          starLabels.forEach(label => {
+            const star = label.querySelector('.rating-star');
+            const starRating = parseInt(label.dataset.rating);
+
+            // 선택된 별과 그 이하 별들은 노란색으로
+            if (starRating <= selectedRating) {
+              star
+                .classList
+                .remove('text-gray-300');
+              star
+                .classList
+                .add('text-yellow-400'); // 그 이상의 별들은 회색으로
+            } else {
+              star
+                .classList
+                .remove('text-yellow-400');
+              star
+                .classList
+                .add('text-gray-300');
+            }
+          });
+        } else {
+          // 선택된 별이 없으면 모두 회색으로
+          starLabels.forEach(label => {
+            const star = label.querySelector('.rating-star');
+            star
+              .classList
+              .remove('text-yellow-400');
+            star
+              .classList
+              .add('text-gray-300');
+          });
+        }
+      });
+    });
 
     // 리뷰 수정 버튼 이벤트 (추가 기능)
     const editButtons = document.querySelectorAll('.review-edit-btn');
