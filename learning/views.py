@@ -367,3 +367,54 @@ def download_certificate(request, certificate_id):
     except Exception as e:
         messages.error(request, f"파일 다운로드 중 오류가 발생했습니다: {str(e)}")
         return redirect("learning_view_certificate", certificate_id=certificate.id)
+
+@login_required
+def dashboard_view(request):
+    # 관리자가 접근할 경우 관리자 대시보드로 리디렉션
+    if request.user.is_admin:
+        return redirect('learning_admin_dashboard')
+    
+    # 일반 사용자는 사용자 대시보드로 이동
+    # 사용자의 등록된 과정 및 진행 상황 가져오기
+    enrollments = Enrollment.objects.filter(user=request.user).order_by('-enrolled_at')
+    
+    # 진행 중인 과정과 완료된 과정 분리
+    in_progress = [e for e in enrollments if e.status == "enrolled"]
+    completed = [e for e in enrollments if e.status in ["completed", "certified"]]
+    
+    # 수료증 목록
+    certificates = Certificate.objects.filter(user=request.user).order_by('-issued_at')
+    
+    context = {
+        'in_progress': in_progress,
+        'completed': completed,
+        'certificates': certificates,
+    }
+    return render(request, 'learning/dashboard.html', context)
+
+@login_required
+def admin_dashboard_view(request):
+    # 일반 사용자가 접근할 경우 일반 대시보드로 리디렉션
+    if not request.user.is_admin:
+        messages.error(request, '관리자 권한이 필요합니다.')
+        return redirect('learning_dashboard')
+    
+    # 관리자 통계 및 관리 데이터 가져오기
+    all_courses = Course.objects.all().order_by('-created_at')
+    all_users = User.objects.all().order_by('-date_joined')
+    
+    # 수강신청 통계
+    total_enrollments = Enrollment.objects.count()
+    total_certificates = Certificate.objects.count()
+    
+    # 최근 수강신청 목록
+    recent_enrollments = Enrollment.objects.all().order_by('-enrolled_at')[:10]
+    
+    context = {
+        'all_courses': all_courses,
+        'all_users': all_users,
+        'total_enrollments': total_enrollments,
+        'total_certificates': total_certificates,
+        'recent_enrollments': recent_enrollments,
+    }
+    return render(request, 'learning/admin_dashboard.html', context)
