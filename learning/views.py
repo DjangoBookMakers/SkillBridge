@@ -367,3 +367,42 @@ def download_certificate(request, certificate_id):
     except Exception as e:
         messages.error(request, f"파일 다운로드 중 오류가 발생했습니다: {str(e)}")
         return redirect("learning_view_certificate", certificate_id=certificate.id)
+
+@login_required
+def dashboard_view(request):
+    # 관리자가 접근할 경우 관리자 대시보드로 리디렉션
+    if request.user.is_admin:
+        return redirect('learning:admin_dashboard')
+    
+    # TODO: 사용자의 등록된 과정 및 진행 상황 가져오기
+    # enrolled_courses = Enrollment.objects.filter(user=request.user)
+    
+    # 임시 데이터
+    enrolled_courses = []
+    
+    context = {
+        'enrolled_courses': enrolled_courses,
+    }
+    return render(request, 'learning/dashboard.html', context)
+
+@login_required
+def admin_dashboard_view(request):
+    # 일반 사용자가 접근할 경우 일반 대시보드로 리디렉션
+    if not request.user.is_admin:
+        messages.error(request, '관리자 권한이 필요합니다.')
+        return redirect('learning:dashboard')
+    
+    # TODO: 관리자 통계 및 관리 데이터 가져오기
+    # all_courses = Course.objects.all()
+    # all_users = User.objects.all()
+    
+    # 임시 데이터
+    all_courses = []
+    all_users = []
+    
+    context = {
+        'all_courses': all_courses,
+        'all_users': all_users,
+    }
+    return render(request, 'learning/admin_dashboard.html', context)
+
