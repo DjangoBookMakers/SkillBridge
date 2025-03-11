@@ -354,7 +354,239 @@ class Certificate(models.Model):
         return self.certificate_number
 
     def generate_pdf(self):
-        """수료증 PDF 생성"""
-        # TODO: PDF 생성 로직 구현
-        # 실제 구현은 별도 서비스나 라이브러리 사용 필요
-        pass
+        """수료증 PDF 생성 - 웹 버전과 동일한 디자인"""
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.platypus import (
+            SimpleDocTemplate,
+            Paragraph,
+            Spacer,
+            Image,
+            Table,
+            TableStyle,
+        )
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        from io import BytesIO
+        from django.contrib.staticfiles.finders import find as find_static_file
+        from django.core.files.base import ContentFile
+
+        # 폰트 등록 (한글 지원을 위해)
+        font_path = find_static_file("fonts/NanumGothic.ttf")
+        if font_path:
+            pdfmetrics.registerFont(TTFont("NanumGothic", font_path))
+            pdfmetrics.registerFont(
+                TTFont(
+                    "NanumGothicBold",
+                    find_static_file("fonts/NanumGothicBold.ttf") or font_path,
+                )
+            )
+            font_name = "NanumGothic"
+            font_name_bold = "NanumGothicBold"
+        else:
+            # 폰트를 찾지 못하면 기본 폰트 사용
+            font_name = "Helvetica"
+            font_name_bold = "Helvetica-Bold"
+
+        # 스타일 정의
+        styles = getSampleStyleSheet()
+
+        # 스타일 추가
+        styles.add(
+            ParagraphStyle(
+                name="TitleKO",
+                fontName=font_name_bold,
+                fontSize=24,
+                alignment=TA_CENTER,
+                spaceAfter=5,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="SubtitleKO",
+                fontName=font_name,
+                fontSize=14,
+                alignment=TA_CENTER,
+                spaceAfter=20,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="BodyKO",
+                fontName=font_name,
+                fontSize=12,
+                alignment=TA_CENTER,
+                leading=18,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="NameKO",
+                fontName=font_name_bold,
+                fontSize=16,
+                alignment=TA_CENTER,
+                spaceBefore=15,
+                spaceAfter=15,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="CourseKO",
+                fontName=font_name_bold,
+                fontSize=18,
+                alignment=TA_CENTER,
+                spaceAfter=5,
+                textColor=colors.blue,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="CreditKO",
+                fontName=font_name,
+                fontSize=12,
+                alignment=TA_CENTER,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="InfoLeftKO",
+                fontName=font_name,
+                fontSize=10,
+                alignment=TA_LEFT,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="InfoRightKO",
+                fontName=font_name,
+                fontSize=10,
+                alignment=TA_RIGHT,
+            )
+        )
+
+        # PDF 생성
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            leftMargin=72,
+            rightMargin=72,
+            topMargin=72,
+            bottomMargin=72,
+        )
+
+        # PDF에 들어갈 요소들
+        elements = []
+
+        # 타이틀 로고
+        elements.append(Paragraph("스킬브릿지", styles["TitleKO"]))
+        elements.append(Spacer(1, 20))
+
+        # 수료증
+        elements.append(Paragraph("수료증", styles["TitleKO"]))
+        elements.append(Paragraph("Certificate of Completion", styles["SubtitleKO"]))
+        elements.append(Spacer(1, 30))
+
+        # 본문
+        elements.append(
+            Paragraph(
+                "본 증서는 아래의 교육과정을 성공적으로 이수하였음을 증명합니다.",
+                styles["BodyKO"],
+            )
+        )
+        elements.append(Spacer(1, 40))
+
+        # 수료자 이름
+        user_name = self.user.get_full_name() or self.user.username
+        elements.append(Paragraph(f"{user_name}", styles["NameKO"]))
+
+        # 과정명
+        course_title = self.enrollment.course.title
+        elements.append(Paragraph(f"{course_title}", styles["CourseKO"]))
+
+        # 학점
+        course_credit = self.enrollment.course.credit
+        elements.append(Paragraph(f"총 학점: {course_credit}학점", styles["CreditKO"]))
+        elements.append(Spacer(1, 50))
+
+        # 발급번호 및 발급일 (테이블로 배치)
+        issue_date = self.issued_at.strftime("%Y년 %m월 %d일")
+
+        data = [
+            [
+                Paragraph("발급 번호", styles["InfoLeftKO"]),
+                Paragraph("발급일", styles["InfoRightKO"]),
+            ],
+            [
+                Paragraph(f"{self.certificate_number}", styles["InfoLeftKO"]),
+                Paragraph(f"{issue_date}", styles["InfoRightKO"]),
+            ],
+        ]
+
+        t = Table(data, colWidths=[doc.width / 2.0, doc.width / 2.0])
+        t.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ]
+            )
+        )
+
+        elements.append(t)
+        elements.append(Spacer(1, 50))
+
+        # 직인 이미지
+        seal_path = find_static_file("images/seal.png")
+        if seal_path:
+            seal = Image(seal_path, width=100, height=100)
+            seal.hAlign = "CENTER"
+            elements.append(seal)
+        else:
+            # 직인 이미지가 없는 경우, 텍스트로 대체
+            elements.append(Paragraph("(직인)", styles["BodyKO"]))
+
+        elements.append(Spacer(1, 20))
+
+        # 기관명
+        elements.append(Paragraph("스킬브릿지", styles["BodyKO"]))
+        elements.append(Paragraph("대표: 홍길동", styles["BodyKO"]))
+
+        # 배경에 테두리 추가를 위한 후처리 함수
+        def add_border(canvas, doc):
+            canvas.saveState()
+            canvas.setStrokeColor(colors.black)
+            canvas.setLineWidth(1)
+            canvas.rect(
+                doc.leftMargin - 10,
+                doc.bottomMargin - 10,
+                doc.width + 20,
+                doc.height + 20,
+            )
+            canvas.restoreState()
+
+        # PDF 생성 (배경 테두리 추가)
+        doc.build(elements, onFirstPage=add_border, onLaterPages=add_border)
+
+        # PDF 파일 저장
+        pdf_content = buffer.getvalue()
+        buffer.close()
+
+        # 파일명 생성 (타임스탬프 추가로 유니크하게)
+        from datetime import datetime
+
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        pdf_filename = f"certificate_{self.certificate_number}_{timestamp}.pdf"
+
+        # 모델의 pdf_file 필드에 저장
+        self.pdf_file.save(pdf_filename, ContentFile(pdf_content), save=True)
+
+        return self.pdf_file
