@@ -131,11 +131,25 @@
       <!-- 페이지네이션 -->
       <div class="mt-10 flex justify-center">
         <nav class="flex items-center space-x-2">
-          <a href="#" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700">이전</a>
-          <a href="#" class="px-3 py-1 rounded-md bg-blue-600 text-white">1</a>
-          <a href="#" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700">2</a>
-          <a href="#" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700">3</a>
-          <a href="#" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700">다음</a>
+          {% if all_courses.has_previous %}
+            <a href="?page={{ all_courses.previous_page_number }}" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 transition">이전</a>
+          {% else %}
+            <span class="px-3 py-1 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">이전</span>
+          {% endif %}
+
+          {% for num in all_courses.paginator.page_range %}
+            {% if all_courses.number == num %}
+              <span class="px-3 py-1 rounded-md bg-blue-600 text-white">{{ num }}</span>
+            {% elif num > all_courses.number|add:'-3' and num < all_courses.number|add:'3' %}
+              <a href="?page={{ num }}" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 transition">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+
+          {% if all_courses.has_next %}
+            <a href="?page={{ all_courses.next_page_number }}" class="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 transition">다음</a>
+          {% else %}
+            <span class="px-3 py-1 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">다음</span>
+          {% endif %}
         </nav>
       </div>
     </div>

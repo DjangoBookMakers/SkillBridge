@@ -1,4 +1,6 @@
 from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 from django.db.models import Avg
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -14,7 +16,20 @@ def course_list(request):
     ).order_by("-avg_rating", "-created_at")[:6]
 
     # 전체 과정 (최신순)
-    all_courses = Course.objects.all().order_by("-created_at")
+    all_courses_list = Course.objects.all().order_by("-created_at")
+
+    # 페이지네이션 (한 페이지에 12개씩 표시)
+    paginator = Paginator(all_courses_list, 12)
+    page = request.GET.get("page")
+
+    try:
+        all_courses = paginator.page(page)
+    except PageNotAnInteger:
+        # 페이지 번호가, 숫자가 아닐 경우 첫 페이지
+        all_courses = paginator.page(1)
+    except EmptyPage:
+        # 페이지가 범위를 벗어나면 마지막 페이지
+        all_courses = paginator.page(paginator.num_pages)
 
     context = {
         "popular_courses": popular_courses,
