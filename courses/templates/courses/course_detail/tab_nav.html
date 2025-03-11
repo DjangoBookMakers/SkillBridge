@@ -15,7 +15,8 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const tabs = document.querySelectorAll('nav a');
+    const tabNav = document.querySelector('.border-b.border-gray-200 nav');
+    const tabs = tabNav.querySelectorAll('a');
     const sections = document.querySelectorAll('section[id]');
 
     function showSection(sectionId) {
