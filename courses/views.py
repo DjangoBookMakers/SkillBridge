@@ -42,10 +42,11 @@ def course_detail(request, course_id):
 
     # 사용자가 이미 이 과정을 구매했는지 확인
     is_enrolled = False
-    # TODO: Enrollment 모델 구현 뒤 사용
-    # if request.user.is_authenticated:
-    #     # Enrollment 모델에 따라 수정 필요
-    #     is_enrolled = hasattr(request.user, 'enrollments') and request.user.enrollments.filter(course=course).exists()
+    if request.user.is_authenticated:
+        is_enrolled = (
+            hasattr(request.user, "enrollments")
+            and request.user.enrollments.filter(course=course).exists()
+        )
 
     context = {
         "course": course,
