@@ -36,7 +36,7 @@
 
               <!-- 대시보드/어드민 버튼 (기능은 나중에 구현) -->
               {% if user.is_admin %}
-                <a href="{% url 'learning_admin_dashboard' %}" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded transition">
+                <a href="{% url 'admin_portal_dashboard' %}" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded transition">
                   어드민 페이지로 이동
                 </a>
               {% else %}

@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}관리자 대시보드 | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">관리자 대시보드</h1>
+
+    <!-- 통계 요약 카드 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- 총 수강생 수 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">총 수강생 수</p>
+            <h3 class="text-3xl font-bold text-gray-800">{{ total_students }}</h3>
+          </div>
+          <div class="bg-blue-100 rounded-full p-3">
+            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <p class="text-green-600 mt-4 text-sm">
+          <span class="font-bold">오늘:</span>
+          +{{ today_stats.new_users|default:0 }}명
+        </p>
+      </div>
+
+      <!-- 총 과정 수 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">총 과정 수</p>
+            <h3 class="text-3xl font-bold text-gray-800">{{ total_courses }}</h3>
+          </div>
+          <div class="bg-purple-100 rounded-full p-3">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 총 수강신청 수 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">총 수강신청 수</p>
+            <h3 class="text-3xl font-bold text-gray-800">{{ total_enrollments }}</h3>
+          </div>
+          <div class="bg-green-100 rounded-full p-3">
+            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <p class="text-green-600 mt-4 text-sm">
+          <span class="font-bold">오늘:</span>
+          +{{ today_stats.new_enrollments|default:0 }}건
+        </p>
+      </div>
+
+      <!-- 발급된 수료증 수 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">수료증 발급 수</p>
+            <h3 class="text-3xl font-bold text-gray-800">{{ total_certificates }}</h3>
+          </div>
+          <div class="bg-yellow-100 rounded-full p-3">
+            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+        </div>
+        <p class="text-green-600 mt-4 text-sm">
+          <span class="font-bold">오늘:</span>
+          +{{ today_stats.certificates_issued|default:0 }}건
+        </p>
+      </div>
+    </div>
+
+    <!-- 차트 및 통계 영역 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- 사용자 통계 차트 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">사용자 통계</h2>
+        <div class="flex mb-4">
+          <button class="period-btn selected px-3 py-1 bg-blue-100 text-blue-800 rounded-md mr-2" data-period="7">7일</button>
+          <button class="period-btn px-3 py-1 bg-gray-100 text-gray-800 rounded-md mr-2" data-period="30">30일</button>
+          <button class="period-btn px-3 py-1 bg-gray-100 text-gray-800 rounded-md" data-period="90">90일</button>
+        </div>
+        <div class="h-64">
+          <canvas id="userStatsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 수강신청 통계 차트 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">수강신청 및 학습 통계</h2>
+        <div class="flex mb-4">
+          <button class="enrollment-period-btn selected px-3 py-1 bg-blue-100 text-blue-800 rounded-md mr-2" data-period="7">7일</button>
+          <button class="enrollment-period-btn px-3 py-1 bg-gray-100 text-gray-800 rounded-md mr-2" data-period="30">30일</button>
+          <button class="enrollment-period-btn px-3 py-1 bg-gray-100 text-gray-800 rounded-md" data-period="90">90일</button>
+        </div>
+        <div class="h-64">
+          <canvas id="enrollmentStatsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 인기 과정 및 최근 활동 영역 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 인기 과정 목록 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">인기 과정</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="text-left border-b">
+                <th class="pb-2 text-gray-600">과정명</th>
+                <th class="pb-2 text-gray-600 text-right">수강생</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for course in course_enrollments %}
+                <tr class="border-b border-gray-100">
+                  <td class="py-3">{{ course.title }}</td>
+                  <td class="py-3 text-right font-semibold">{{ course.student_count }}명</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="2" class="py-4 text-center text-gray-500">등록된 과정이 없습니다.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 평가 대기 중인 프로젝트 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">평가 대기 중인 프로젝트</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="text-left border-b">
+                <th class="pb-2 text-gray-600">학생</th>
+                <th class="pb-2 text-gray-600">과목</th>
+                <th class="pb-2 text-gray-600 text-right">제출일</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for project in pending_projects %}
+                <tr class="border-b border-gray-100">
+                  <td class="py-3">{{ project.user.username }}</td>
+                  <td class="py-3">{{ project.subject.title }}</td>
+                  <td class="py-3 text-right">{{ project.submitted_at|date:"Y년 m월 d일" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="py-4 text-center text-gray-500">평가 대기 중인 프로젝트가 없습니다.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 차트 데이터 초기화
+      const chartData = {{ chart_data | safe }};
+
+      // 사용자 통계 차트
+      const userCtx = document
+        .getElementById('userStatsChart')
+        .getContext('2d');
+      const userChart = new Chart(userCtx, {
+        type: 'line',
+        data: {
+          labels: chartData.dates,
+          datasets: [
+            {
+              label: '신규 사용자',
+              data: chartData.new_users,
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            }, {
+              label: '활성 사용자',
+              data: chartData.active_users,
+              borderColor: 'rgb(16, 185, 129)',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // 수강신청 통계 차트
+      const enrollmentCtx = document
+        .getElementById('enrollmentStatsChart')
+        .getContext('2d');
+      const enrollmentChart = new Chart(enrollmentCtx, {
+        type: 'line',
+        data: {
+          labels: chartData.dates,
+          datasets: [
+            {
+              label: '신규 수강신청',
+              data: chartData.new_enrollments,
+              borderColor: 'rgb(139, 92, 246)',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // 기간 선택 버튼에 이벤트 추가
+      document
+        .querySelectorAll('.period-btn')
+        .forEach(btn => {
+          btn.addEventListener('click', function () {
+            // 선택된 버튼 스타일 변경
+            document
+              .querySelectorAll('.period-btn')
+              .forEach(b => {
+                b
+                  .classList
+                  .remove('selected', 'bg-blue-100', 'text-blue-800');
+                b
+                  .classList
+                  .add('bg-gray-100', 'text-gray-800');
+              });
+            this
+              .classList
+              .add('selected', 'bg-blue-100', 'text-blue-800');
+            this
+              .classList
+              .remove('bg-gray-100', 'text-gray-800');
+
+            // API 호출하여 데이터 가져오기
+            const period = this.dataset.period;
+            fetch(`/admin_portal/statistics/api/?period=${period}`)
+              .then(response => response.json())
+              .then(data => {
+                userChart.data.labels = data.dates;
+                userChart
+                  .data
+                  .datasets[0]
+                  .data = data.new_users;
+                userChart
+                  .data
+                  .datasets[1]
+                  .data = data.active_users;
+                userChart.update();
+              });
+          });
+        });
+
+      document
+        .querySelectorAll('.enrollment-period-btn')
+        .forEach(btn => {
+          btn.addEventListener('click', function () {
+            // 선택된 버튼 스타일 변경
+            document
+              .querySelectorAll('.enrollment-period-btn')
+              .forEach(b => {
+                b
+                  .classList
+                  .remove('selected', 'bg-blue-100', 'text-blue-800');
+                b
+                  .classList
+                  .add('bg-gray-100', 'text-gray-800');
+              });
+            this
+              .classList
+              .add('selected', 'bg-blue-100', 'text-blue-800');
+            this
+              .classList
+              .remove('bg-gray-100', 'text-gray-800');
+
+            // API 호출하여 데이터 가져오기
+            const period = this.dataset.period;
+            fetch(`/admin_portal/statistics/api/?period=${period}`)
+              .then(response => response.json())
+              .then(data => {
+                enrollmentChart.data.labels = data.dates;
+                enrollmentChart
+                  .data
+                  .datasets[0]
+                  .data = data.new_enrollments;
+                enrollmentChart.update();
+              });
+          });
+        });
+    });
+  </script>
+{% endblock %}
