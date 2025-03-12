@@ -13,15 +13,6 @@
       <h1 class="text-xl font-semibold text-gray-900 text-center mb-2">로그인</h1>
       <p class="text-sm text-gray-600 text-center mb-6">학습을 계속하려면 로그인하세요</p>
 
-      <!-- 메시지 표시 -->
-      {% if messages %}
-        {% for message in messages %}
-          <div class="p-3 mb-4 rounded {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-
       <form method="post" class="space-y-4">
         {% csrf_token %}
         <div>
