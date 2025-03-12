@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}프로젝트 상세 | 스킬브릿지 관리자{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="mb-6">
+        <div class="flex items-center mb-4">
+            <a href="{% url 'admin_portal_pending_projects' %}" class="text-blue-600 hover:underline mr-2">
+                <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                프로젝트 목록으로 돌아가기
+            </a>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">프로젝트 상세 정보</h1>
+    </div>
+
+    <!-- 프로젝트 상태 표시 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 mb-2">{{ subject.title }}</h2>
+                <p class="text-gray-600 mb-4">{{ course.title }}</p>
+
+                <div class="flex items-center text-sm text-gray-600 mb-4">
+                    <span class="mr-4">제출일: {{ project.submitted_at|date:"Y년 m월 d일 H:i" }}</span>
+
+                    {% if project.reviewed_at %}
+                    <span>평가일: {{ project.reviewed_at|date:"Y년 m월 d일 H:i" }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center mb-4">
+                    <div class="mr-4">
+                        <span class="text-sm text-gray-600">상태:</span>
+                        {% if project.is_passed %}
+                        <span class="ml-1 px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">통과</span>
+                        {% elif project.reviewed_at %}
+                        <span class="ml-1 px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">미통과</span>
+                        {% else %}
+                        <span class="ml-1 px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">평가 대기 중</span>
+                        {% endif %}
+                    </div>
+
+                    {% if project.reviewed_by %}
+                    <div>
+                        <span class="text-sm text-gray-600">평가자:</span>
+                        <span class="ml-1 text-sm text-gray-800">{{ project.reviewed_by.username }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                {% if not project.reviewed_at %}
+                <a href="{% url 'admin_portal_evaluate_project' project.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition">
+                    평가하기
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 학생 정보 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">학생 정보</h2>
+
+        <div class="flex items-center">
+            {% if project.user.profile_image %}
+            <div class="flex-shrink-0 h-16 w-16 mr-4">
+                <img class="h-16 w-16 rounded-full object-cover" src="{{ project.user.profile_image.url }}" alt="{{ project.user.username }}">
+            </div>
+            {% else %}
+            <div class="flex-shrink-0 h-16 w-16 mr-4 bg-gray-200 rounded-full flex items-center justify-center">
+                <span class="text-2xl text-gray-600 font-medium">{{ project.user.username|first|upper }}</span>
+            </div>
+            {% endif %}
+
+            <div>
+                <h3 class="text-lg font-medium text-gray-900">{{ project.user.username }}</h3>
+                <p class="text-gray-600">{{ project.user.email }}</p>
+                {% if project.user.get_full_name %}
+                <p class="text-gray-600">{{ project.user.get_full_name }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 프로젝트 파일 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">제출 파일</h2>
+
+        <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+            <div class="flex items-center">
+                <svg class="w-10 h-10 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <div>
+                    <p class="font-medium">{{ project.project_file.name|slice:"9:" }}</p>
+                    <a href="{{ project.project_file.url }}" class="text-blue-600 hover:text-blue-800 text-sm inline-flex items-center mt-1" target="_blank">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        다운로드
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 피드백 섹션 -->
+    {% if project.reviewed_at %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">피드백</h2>
+
+        <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+            {% if project.feedback %}
+            <p class="text-gray-800 whitespace-pre-line">{{ project.feedback }}</p>
+            {% else %}
+            <p class="text-gray-500 italic">작성된 피드백이 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

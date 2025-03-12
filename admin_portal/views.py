@@ -1,8 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.utils import timezone
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg, Q
 from datetime import timedelta
 import json
 
@@ -130,3 +132,128 @@ def admin_statistics_api(request):
     }
 
     return JsonResponse(data)
+
+
+@login_required
+def admin_pending_projects(request):
+    """평가 대기 중인 프로젝트 목록 페이지"""
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")  # 일반 사용자 대시보드로 리디렉션
+
+    # 검색 및 필터링
+    search_query = request.GET.get("search", "")
+    status_filter = request.GET.get("status", "pending")
+
+    # 기본 쿼리셋 생성
+    projects = ProjectSubmission.objects.select_related(
+        "user", "subject", "subject__course"
+    )
+
+    # 상태 필터 적용
+    if status_filter == "all":
+        pass  # 모든 프로젝트 표시
+    elif status_filter == "pending":
+        projects = projects.filter(is_passed=False, reviewed_at__isnull=True)
+    elif status_filter == "reviewed":
+        projects = projects.filter(reviewed_at__isnull=False)
+    elif status_filter == "passed":
+        projects = projects.filter(is_passed=True)
+
+    # 검색 필터 적용
+    if search_query:
+        projects = projects.filter(
+            Q(user__username__icontains=search_query)
+            | Q(subject__title__icontains=search_query)
+            | Q(subject__course__title__icontains=search_query)
+        )
+
+    # 정렬
+    projects = projects.order_by("-submitted_at")
+
+    # 페이지네이션
+    paginator = Paginator(projects, 10)  # 한 페이지에 10개씩 표시
+    page = request.GET.get("page")
+
+    try:
+        projects_page = paginator.page(page)
+    except PageNotAnInteger:
+        projects_page = paginator.page(1)
+    except EmptyPage:
+        projects_page = paginator.page(paginator.num_pages)
+
+    context = {
+        "projects": projects_page,
+        "search_query": search_query,
+        "status_filter": status_filter,
+    }
+
+    return render(request, "admin_portal/pending_projects.html", context)
+
+
+@login_required
+def project_detail(request, project_id):
+    """프로젝트 제출 상세 보기"""
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    project = get_object_or_404(ProjectSubmission, id=project_id)
+
+    context = {
+        "project": project,
+        "subject": project.subject,
+        "course": project.subject.course,
+    }
+
+    return render(request, "admin_portal/project_detail.html", context)
+
+
+@login_required
+def evaluate_project(request, project_id):
+    """프로젝트 평가 페이지"""
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    project = get_object_or_404(ProjectSubmission, id=project_id)
+
+    if request.method == "POST":
+        # 평가 처리
+        is_passed = request.POST.get("is_passed") == "true"
+        feedback = request.POST.get("feedback", "")
+
+        project.is_passed = is_passed
+        project.feedback = feedback
+        project.reviewed_at = timezone.now()
+        project.reviewed_by = request.user
+        project.save()
+
+        messages.success(request, "프로젝트 평가가 완료되었습니다.")
+
+        # 학생이 이 프로젝트를 통과했다면 해당 과목의 진행 상태 업데이트
+        if is_passed:
+            try:
+                # 해당 과목(중간/기말고사)에 대한 진행 상태 체크
+                enrollment = Enrollment.objects.get(
+                    user=project.user, course=project.subject.course
+                )
+
+                # 과정 완료 여부 확인
+                enrollment.check_completion()
+
+                # 만약 이 프로젝트로 인해 과정이 완료되었다면
+                if enrollment.status == "completed":
+                    messages.info(
+                        request,
+                        f"{project.user.username}님의 과정 완료 처리가 되었습니다.",
+                    )
+            except Enrollment.DoesNotExist:
+                pass
+
+        return redirect("admin_portal_project_detail", project_id=project.id)
+
+    context = {
+        "project": project,
+        "subject": project.subject,
+        "course": project.subject.course,
+    }
+
+    return render(request, "admin_portal/evaluate_project.html", context)
