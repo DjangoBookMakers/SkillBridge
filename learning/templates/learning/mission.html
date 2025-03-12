@@ -133,20 +133,24 @@
 {% block extra_js %}
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      // 상태 변수들
       const totalQuestions = {{ questions | length }};
-      let currentQuestion = 1;
+      let currentQuestionNumber = 1;
 
-      // 문제 카드 요소 선택 - ID로 정확히 찾도록 수정
+      // DOM 요소 선택
       const questionCards = document.querySelectorAll('[id^="question-"]');
       const questionDots = document.querySelectorAll('.question-dot');
       const progressBar = document.getElementById('progressBar');
       const currentQuestionDisplay = document.getElementById('currentQuestion');
-
       const prevButton = document.getElementById('prevButton');
       const nextButton = document.getElementById('nextButton');
       const submitButton = document.getElementById('submitButton');
+      const missionForm = document.getElementById('missionForm');
 
-      // 현재 문제 표시 업데이트
+      /**
+         * 현재 문제 표시 상태 업데이트
+         * @param {number} questionNum - 표시할 문제 번호
+         */
       function updateCurrentQuestion(questionNum) {
         // 모든 문제 카드 숨기기
         questionCards.forEach(card => card.classList.add('hidden'));
@@ -160,91 +164,122 @@
         }
 
         // 하단 페이지네이션 업데이트
+        updatePaginationDots(questionNum);
+
+        // 진행 상태 업데이트
+        updateProgressDisplay(questionNum);
+
+        // 네비게이션 버튼 상태 업데이트
+        updateNavigationButtons(questionNum);
+
+        // 현재 문제 번호 업데이트
+        currentQuestionNumber = questionNum;
+      }
+
+      /**
+         * 페이지네이션 점(하단 인디케이터) 업데이트
+         * @param {number} currentNum - 현재 문제 번호
+         */
+      function updatePaginationDots(currentNum) {
         questionDots.forEach(dot => {
           const dotQuestion = parseInt(dot.getAttribute('data-question'));
+          const dotClasses = dot.classList;
 
-          if (dotQuestion === questionNum) {
-            dot
-              .classList
-              .add('bg-blue-600', 'text-white', 'border-blue-600');
-            dot
-              .classList
-              .remove('bg-white', 'text-gray-700', 'border-gray-300', 'bg-green-100', 'text-green-800', 'border-green-300');
+          if (dotQuestion === currentNum) {
+            // 현재 문제 표시
+            dotClasses.add('bg-blue-600', 'text-white', 'border-blue-600');
+            dotClasses.remove('bg-white', 'text-gray-700', 'border-gray-300', 'bg-green-100', 'text-green-800', 'border-green-300');
           } else {
             // 이미 답변한 문제는 체크 표시
             const cardIndex = dotQuestion - 1;
             if (cardIndex >= 0 && cardIndex < questionCards.length) {
               const questionCard = questionCards[cardIndex];
-              const radioInputs = questionCard.querySelectorAll('input[type="radio"]');
               const isAnswered = Array
-                .from(radioInputs)
+                .from(questionCard.querySelectorAll('input[type="radio"]'))
                 .some(input => input.checked);
 
               if (isAnswered) {
-                dot
-                  .classList
-                  .add('bg-green-100', 'text-green-800', 'border-green-300');
-                dot
-                  .classList
-                  .remove('bg-blue-600', 'text-white', 'border-blue-600', 'bg-white', 'text-gray-700', 'border-gray-300');
+                dotClasses.add('bg-green-100', 'text-green-800', 'border-green-300');
+                dotClasses.remove('bg-blue-600', 'text-white', 'border-blue-600', 'bg-white', 'text-gray-700', 'border-gray-300');
               } else {
-                dot
-                  .classList
-                  .add('bg-white', 'text-gray-700', 'border-gray-300');
-                dot
-                  .classList
-                  .remove('bg-blue-600', 'text-white', 'border-blue-600', 'bg-green-100', 'text-green-800', 'border-green-300');
+                dotClasses.add('bg-white', 'text-gray-700', 'border-gray-300');
+                dotClasses.remove('bg-blue-600', 'text-white', 'border-blue-600', 'bg-green-100', 'text-green-800', 'border-green-300');
               }
             }
           }
         });
+      }
 
-        // 진행 상태 업데이트
-        currentQuestionDisplay.textContent = questionNum;
-        progressBar.style.width = `${ (questionNum / totalQuestions) * 100}%`;
+      /**
+         * 진행 상태 표시 업데이트
+         * @param {number} questionNum - 현재 문제 번호
+         */
+      function updateProgressDisplay(questionNum) {
+        if (currentQuestionDisplay) {
+          currentQuestionDisplay.textContent = questionNum;
+        }
 
-        // 이전/다음/제출 버튼 상태 업데이트
+        if (progressBar) {
+          const progressPercentage = (questionNum / totalQuestions) * 100;
+          progressBar.style.width = `${progressPercentage}%`;
+        }
+      }
+
+      /**
+         * 이전/다음/제출 버튼 상태 업데이트
+         * @param {number} questionNum - 현재 문제 번호
+         */
+      function updateNavigationButtons(questionNum) {
+        // 첫 번째 문제에서는 '이전' 버튼 숨김
         prevButton
           .classList
           .toggle('hidden', questionNum === 1);
+
+        // 마지막 문제에서는 '다음' 버튼 숨기고 '제출' 버튼 표시
         nextButton
           .classList
           .toggle('hidden', questionNum === totalQuestions);
         submitButton
           .classList
           .toggle('hidden', questionNum !== totalQuestions);
-
-        currentQuestion = questionNum;
       }
 
-      // 이전 문제 버튼
+      /**
+         * 현재 문제에 대한 사용자 응답 확인
+         * @returns {boolean} 응답 선택 여부
+         */
+      function isCurrentQuestionAnswered() {
+        const currentCard = document.getElementById(`question-${currentQuestionNumber}`);
+        if (!currentCard)
+          return false;
+
+        const radioInputs = currentCard.querySelectorAll('input[type="radio"]');
+        return Array
+          .from(radioInputs)
+          .some(input => input.checked);
+      }
+
+      // 이전 문제 버튼 이벤트
       prevButton.addEventListener('click', function () {
-        if (currentQuestion > 1) {
-          updateCurrentQuestion(currentQuestion - 1);
+        if (currentQuestionNumber > 1) {
+          updateCurrentQuestion(currentQuestionNumber - 1);
         }
       });
 
-      // 다음 문제 버튼
+      // 다음 문제 버튼 이벤트
       nextButton.addEventListener('click', function () {
-        console.log("nextButton clicked")
         // 현재 문제의 답변이 선택되었는지 확인
-        const currentCard = document.getElementById(`question-${currentQuestion}`);
-        const radioInputs = currentCard.querySelectorAll('input[type="radio"]');
-        const isAnswered = Array
-          .from(radioInputs)
-          .some(input => input.checked);
-
-        if (!isAnswered) {
+        if (!isCurrentQuestionAnswered()) {
           alert('이 문제에 답변을 선택해주세요.');
           return;
         }
 
-        if (currentQuestion < totalQuestions) {
-          updateCurrentQuestion(currentQuestion + 1);
+        if (currentQuestionNumber < totalQuestions) {
+          updateCurrentQuestion(currentQuestionNumber + 1);
         }
       });
 
-      // 페이지네이션 점 클릭
+      // 페이지네이션 점 클릭 이벤트
       questionDots.forEach(dot => {
         dot.addEventListener('click', function () {
           const questionNum = parseInt(this.getAttribute('data-question'));
@@ -253,36 +288,40 @@
       });
 
       // 폼 제출 전 모든 문제 답변 확인
-      document
-        .getElementById('missionForm')
-        .addEventListener('submit', function (e) {
-          let allAnswered = true;
-          let firstUnanswered = null;
+      missionForm.addEventListener('submit', function (e) {
+        // 모든 문제에 답변했는지 확인
+        let allAnswered = true;
+        let firstUnansweredIndex = null;
 
-          questionCards.forEach((card, index) => {
-            const radioInputs = card.querySelectorAll('input[type="radio"]');
-            const isAnswered = Array
-              .from(radioInputs)
-              .some(input => input.checked);
+        questionCards.forEach((card, index) => {
+          const cardIndex = index + 1;
+          const radioInputs = card.querySelectorAll('input[type="radio"]');
+          const isAnswered = Array
+            .from(radioInputs)
+            .some(input => input.checked);
 
-            if (!isAnswered) {
-              allAnswered = false;
-              if (firstUnanswered === null) {
-                firstUnanswered = index + 1;
-              }
+          if (!isAnswered) {
+            allAnswered = false;
+            if (firstUnansweredIndex === null) {
+              firstUnansweredIndex = cardIndex;
             }
-          });
-
-          if (!allAnswered) {
-            e.preventDefault();
-            alert(`${firstUnanswered}번 문제에 답변을 선택해주세요.`);
-            updateCurrentQuestion(firstUnanswered);
-          } else if (!confirm('미션을 제출하시겠습니까? 제출 후에는 답변을 수정할 수 없습니다.')) {
-            e.preventDefault();
           }
         });
 
-      // 초기 상태 설정
+        if (!allAnswered) {
+          e.preventDefault();
+          alert(`${firstUnansweredIndex}번 문제에 답변을 선택해주세요.`);
+          updateCurrentQuestion(firstUnansweredIndex);
+          return;
+        }
+
+        // 제출 확인
+        if (!confirm('미션을 제출하시겠습니까? 제출 후에는 답변을 수정할 수 없습니다.')) {
+          e.preventDefault();
+        }
+      });
+
+      // 초기 상태 설정 - 첫 번째 문제 표시
       updateCurrentQuestion(1);
     });
   </script>
