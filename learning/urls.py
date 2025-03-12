@@ -4,7 +4,6 @@ from . import views
 urlpatterns = [
     # 대시보드
     path("dashboard/", views.dashboard, name="learning_dashboard"),
-    path("admin-dashboard/", views.admin_dashboard, name="learning_admin_dashboard"),
     # 이어서 학습하기
     path(
         "course/<int:course_id>/resume/",
