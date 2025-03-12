@@ -1,0 +1,19 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-gray-500 text-sm">{{ title }}</p>
+      <h3 class="text-3xl font-bold text-gray-800">{{ value }}</h3>
+    </div>
+    <div class="{{ bg_class }} rounded-full p-3">
+      <svg class="w-8 h-8 {{ icon_class }}" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ svg_path }}"></path>
+      </svg>
+    </div>
+  </div>
+  {% if today_value %}
+    <p class="text-green-600 mt-4 text-sm">
+      <span class="font-bold">오늘:</span>
+      +{{ today_value }}명
+    </p>
+  {% endif %}
+</div>

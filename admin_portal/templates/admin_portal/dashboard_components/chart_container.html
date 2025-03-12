@@ -1,0 +1,11 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+  <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ title }}</h2>
+  <div class="flex mb-4">
+    <button class="{{ period_class }} selected px-3 py-1 bg-blue-100 text-blue-800 rounded-md mr-2" data-period="7">7일</button>
+    <button class="{{ period_class }} px-3 py-1 bg-gray-100 text-gray-800 rounded-md mr-2" data-period="30">30일</button>
+    <button class="{{ period_class }} px-3 py-1 bg-gray-100 text-gray-800 rounded-md" data-period="90">90일</button>
+  </div>
+  <div class="h-64">
+    <canvas id="{{ chart_id }}"></canvas>
+  </div>
+</div>
