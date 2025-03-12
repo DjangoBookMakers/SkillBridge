@@ -127,7 +127,7 @@
 
               // API 호출하여 데이터 가져오기
               const period = this.dataset.period;
-              fetch(`/admin_portal/statistics/api/?period=${period}`)
+              fetch(`{% url 'admin_portal_statistics_api' %}?period=${period}`)
                 .then(response => response.json())
                 .then(data => {
                   chart.data.labels = data.dates;
