@@ -8,59 +8,128 @@
       </div>
       <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
-        <div class="flex items-center">
-          <!-- 프로필 페이지로 이동하는 링크로 감싸기 -->
-          <a href="{% url 'accounts:profile' %}" class="flex items-center hover:text-blue-600 transition">
-          {% if user.profile_image %}
-            <!-- 저장된 프로필 사진 표시 (일반 업로드 또는 소셜 계정에서 가져온 이미지) -->
-            <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover mr-2">
-          {% else %}  
-            <!-- 프로필 사진이 없는 경우 이니셜 원 표시 -->
-            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium mr-2">
-              {{ user.username|first|upper }}
+          <div class="flex items-center">
+            <!-- 프로필 페이지로 이동하는 링크로 감싸기 -->
+            <a href="{% url 'accounts:profile' %}" class="flex items-center hover:text-blue-600 transition">
+              {% if user.profile_image %}
+                <!-- 저장된 프로필 사진 표시 (일반 업로드 또는 소셜 계정에서 가져온 이미지) -->
+                <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover mr-2">
+              {% else %}
+                <!-- 프로필 사진이 없는 경우 이니셜 원 표시 -->
+                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium mr-2">
+                  {{ user.username|first|upper }}
+                </div>
+              {% endif %}
+              <span class="text-gray-700">{{ user.username }}님</span>
             </div>
+            {% if user.is_admin %}
+              <a href="{% url 'learning_admin_dashboard' %}" class="text-sm px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded transition duration-200">대시보드</a>
+            {% else %}
+              <a href="{% url 'learning_dashboard' %}" class="text-sm px-4 py-2 bg-green-500 hover:bg-blue-600 text-white rounded transition duration-200">대시보드</a>
+            {% endif %}
+            <a href="{% url 'accounts:logout' %}" class="text-sm px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition duration-200">로그아웃</a>
+          {% else %}
+            {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}
+              <a href="{% url 'accounts:login' %}" class="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition duration-200">로그인</a>
+              <a href="{% url 'accounts:signup' %}" class="text-sm px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition duration-200">회원가입</a>
+            {% endif %}
           {% endif %}
-          <span class="text-gray-700">{{ user.username }}님</span>
         </div>
-        {% if user.is_admin %}
-          <a href="{% url 'learning_admin_dashboard' %}" class="text-sm px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded transition duration-200">대시보드</a>
-        {% else %}
-          <a href="{% url 'learning_dashboard' %}" class="text-sm px-4 py-2 bg-green-500 hover:bg-blue-600 text-white rounded transition duration-200">대시보드</a>
-        {% endif %}
-          <a href="{% url 'accounts:logout' %}" class="text-sm px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition duration-200">로그아웃</a>
-        {% else %}
-          {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}
-            <a href="{% url 'accounts:login' %}" class="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition duration-200">로그인</a>
-            <a href="{% url 'accounts:signup' %}" class="text-sm px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition duration-200">회원가입</a>
-          {% endif %}
-        {% endif %}
       </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
-<!-- 메시지 표시 영역 -->
-{% if messages %}
-  <div class="container mx-auto px-4 mt-4">
-    {% for message in messages %}
-      <div class="message-alert p-4 mb-3 rounded-md {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-blue-100 text-blue-700{% endif %}">
-        <p class="text-center">{{ message }}</p>
-      </div>
-    {% endfor %}
-  </div>
+  <!-- 메시지 표시 영역 -->
+  {% if messages %}
+    <div class="container mx-auto px-4 mt-4">
+      {% for message in messages %}
+        <div class="message-alert p-4 mb-3 rounded-md {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+          <p class="text-center">{{ message }}</p>
+        </div>
+      {% endfor %}
+    </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const messages = document.querySelectorAll('.message-alert');
-      messages.forEach(function(message) {
-        setTimeout(function() {
-          message.style.transition = 'opacity 0.5s ease';
-          message.style.opacity = '0';
-          setTimeout(function() {
-            message.style.display = 'none';
-          }, 500);
-        }, 3000);
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        /**
+         * 메시지 알림 처리를 위한 함수
+         * 일정 시간 후 알림을 페이드아웃하고 제거함
+         */
+        function setupMessageAutoHide() {
+          const messages = document.querySelectorAll('.message-alert');
+
+          // 메시지가 없는 경우 실행하지 않음
+          if (messages.length === 0)
+            return;
+
+          messages.forEach(function (message) {
+            // 메시지에 애니메이션 클래스 미리 추가
+            message
+              .classList
+              .add('transition-opacity', 'duration-500');
+
+            // 메시지 레이아웃 조정 - 수정된 부분
+            const originalContent = message.innerHTML;
+
+            // 메시지 내용 초기화 후 새로운 레이아웃 구성
+            message.innerHTML = '';
+
+            // 닫기 버튼 생성
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '&times;';
+            closeButton.className = 'absolute left-4 top-1/2 transform -translate-y-1/2 text-sm focus:outline-none';
+            message.appendChild(closeButton);
+
+            // 텍스트 컨테이너 생성 - 중앙 정렬
+            const textContainer = document.createElement('p');
+            textContainer.className = 'text-center w-full';
+            textContainer.innerHTML = originalContent;
+            message.appendChild(textContainer);
+
+            // 전체 메시지에 상대 위치 추가
+            message
+              .classList
+              .add('relative', 'flex', 'items-center', 'justify-center');
+
+            // 메시지 숨기기 함수
+            function hideMessage() {
+              // 이미 사라지는 중인 메시지는 처리하지 않음
+              if (message.classList.contains('opacity-0'))
+                return;
+
+              // 페이드 아웃 애니메이션 적용
+              message
+                .classList
+                .add('opacity-0');
+
+              // 애니메이션 완료 후 요소 제거
+              message.addEventListener('transitionend', function () {
+                message.remove();
+              }, {once: true}); // once 옵션으로 이벤트 리스너 자동 제거
+            }
+
+            // 닫기 버튼에 이벤트 리스너 추가
+            closeButton.addEventListener('click', hideMessage);
+
+            // 각 메시지별 3초 후 숨기기
+            const hideTimeout = setTimeout(hideMessage, 3000);
+
+            // 사용자가 메시지에 마우스를 올리면 타이머 취소
+            message.addEventListener('mouseenter', function () {
+              clearTimeout(hideTimeout);
+            });
+
+            // 사용자가 메시지에서 마우스를 떼면 다시 타이머 설정
+            message.addEventListener('mouseleave', function () {
+              const newHideTimeout = setTimeout(hideMessage, 2000);
+              // 변수 스코프 문제를 피하기 위해 데이터 속성 사용
+              message.dataset.hideTimeout = newHideTimeout;
+            });
+          });
+        }
+
+        // 메시지 자동 숨김 설정 실행
+        setupMessageAutoHide();
       });
-    });
-  </script>
-{% endif %}
+    </script>
+  {% endif %}

@@ -27,7 +27,7 @@
         <div class="lg:w-2/3">
           <div class="bg-black rounded-lg overflow-hidden">
             {% if lecture.video_url %}
-              <video id="lectureVideo" class="w-full aspect-video" controls="controls" poster="/static/images/video_poster.jpg" controlslist="nodownload" onplay="markVideoStarted()">
+              <video id="lectureVideo" class="w-full aspect-video" controls="controls" poster="/static/images/video_poster.jpg" controlslist="nodownload">
                 <source src="{{ lecture.video_url.url }}" type="video/mp4">
                 브라우저가 비디오 태그를 지원하지 않습니다.
               </video>
@@ -208,39 +208,48 @@
 
 {% block extra_js %}
   <script>
-    function markVideoStarted() {
-      // AJAX를 통해 동영상 시청 시작을 서버에 알림
-      const lectureId = {{ lecture.id }};
-
-      fetch(`/learning/lecture/${lectureId}/mark-completed/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': '{{ csrf_token }}'
-        },
-        credentials: 'same-origin'
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            console.log('강의 완료 처리 성공');
-            // 필요한 경우 UI 업데이트
-          }
-        })
-        .catch(error => {
-          console.error('강의 완료 처리 중 오류:', error);
-        });
-    }
-
     document.addEventListener('DOMContentLoaded', function () {
-      // 페이지 로드 시 동영상 재생을 자동으로 시작하지 않음
-      // 사용자가 직접 재생 버튼을 눌러야 함
+      // DOM 요소
+      const videoPlayer = document.getElementById('lectureVideo');
+      const currentLectureItem = document.querySelector('.bg-blue-100');
+
+      // 비디오 플레이어 에러 처리
+      if (videoPlayer) {
+        videoPlayer.addEventListener('error', function (e) {
+          console.error('비디오 로딩 중 오류:', e);
+          showErrorMessage('동영상을 로드하는 중 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.');
+        });
+      }
 
       // 현재 강의 항목으로 자동 스크롤
-      const currentLectureItem = document.querySelector('.bg-blue-100');
       if (currentLectureItem) {
-        currentLectureItem.scrollIntoView({block: 'center', behavior: 'smooth'});
+        setTimeout(() => {
+          currentLectureItem.scrollIntoView({block: 'center', behavior: 'smooth'});
+        }, 300);
       }
+
+      /**
+         * 오류 메시지 표시
+         */
+      function showErrorMessage(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md z-50 transition-opacity duration-300';
+        notification.innerHTML = message;
+
+        document
+          .body
+          .appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          setTimeout(() => notification.remove(), 300);
+        }, 4000);
+      }
+
+      // 네트워크 상태 감지
+      window.addEventListener('offline', () => {
+        showErrorMessage('네트워크 연결이 끊겼습니다. 페이지를 새로고침하면 학습 진행이 기록되지 않을 수 있습니다.');
+      });
     });
   </script>
 {% endblock %}
