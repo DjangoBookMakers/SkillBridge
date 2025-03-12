@@ -1,0 +1,27 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+  <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ title }}</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="text-left border-b">
+          <th class="pb-2 text-gray-600">학생</th>
+          <th class="pb-2 text-gray-600">과목</th>
+          <th class="pb-2 text-gray-600 text-right">제출일</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+          <tr class="border-b border-gray-100">
+            <td class="py-3">{{ project.user.username }}</td>
+            <td class="py-3">{{ project.subject.title }}</td>
+            <td class="py-3 text-right">{{ project.submitted_at|date:"Y년 m월 d일" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="py-4 text-center text-gray-500">평가 대기 중인 프로젝트가 없습니다.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
