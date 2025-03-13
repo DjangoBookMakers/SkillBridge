@@ -10,7 +10,7 @@ import json
 
 from accounts.models import User
 from courses.models import Course
-from learning.models import Enrollment, Certificate, ProjectSubmission
+from learning.models import Enrollment, Certificate, LectureProgress, ProjectSubmission
 from .models import DailyStatistics
 
 
@@ -32,6 +32,7 @@ def admin_dashboard(request):
     total_courses = Course.objects.count()
     total_enrollments = Enrollment.objects.count()
     total_certificates = Certificate.objects.count()
+    total_video_views = LectureProgress.objects.filter(is_completed=True).count()
 
     # 최근 30일간 통계
     last_30_days = today - timedelta(days=30)
@@ -74,6 +75,7 @@ def admin_dashboard(request):
     new_users_data = [stat.new_users for stat in daily_stats]
     active_users_data = [stat.active_users for stat in daily_stats]
     new_enrollments_data = [stat.new_enrollments for stat in daily_stats]
+    video_views_data = [stat.completed_lectures for stat in daily_stats]
 
     # 차트 데이터 JSON 형식으로 변환
     chart_data = {
@@ -81,6 +83,7 @@ def admin_dashboard(request):
         "new_users": new_users_data,
         "active_users": active_users_data,
         "new_enrollments": new_enrollments_data,
+        "completed_lectures": video_views_data,
     }
 
     context = {
@@ -88,6 +91,7 @@ def admin_dashboard(request):
         "total_courses": total_courses,
         "total_enrollments": total_enrollments,
         "total_certificates": total_certificates,
+        "total_video_views": total_video_views,
         "course_enrollments": course_enrollments,
         "top_rated_courses": top_rated_courses,
         "recent_users": recent_users,
