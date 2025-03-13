@@ -1,169 +1,187 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block title %}관리자 대시보드 | 스킬브릿지{%
+endblock %} {% block content %}
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">관리자 대시보드</h1>
 
-{% block title %}관리자 대시보드 | 스킬브릿지{% endblock %}
-
-{% block content %}
-  <div class="container mx-auto px-4 py-6">
-    <h1 class="text-3xl font-bold text-gray-900 mb-6">관리자 대시보드</h1>
-
-    <!-- 통계 요약 카드 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {% include 'admin_portal/dashboard_components/stats_card.html' with title='총 수강생 수' value=total_users icon_class='text-blue-600' bg_class='bg-blue-100' today_value=today_stats.new_users|default:0 svg_path='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'%}
-
-      {% include 'admin_portal/dashboard_components/stats_card.html' with title='총 과정 수' value=total_courses icon_class='text-purple-600' bg_class='bg-purple-100' svg_path='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' %}
-
-      {% include 'admin_portal/dashboard_components/stats_card.html' with title='총 수강신청 수' value=total_enrollments icon_class='text-green-600' bg_class='bg-green-100' today_value=today_stats.new_enrollments|default:0 svg_path='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'%}
-
-      {% include 'admin_portal/dashboard_components/stats_card.html' with title='수료증 발급 수' value=total_certificates icon_class='text-yellow-600' bg_class='bg-yellow-100' today_value=today_stats.certificates_issued|default:0 svg_path='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' %}
-
-      {% include 'admin_portal/dashboard_components/stats_card.html' with title='오늘 동영상 조회 수' value=today_stats.completed_lectures|default:0 icon_class='text-red-600' bg_class='bg-red-100' today_caption='총 누적 조회 수' today_value=total_video_views|default:0 svg_path='M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z' %}
-    </div>
-
-    <!-- 차트 및 통계 영역 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      {% include 'admin_portal/dashboard_components/chart_container.html' with title='사용자 통계' chart_id='userStatsChart' period_class='period-btn' %}
-
-      {% include 'admin_portal/dashboard_components/chart_container.html' with title='수강신청 및 학습 통계' chart_id='enrollmentStatsChart' period_class='enrollment-period-btn' %}
-
-      {% include 'admin_portal/dashboard_components/chart_container.html' with title='동영상 조회수 통계' chart_id='videoViewsChart' period_class='video-period-btn' %}
-    </div>
-
-    <!-- 인기 과정 및 최근 활동 영역 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {% include 'admin_portal/dashboard_components/course_table.html' with title='인기 과정' courses=course_enrollments %}
-
-      {% include 'admin_portal/dashboard_components/project_table.html' with title='평가 대기 중인 프로젝트' projects=pending_projects %}
-    </div>
+  <!-- 통계 요약 카드 -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    {% include 'admin_portal/dashboard_components/stats_card.html' with
+    title='총 수강생 수' value=total_users icon_class='text-blue-600'
+    bg_class='bg-blue-100' today_value=today_stats.new_users|default:0
+    svg_path='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10
+    0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7
+    20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6
+    0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014
+    0z'%} {% include 'admin_portal/dashboard_components/stats_card.html' with
+    title='총 과정 수' value=total_courses icon_class='text-purple-600'
+    bg_class='bg-purple-100' svg_path='M12 6.253v13m0-13C10.832 5.477 9.246 5
+    7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5
+    1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5
+    1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' %} {%
+    include 'admin_portal/dashboard_components/stats_card.html' with title='총
+    수강신청 수' value=total_enrollments icon_class='text-green-600'
+    bg_class='bg-green-100' today_value=today_stats.new_enrollments|default:0
+    svg_path='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'%} {% include
+    'admin_portal/dashboard_components/stats_card.html' with title='수료증 발급
+    수' value=total_certificates icon_class='text-yellow-600'
+    bg_class='bg-yellow-100'
+    today_value=today_stats.certificates_issued|default:0 svg_path='M9 12h6m-6
+    4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1
+    0 01.293.707V19a2 2 0 01-2 2z' %} {% include
+    'admin_portal/dashboard_components/stats_card.html' with title='오늘 동영상
+    조회 수' value=today_stats.completed_lectures|default:0
+    icon_class='text-red-600' bg_class='bg-red-100' today_caption='총 누적 조회
+    수' today_value=total_video_views|default:0 svg_path='M14.752
+    11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1
+    0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z' %}
   </div>
-{% endblock %}
 
-{% block extra_js %}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const chartData = {{ chart_data | safe }};
+  <!-- 차트 및 통계 영역 -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    {% include 'admin_portal/dashboard_components/chart_container.html' with
+    title='사용자 통계' chart_id='userStatsChart' period_class='period-btn' %}
+    {% include 'admin_portal/dashboard_components/chart_container.html' with
+    title='수강신청 및 학습 통계' chart_id='enrollmentStatsChart'
+    period_class='enrollment-period-btn' %} {% include
+    'admin_portal/dashboard_components/chart_container.html' with title='동영상
+    조회수 통계' chart_id='videoViewsChart' period_class='video-period-btn' %}
+  </div>
 
-      // 차트 초기화 함수
-      function initChart(id, labels, datasets) {
-        const ctx = document
-          .getElementById(id)
-          .getContext('2d');
-        return new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels,
-            datasets
+  <!-- 인기 과정 및 최근 활동 영역 -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {% include 'admin_portal/dashboard_components/course_table.html' with
+    title='인기 과정' courses=course_enrollments %} {% include
+    'admin_portal/dashboard_components/project_table.html' with title='평가 대기
+    중인 프로젝트' projects=pending_projects %}
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const chartData = {{ chart_data | safe }};
+
+    // 차트 초기화 함수
+    function initChart(id, labels, datasets) {
+      const ctx = document
+        .getElementById(id)
+        .getContext('2d');
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top'
+            }
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'top'
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true
-              }
+          scales: {
+            y: {
+              beginAtZero: true
             }
           }
-        });
+        }
+      });
+    }
+
+    // 사용자 통계 차트
+    const userDatasets = [
+      {
+        label: '신규 사용자',
+        data: chartData.new_users,
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true
+      }, {
+        label: '활성 사용자',
+        data: chartData.active_users,
+        borderColor: 'rgb(16, 185, 129)',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        tension: 0.4,
+        fill: true
       }
+    ];
 
-      // 사용자 통계 차트
-      const userDatasets = [
-        {
-          label: '신규 사용자',
-          data: chartData.new_users,
-          borderColor: 'rgb(59, 130, 246)',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          tension: 0.4,
-          fill: true
-        }, {
-          label: '활성 사용자',
-          data: chartData.active_users,
-          borderColor: 'rgb(16, 185, 129)',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          tension: 0.4,
-          fill: true
-        }
-      ];
+    // 수강신청 통계 차트
+    const enrollmentDatasets = [
+      {
+        label: '신규 수강신청',
+        data: chartData.new_enrollments,
+        borderColor: 'rgb(139, 92, 246)',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        tension: 0.4,
+        fill: true
+      }
+    ];
 
-      // 수강신청 통계 차트
-      const enrollmentDatasets = [
-        {
-          label: '신규 수강신청',
-          data: chartData.new_enrollments,
-          borderColor: 'rgb(139, 92, 246)',
-          backgroundColor: 'rgba(139, 92, 246, 0.1)',
-          tension: 0.4,
-          fill: true
-        }
-      ];
+    // 동영상 조회수 통계 차트
+    const videoDatasets = [
+      {
+        label: '동영상 조회수',
+        data: chartData.completed_lectures,
+        borderColor: 'rgb(220, 38, 38)',
+        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+        tension: 0.4,
+        fill: true
+      }
+    ];
 
-      // 동영상 조회수 통계 차트
-      const videoDatasets = [
-        {
-          label: '동영상 조회수',
-          data: chartData.completed_lectures,
-          borderColor: 'rgb(220, 38, 38)',
-          backgroundColor: 'rgba(220, 38, 38, 0.1)',
-          tension: 0.4,
-          fill: true
-        }
-      ];
+    const userChart = initChart('userStatsChart', chartData.dates, userDatasets);
+    const enrollmentChart = initChart('enrollmentStatsChart', chartData.dates, enrollmentDatasets);
+    const videoChart = initChart('videoViewsChart', chartData.dates, videoDatasets);
 
-      const userChart = initChart('userStatsChart', chartData.dates, userDatasets);
-      const enrollmentChart = initChart('enrollmentStatsChart', chartData.dates, enrollmentDatasets);
-      const videoChart = initChart('videoViewsChart', chartData.dates, videoDatasets);
+    // 기간 버튼 핸들러 설정
+    function setupPeriodButtons(buttonClass, chart, datasetNames) {
+      document
+        .querySelectorAll('.' + buttonClass)
+        .forEach(btn => {
+          btn.addEventListener('click', function () {
+            // 선택된 버튼 스타일 변경
+            document
+              .querySelectorAll('.' + buttonClass)
+              .forEach(b => {
+                b
+                  .classList
+                  .remove('selected', 'bg-blue-100', 'text-blue-800');
+                b
+                  .classList
+                  .add('bg-gray-100', 'text-gray-800');
+              });
+            this
+              .classList
+              .add('selected', 'bg-blue-100', 'text-blue-800');
+            this
+              .classList
+              .remove('bg-gray-100', 'text-gray-800');
 
-      // 기간 버튼 핸들러 설정
-      function setupPeriodButtons(buttonClass, chart, datasetNames) {
-        document
-          .querySelectorAll('.' + buttonClass)
-          .forEach(btn => {
-            btn.addEventListener('click', function () {
-              // 선택된 버튼 스타일 변경
-              document
-                .querySelectorAll('.' + buttonClass)
-                .forEach(b => {
-                  b
-                    .classList
-                    .remove('selected', 'bg-blue-100', 'text-blue-800');
-                  b
-                    .classList
-                    .add('bg-gray-100', 'text-gray-800');
+            // API 호출하여 데이터 가져오기
+            const period = this.dataset.period;
+            fetch(`{% url 'admin_portal_statistics_api' %}?period=${period}`)
+              .then(response => response.json())
+              .then(data => {
+                chart.data.labels = data.dates;
+                datasetNames.forEach((name, index) => {
+                  chart
+                    .data
+                    .datasets[index]
+                    .data = data[name];
                 });
-              this
-                .classList
-                .add('selected', 'bg-blue-100', 'text-blue-800');
-              this
-                .classList
-                .remove('bg-gray-100', 'text-gray-800');
-
-              // API 호출하여 데이터 가져오기
-              const period = this.dataset.period;
-              fetch(`{% url 'admin_portal_statistics_api' %}?period=${period}`)
-                .then(response => response.json())
-                .then(data => {
-                  chart.data.labels = data.dates;
-                  datasetNames.forEach((name, index) => {
-                    chart
-                      .data
-                      .datasets[index]
-                      .data = data[name];
-                  });
-                  chart.update();
-                })
-                .catch(error => console.error('Error fetching statistics:', error));
-            });
+                chart.update();
+              })
+              .catch(error => console.error('Error fetching statistics:', error));
           });
-      }
+        });
+    }
 
-      setupPeriodButtons('period-btn', userChart, ['new_users', 'active_users']);
-      setupPeriodButtons('enrollment-period-btn', enrollmentChart, ['new_enrollments']);
-      setupPeriodButtons('video-period-btn', videoChart, ['completed_lectures']);
-    });
-  </script>
+    setupPeriodButtons('period-btn', userChart, ['new_users', 'active_users']);
+    setupPeriodButtons('enrollment-period-btn', enrollmentChart, ['new_enrollments']);
+    setupPeriodButtons('video-period-btn', videoChart, ['completed_lectures']);
+  });
+</script>
 {% endblock %}
