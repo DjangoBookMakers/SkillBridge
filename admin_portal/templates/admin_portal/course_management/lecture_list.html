@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ subject.title }} - 강의 관리 | 스킬브릿지 관리자{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="flex items-center mb-4">
+        <a href="{% url 'admin_portal_subject_management' course.id %}" class="text-blue-600 hover:underline mr-2">
+            <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            과목 관리로 돌아가기
+        </a>
+    </div>
+    
+    <div class="flex justify-between items-start mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ subject.title }} - 강의 관리</h1>
+            <p class="text-gray-600 mt-1">{{ course.title }}</p>
+            <div class="mt-2">
+                {% if subject.subject_type == 'normal' %}
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    일반 과목
+                </span>
+                {% elif subject.subject_type == 'midterm' %}
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    중간고사
+                </span>
+                {% elif subject.subject_type == 'final' %}
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                    기말고사
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <a href="{% url 'admin_portal_lecture_create' course.id subject.id %}" 
+           class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            새 강의 추가
+        </a>
+    </div>
+    
+    <!-- 강의 목록 -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        {% if lectures %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                        순서
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        강의명
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        유형
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        콘텐츠
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        관리
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for lecture in lectures %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-lg font-bold text-gray-900">{{ lecture.order_index }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ lecture.title }}</div>
+                        <div class="text-sm text-gray-500">{{ lecture.description|truncatechars:60 }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if lecture.lecture_type == 'video' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            동영상
+                        </span>
+                        {% elif lecture.lecture_type == 'quiz' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                            미션
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if lecture.lecture_type == 'video' %}
+                            {% if lecture.video_file %}
+                            <span class="text-green-600 text-sm">동영상 있음</span>
+                            {% else %}
+                            <span class="text-red-600 text-sm">동영상 없음</span>
+                            {% endif %}
+                        {% else %}
+                            {% with question_count=lecture.question_set.count %}
+                                {% if question_count > 0 %}
+                                <span class="text-green-600 text-sm">문제 {{ question_count }}개</span>
+                                {% else %}
+                                <span class="text-red-600 text-sm">문제 없음</span>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        <div class="flex justify-center space-x-3">
+                            <a href="{% url 'admin_portal_lecture_detail' course.id subject.id lecture.id %}" class="text-indigo-600 hover:text-indigo-900">
+                                수정
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="p-8 text-center">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">등록된 강의가 없습니다.</h3>
+            <p class="mt-1 text-sm text-gray-500">이 과목에 대한 강의를 추가해주세요.</p>
+            <div class="mt-6">
+                <a href="{% url 'admin_portal_lecture_create' course.id subject.id %}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    새 강의 추가하기
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 강의 구성 가이드 -->
+    <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">강의 구성 가이드</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 border border-gray-200 rounded-md bg-gray-50">
+                <div class="flex items-center mb-2">
+                    <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-semibold mr-2">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-gray-900">동영상 강의</h3>
+                </div>
+                <p class="text-sm text-gray-600">학습자가 시청할 수 있는 동영상 강의입니다. MP4 형식의 동영상 파일을 업로드할 수 있으며, 학습자는 동영상을 시청한 후 '완료' 버튼을 클릭하여 진도를 기록합니다.</p>
+            </div>
+            
+            <div class="p-4 border border-gray-200 rounded-md bg-gray-50">
+                <div class="flex items-center mb-2">
+                    <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-800 font-semibold mr-2">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-gray-900">미션 강의 (퀴즈)</h3>
+                </div>
+                <p class="text-sm text-gray-600">학습자의 이해도를 평가하기 위한 퀴즈입니다. 5지선다형 문제를 여러 개 등록할 수 있으며, 학습자는 모든 문제를 풀고 정답을 제출해야 진도가 기록됩니다.</p>
+            </div>
+        </div>
+        
+        <div class="mt-4 p-4 border border-gray-200 rounded-md bg-yellow-50">
+            <p class="text-sm text-gray-800 flex items-start">
+                <svg class="h-5 w-5 text-yellow-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+                강의는 순서대로 정렬되어 표시됩니다. 순서 번호가 낮은 강의부터 학습자에게 제공되며, 이전 강의를 완료해야 다음 강의로 진행할 수 있습니다.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
