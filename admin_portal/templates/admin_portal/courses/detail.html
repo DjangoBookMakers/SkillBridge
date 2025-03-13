@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}과정 상세 | 스킬브릿지{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-100">
+    <!-- 사이드바 -->
+    <div class="w-64 bg-white shadow-md">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-bold text-gray-800">관리자 포털</h2>
+        </div>
+        <nav class="mt-4">
+            <ul>
+                <li class="mb-1">
+                    <a href="{% url 'admin_portal:admin_dashboard' %}" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-tachometer-alt mr-2"></i>대시보드
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a href="{% url 'admin_portal:course_list' %}" class="block px-6 py-3 bg-indigo-50 text-indigo-700">
+                        <i class="fas fa-graduation-cap mr-2"></i>과정 관리
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-users mr-2"></i>사용자 관리
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-chart-bar mr-2"></i>통계
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-cog mr-2"></i>설정
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="flex-1 overflow-y-auto">
+        <!-- 상단 네비게이션 -->
+        <header class="bg-white shadow-sm">
+            <div class="flex justify-between items-center px-6 py-4">
+                <div class="flex items-center">
+                    <h1 class="text-lg font-semibold text-gray-800">과정 상세</h1>
+                </div>
+                <div class="flex items-center">
+                    <span class="mr-4 text-gray-700">{{ request.user.username }}</span>
+                    <a href="{% url 'accounts:logout' %}" class="text-sm text-red-600 hover:text-red-800">로그아웃</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- 메인 컨텐츠 영역 -->
+        <main class="p-6">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">{{ course.title }}</h2>
+                    <div class="flex space-x-2">
+                        <a href="{% url 'admin_portal:course_edit' course.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-edit mr-2"></i>수정
+                        </a>
+                        <a href="{% url 'admin_portal:course_delete' course.id %}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-trash-alt mr-2"></i>삭제
+                        </a>
+                        <a href="{% url 'admin_portal:subject_list' course.id %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-list mr-2"></i>과목 관리
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">기본 정보</h3>
+                        <div class="bg-gray-50 p-4 rounded-md mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">과정 제목</p>
+                                    <p class="text-base font-medium">{{ course.title }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">난이도</p>
+                                    <p class="text-base font-medium">{{ course.get_difficulty_level_display }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">학점</p>
+                                    <p class="text-base font-medium">{{ course.credit }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">예상 학습시간</p>
+                                    <p class="text-base font-medium">{{ course.estimated_time }}시간</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">가격</p>
+                                    <p class="text-base font-medium">{{ course.price|floatformat:0 }}원</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">강사</p>
+                                    <p class="text-base font-medium">{{ course.instructor.user.username }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">등록일</p>
+                                    <p class="text-base font-medium">{{ course.created_at|date:"Y-m-d" }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">과목 수</p>
+                                    <p class="text-base font-medium">{{ subjects.count }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">상세 설명</h3>
+                        <div class="bg-gray-50 p-4 rounded-md mb-4">
+                            <p class="text-gray-800 whitespace-pre-line">{{ course.description }}</p>
+                        </div>
+                        
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">대상 수강생</h3>
+                        <div class="bg-gray-50 p-4 rounded-md mb-4">
+                            <p class="text-gray-800 whitespace-pre-line">{{ course.target_audience|default:"지정되지 않음" }}</p>
+                        </div>
+
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">과목 목록</h3>
+                        <div class="bg-gray-50 p-4 rounded-md">
+                            {% if subjects %}
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">순서</th>
+                                                <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">제목</th>
+                                                <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">유형</th>
+                                                <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">관리</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            {% for subject in subjects %}
+                                                <tr>
+                                                    <td class="px-4 py-2 whitespace-nowrap text-sm">{{ subject.order_index }}</td>
+                                                    <td class="px-4 py-2 whitespace-nowrap text-sm font-medium">{{ subject.title }}</td>
+                                                    <td class="px-4 py-2 whitespace-nowrap text-sm">
+                                                        {% if subject.subject_type == 'general' %}
+                                                            <span class="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">일반</span>
+                                                        {% elif subject.subject_type == 'midterm' %}
+                                                            <span class="px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-800">중간고사</span>
+                                                        {% elif subject.subject_type == 'final' %}
+                                                            <span class="px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800">기말고사</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="px-4 py-2 whitespace-nowrap text-sm">
+                                                        <a href="{% url 'admin_portal:subject_detail' course.id subject.id %}" class="text-blue-600 hover:text-blue-800 mr-2">상세</a>
+                                                        <a href="{% url 'admin_portal:lecture_list' course.id subject.id %}" class="text-green-600 hover:text-green-800">강의 관리</a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <p class="text-gray-500">등록된 과목이 없습니다.</p>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mt-4">
+                                <a href="{% url 'admin_portal:subject_list' course.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                    과목 관리 바로가기 →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">썸네일 이미지</h3>
+                        <div class="bg-gray-50 p-4 rounded-md mb-6 flex justify-center">
+                            {% if course.thumbnail_image %}
+                                <img src="{{ course.thumbnail_image.url }}" alt="{{ course.title }}" class="w-full h-auto max-h-60 object-contain">
+                            {% else %}
+                                <div class="w-full h-40 bg-gray-200 flex items-center justify-center">
+                                    <span class="text-gray-500">이미지 없음</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">빠른 바로가기</h3>
+                        <div class="space-y-2">
+                            <a href="{% url 'admin_portal:course_edit' course.id %}" class="block w-full bg-white hover:bg-gray-50 border border-gray-300 rounded-md p-4 transition duration-150">
+                                <div class="flex items-center">
+                                    <i class="fas fa-edit text-blue-500 mr-3 text-lg"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">과정 수정</p>
+                                        <p class="text-xs text-gray-500">과정 정보를 수정합니다</p>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <a href="{% url 'admin_portal:subject_list' course.id %}" class="block w-full bg-white hover:bg-gray-50 border border-gray-300 rounded-md p-4 transition duration-150">
+                                <div class="flex items-center">
+                                    <i class="fas fa-list text-green-500 mr-3 text-lg"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">과목 관리</p>
+                                        <p class="text-xs text-gray-500">과목 목록을 관리합니다</p>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <a href="{% url 'admin_portal:subject_create' course.id %}" class="block w-full bg-white hover:bg-gray-50 border border-gray-300 rounded-md p-4 transition duration-150">
+                                <div class="flex items-center">
+                                    <i class="fas fa-plus text-indigo-500 mr-3 text-lg"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">신규 과목 추가</p>
+                                        <p class="text-xs text-gray-500">새로운 과목을 추가합니다</p>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <a href="{% url 'admin_portal:course_delete' course.id %}" class="block w-full bg-white hover:bg-gray-50 border border-gray-300 rounded-md p-4 transition duration-150">
+                                <div class="flex items-center">
+                                    <i class="fas fa-trash-alt text-red-500 mr-3 text-lg"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">과정 삭제</p>
+                                        <p class="text-xs text-gray-500">이 과정을 삭제합니다</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}

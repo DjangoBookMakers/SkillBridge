@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}강의 관리 | 스킬브릿지{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-100">
+    <!-- 사이드바 -->
+    <div class="w-64 bg-white shadow-md">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-bold text-gray-800">관리자 포털</h2>
+        </div>
+        <nav class="mt-4">
+            <ul>
+                <li class="mb-1">
+                    <a href="{% url 'admin_portal:admin_dashboard' %}" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-tachometer-alt mr-2"></i>대시보드
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a href="{% url 'admin_portal:course_list' %}" class="block px-6 py-3 bg-indigo-50 text-indigo-700">
+                        <i class="fas fa-graduation-cap mr-2"></i>과정 관리
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-users mr-2"></i>사용자 관리
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-chart-bar mr-2"></i>통계
+                    </a>
+                </li>
+                <li class="mb-1">
+                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-cog mr-2"></i>설정
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="flex-1 overflow-y-auto">
+        <!-- 상단 네비게이션 -->
+        <header class="bg-white shadow-sm">
+            <div class="flex justify-between items-center px-6 py-4">
+                <div class="flex items-center">
+                    <h1 class="text-lg font-semibold text-gray-800">강의 관리</h1>
+                    <span class="mx-2 text-gray-400">/</span>
+                    <a href="{% url 'admin_portal:course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">{{ course.title }}</a>
+                    <span class="mx-2 text-gray-400">/</span>
+                    <a href="{% url 'admin_portal:subject_list' course.id %}" class="text-blue-600 hover:text-blue-800">{{ subject.title }}</a>
+                </div>
+                <div class="flex items-center">
+                    <span class="mr-4 text-gray-700">{{ request.user.username }}</span>
+                    <a href="{% url 'accounts:logout' %}" class="text-sm text-red-600 hover:text-red-800">로그아웃</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- 메인 컨텐츠 영역 -->
+        <main class="p-6">
+            <!-- 과목 정보 요약 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">{{ subject.title }}</h2>
+                        <p class="text-sm text-gray-600 mb-2">{{ subject.description }}</p>
+                        <div class="flex items-center text-sm">
+                            {% if subject.subject_type == 'general' %}
+                                <span class="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">일반</span>
+                            {% elif subject.subject_type == 'midterm' %}
+                                <span class="px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-800">중간고사</span>
+                            {% elif subject.subject_type == 'final' %}
+                                <span class="px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800">기말고사</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{% url 'admin_portal:subject_detail' course.id subject.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        과목으로 돌아가기 →
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 강의 목록 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800">강의 목록</h2>
+                    <a href="{% url 'admin_portal:lecture_create' course.id subject.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-plus mr-2"></i>신규 강의 추가
+                    </a>
+                </div>
+                
+                {% if lectures %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">순서</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">제목</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">유형</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">설명</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for lecture in lectures %}
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ lecture.order_index }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ lecture.title }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {% if lecture.lecture_type == 'video' %}
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">동영상</span>
+                                            {% elif lecture.lecture_type == 'mission' %}
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">미션</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900 line-clamp-1">{{ lecture.description }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <a href="{% url 'admin_portal:lecture_detail' course.id subject.id lecture.id %}" class="text-indigo-600 hover:text-indigo-900 mr-2">상세</a>
+                                            <a href="{% url 'admin_portal:lecture_edit' course.id subject.id lecture.id %}" class="text-blue-600 hover:text-blue-900 mr-2">수정</a>
+                                            <a href="{% url 'admin_portal:lecture_delete' course.id subject.id lecture.id %}" class="text-red-600 hover:text-red-900 mr-2">삭제</a>
+                                            {% if lecture.lecture_type == 'mission' %}
+                                                <a href="{% url 'admin_portal:question_list' course.id subject.id lecture.id %}" class="text-green-600 hover:text-green-900">문제 관리</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-10">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">등록된 강의가 없습니다</h3>
+                        <p class="mt-1 text-sm text-gray-500">지금 첫 강의를 추가해보세요.</p>
+                        <div class="mt-6">
+                            <a href="{% url 'admin_portal:lecture_create' course.id subject.id %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-plus mr-2"></i>
+                                신규 강의 추가
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
