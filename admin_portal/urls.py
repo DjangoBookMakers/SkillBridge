@@ -42,4 +42,18 @@ urlpatterns = [
         views.course_attendance_pdf,
         name="admin_portal_course_attendance_pdf",
     ),
+    path("courses/", views.course_management, name="admin_portal_course_management"),
+    path("courses/create/", views.course_create, name="admin_portal_course_create"),
+    path("courses/<int:course_id>/", views.course_detail, name="admin_portal_course_detail"),
+    path("courses/<int:course_id>/delete/", views.course_delete, name="admin_portal_course_delete"),
+    
+    # 과목 관리 URL
+    path("courses/<int:course_id>/subjects/", views.subject_management, name="admin_portal_subject_management"),
+    path("courses/<int:course_id>/subjects/create/", views.subject_create, name="admin_portal_subject_create"),
+    path("courses/<int:course_id>/subjects/<int:subject_id>/", views.subject_detail, name="admin_portal_subject_detail"),
+    
+    # 강의 관리 URL
+    path("courses/<int:course_id>/subjects/<int:subject_id>/lectures/", views.lecture_management, name="admin_portal_lecture_management"),
+    path("courses/<int:course_id>/subjects/<int:subject_id>/lectures/create/", views.lecture_create, name="admin_portal_lecture_create"),
+    path("courses/<int:course_id>/subjects/<int:subject_id>/lectures/<int:lecture_id>/", views.lecture_detail, name="admin_portal_lecture_detail"),
 ]
