@@ -12,8 +12,8 @@
   </div>
   {% if today_value %}
     <p class="text-green-600 mt-4 text-sm">
-      <span class="font-bold">오늘:</span>
-      +{{ today_value }}명
+      <span class="font-bold">{% if today_caption %}{{ today_caption }}{% else %}오늘{% endif %}:</span>
+      {% if today_caption %}{{ today_value }}{% if suffix %}{{ suffix }}{% endif %}{% else %}+{{ today_value }}명{% endif %}
     </p>
   {% endif %}
 </div>
