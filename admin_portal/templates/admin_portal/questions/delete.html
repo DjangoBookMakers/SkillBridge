@@ -1,110 +1,172 @@
-{% extends 'base.html' %}
-
-{% block title %}문제 삭제 | 스킬브릿지{% endblock %}
-
+{% extends 'base.html' %} {% block title %}문제 삭제 | 스킬브릿지{% endblock %}
 {% block content %}
 <div class="flex h-screen bg-gray-100">
-    <!-- 사이드바 -->
-    <div class="w-64 bg-white shadow-md">
-        <div class="p-6 border-b">
-            <h2 class="text-xl font-bold text-gray-800">관리자 포털</h2>
+  <!-- 사이드바 -->
+  <div class="w-64 bg-white shadow-md">
+    <div class="p-6 border-b">
+      <h2 class="text-xl font-bold text-gray-800">관리자 포털</h2>
+    </div>
+    <nav class="mt-4">
+      <ul>
+        <li class="mb-1">
+          <a
+            href="{% url 'admin_dashboard' %}"
+            class="block px-6 py-3 text-gray-700 hover:bg-gray-50"
+          >
+            <i class="fas fa-tachometer-alt mr-2"></i>대시보드
+          </a>
+        </li>
+        <li class="mb-1">
+          <a
+            href="{% url 'course_list' %}"
+            class="block px-6 py-3 bg-indigo-50 text-indigo-700"
+          >
+            <i class="fas fa-graduation-cap mr-2"></i>과정 관리
+          </a>
+        </li>
+        <li class="mb-1">
+          <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+            <i class="fas fa-users mr-2"></i>사용자 관리
+          </a>
+        </li>
+        <li class="mb-1">
+          <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+            <i class="fas fa-chart-bar mr-2"></i>통계
+          </a>
+        </li>
+        <li class="mb-1">
+          <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+            <i class="fas fa-cog mr-2"></i>설정
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- 메인 컨텐츠 -->
+  <div class="flex-1 overflow-y-auto">
+    <!-- 상단 네비게이션 -->
+    <header class="bg-white shadow-sm">
+      <div class="flex justify-between items-center px-6 py-4">
+        <div class="flex items-center">
+          <h1 class="text-lg font-semibold text-gray-800">문제 삭제</h1>
+          <span class="mx-2 text-gray-400">/</span>
+          <a
+            href="{% url 'course_detail' course.id %}"
+            class="text-blue-600 hover:text-blue-800"
+            >{{ course.title }}</a
+          >
+          <span class="mx-2 text-gray-400">/</span>
+          <a
+            href="{% url 'subject_list' course.id %}"
+            class="text-blue-600 hover:text-blue-800"
+            >{{ subject.title }}</a
+          >
+          <span class="mx-2 text-gray-400">/</span>
+          <a
+            href="{% url 'lecture_detail' course.id subject.id lecture.id %}"
+            class="text-blue-600 hover:text-blue-800"
+            >{{ lecture.title }}</a
+          >
         </div>
-        <nav class="mt-4">
-            <ul>
-                <li class="mb-1">
-                    <a href="{% url 'admin_portal:admin_dashboard' %}" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-tachometer-alt mr-2"></i>대시보드
-                    </a>
-                </li>
-                <li class="mb-1">
-                    <a href="{% url 'admin_portal:course_list' %}" class="block px-6 py-3 bg-indigo-50 text-indigo-700">
-                        <i class="fas fa-graduation-cap mr-2"></i>과정 관리
-                    </a>
-                </li>
-                <li class="mb-1">
-                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-users mr-2"></i>사용자 관리
-                    </a>
-                </li>
-                <li class="mb-1">
-                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-chart-bar mr-2"></i>통계
-                    </a>
-                </li>
-                <li class="mb-1">
-                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-cog mr-2"></i>설정
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+        <div class="flex items-center">
+          <span class="mr-4 text-gray-700">{{ request.user.username }}</span>
+          <a
+            href="{% url 'accounts:logout' %}"
+            class="text-sm text-red-600 hover:text-red-800"
+            >로그아웃</a
+          >
+        </div>
+      </div>
+    </header>
 
-    <!-- 메인 컨텐츠 -->
-    <div class="flex-1 overflow-y-auto">
-        <!-- 상단 네비게이션 -->
-        <header class="bg-white shadow-sm">
-            <div class="flex justify-between items-center px-6 py-4">
-                <div class="flex items-center">
-                    <h1 class="text-lg font-semibold text-gray-800">문제 삭제</h1>
-                    <span class="mx-2 text-gray-400">/</span>
-                    <a href="{% url 'admin_portal:course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">{{ course.title }}</a>
-                    <span class="mx-2 text-gray-400">/</span>
-                    <a href="{% url 'admin_portal:subject_list' course.id %}" class="text-blue-600 hover:text-blue-800">{{ subject.title }}</a>
-                    <span class="mx-2 text-gray-400">/</span>
-                    <a href="{% url 'admin_portal:lecture_detail' course.id subject.id lecture.id %}" class="text-blue-600 hover:text-blue-800">{{ lecture.title }}</a>
-                </div>
-                <div class="flex items-center">
-                    <span class="mr-4 text-gray-700">{{ request.user.username }}</span>
-                    <a href="{% url 'accounts:logout' %}" class="text-sm text-red-600 hover:text-red-800">로그아웃</a>
-                </div>
-            </div>
-        </header>
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="p-6">
+      <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <div class="text-center mb-6">
+          <svg
+            class="mx-auto h-16 w-16 text-red-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            ></path>
+          </svg>
+          <h2 class="mt-4 text-xl font-bold text-gray-900">
+            정말 이 문제를 삭제하시겠습니까?
+          </h2>
+          <p class="mt-2 text-sm text-gray-500">
+            이 작업은 취소할 수 없습니다.
+          </p>
+        </div>
 
-        <!-- 메인 컨텐츠 영역 -->
-        <main class="p-6">
-            <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-                <div class="text-center mb-6">
-                    <svg class="mx-auto h-16 w-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    <h2 class="mt-4 text-xl font-bold text-gray-900">정말 이 문제를 삭제하시겠습니까?</h2>
-                    <p class="mt-2 text-sm text-gray-500">이 작업은 취소할 수 없습니다.</p>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-md mb-6">
-                    <p class="font-medium text-gray-800 mb-2">{{ question.question_text }}</p>
-                    
-                    <ol class="list-decimal list-inside ml-2 space-y-1 text-gray-700">
-                        <li class="{% if question.correct_answer == 1 %}font-semibold text-green-600{% endif %}">{{ question.option1 }}</li>
-                        <li class="{% if question.correct_answer == 2 %}font-semibold text-green-600{% endif %}">{{ question.option2 }}</li>
-                        <li class="{% if question.correct_answer == 3 %}font-semibold text-green-600{% endif %}">{{ question.option3 }}</li>
-                        <li class="{% if question.correct_answer == 4 %}font-semibold text-green-600{% endif %}">{{ question.option4 }}</li>
-                        <li class="{% if question.correct_answer == 5 %}font-semibold text-green-600{% endif %}">{{ question.option5 }}</li>
-                    </ol>
-                    
-                    <div class="mt-2 text-sm text-gray-500">
-                        <span>정답: {{ question.correct_answer }}번</span>
-                    </div>
-                </div>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="flex justify-end space-x-3">
-                        <a href="{% url 'admin_portal:question_list' course.id subject.id lecture.id %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md">
-                            취소
-                        </a>
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md">
-                            삭제 확인
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </main>
-    </div>
+        <div class="bg-gray-50 p-4 rounded-md mb-6">
+          <p class="font-medium text-gray-800 mb-2">
+            {{ question.question_text }}
+          </p>
+
+          <ol class="list-decimal list-inside ml-2 space-y-1 text-gray-700">
+            <li
+              class="{% if question.correct_answer == 1 %}font-semibold text-green-600{% endif %}"
+            >
+              {{ question.option1 }}
+            </li>
+            <li
+              class="{% if question.correct_answer == 2 %}font-semibold text-green-600{% endif %}"
+            >
+              {{ question.option2 }}
+            </li>
+            <li
+              class="{% if question.correct_answer == 3 %}font-semibold text-green-600{% endif %}"
+            >
+              {{ question.option3 }}
+            </li>
+            <li
+              class="{% if question.correct_answer == 4 %}font-semibold text-green-600{% endif %}"
+            >
+              {{ question.option4 }}
+            </li>
+            <li
+              class="{% if question.correct_answer == 5 %}font-semibold text-green-600{% endif %}"
+            >
+              {{ question.option5 }}
+            </li>
+          </ol>
+
+          <div class="mt-2 text-sm text-gray-500">
+            <span>정답: {{ question.correct_answer }}번</span>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="flex justify-end space-x-3">
+            <a
+              href="{% url 'question_list' course.id subject.id lecture.id %}"
+              class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md"
+            >
+              취소
+            </a>
+            <button
+              type="submit"
+              class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md"
+            >
+              삭제 확인
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+/>
 {% endblock %}

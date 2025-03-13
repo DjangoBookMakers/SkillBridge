@@ -1,148 +1,224 @@
-{% extends 'base.html' %}
-
-{% block title %}문제 관리 | 스킬브릿지{% endblock %}
-
+{% extends 'base.html' %} {% block title %}문제 관리 | 스킬브릿지{% endblock %}
 {% block content %}
 <div class="flex h-screen bg-gray-100">
-    <!-- 사이드바 -->
-    <div class="w-64 bg-white shadow-md">
-        <div class="p-6 border-b">
-            <h2 class="text-xl font-bold text-gray-800">관리자 포털</h2>
+  <!-- 사이드바 -->
+  <div class="w-64 bg-white shadow-md">
+    <div class="p-6 border-b">
+      <h2 class="text-xl font-bold text-gray-800">관리자 포털</h2>
+    </div>
+    <nav class="mt-4">
+      <ul>
+        <li class="mb-1">
+          <a
+            href="{% url 'admin_dashboard' %}"
+            class="block px-6 py-3 text-gray-700 hover:bg-gray-50"
+          >
+            <i class="fas fa-tachometer-alt mr-2"></i>대시보드
+          </a>
+        </li>
+        <li class="mb-1">
+          <a
+            href="{% url 'course_list' %}"
+            class="block px-6 py-3 bg-indigo-50 text-indigo-700"
+          >
+            <i class="fas fa-graduation-cap mr-2"></i>과정 관리
+          </a>
+        </li>
+        <li class="mb-1">
+          <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+            <i class="fas fa-users mr-2"></i>사용자 관리
+          </a>
+        </li>
+        <li class="mb-1">
+          <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+            <i class="fas fa-chart-bar mr-2"></i>통계
+          </a>
+        </li>
+        <li class="mb-1">
+          <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+            <i class="fas fa-cog mr-2"></i>설정
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- 메인 컨텐츠 -->
+  <div class="flex-1 overflow-y-auto">
+    <!-- 상단 네비게이션 -->
+    <header class="bg-white shadow-sm">
+      <div class="flex justify-between items-center px-6 py-4">
+        <div class="flex items-center">
+          <h1 class="text-lg font-semibold text-gray-800">미션 문제 관리</h1>
+          <span class="mx-2 text-gray-400">/</span>
+          <a
+            href="{% url 'course_detail' course.id %}"
+            class="text-blue-600 hover:text-blue-800"
+            >{{ course.title }}</a
+          >
+          <span class="mx-2 text-gray-400">/</span>
+          <a
+            href="{% url 'subject_list' course.id %}"
+            class="text-blue-600 hover:text-blue-800"
+            >{{ subject.title }}</a
+          >
+          <span class="mx-2 text-gray-400">/</span>
+          <a
+            href="{% url 'lecture_detail' course.id subject.id lecture.id %}"
+            class="text-blue-600 hover:text-blue-800"
+            >{{ lecture.title }}</a
+          >
         </div>
-        <nav class="mt-4">
-            <ul>
-                <li class="mb-1">
-                    <a href="{% url 'admin_portal:admin_dashboard' %}" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-tachometer-alt mr-2"></i>대시보드
-                    </a>
-                </li>
-                <li class="mb-1">
-                    <a href="{% url 'admin_portal:course_list' %}" class="block px-6 py-3 bg-indigo-50 text-indigo-700">
-                        <i class="fas fa-graduation-cap mr-2"></i>과정 관리
-                    </a>
-                </li>
-                <li class="mb-1">
-                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-users mr-2"></i>사용자 관리
-                    </a>
-                </li>
-                <li class="mb-1">
-                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-chart-bar mr-2"></i>통계
-                    </a>
-                </li>
-                <li class="mb-1">
-                    <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-cog mr-2"></i>설정
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+        <div class="flex items-center">
+          <span class="mr-4 text-gray-700">{{ request.user.username }}</span>
+          <a
+            href="{% url 'accounts:logout' %}"
+            class="text-sm text-red-600 hover:text-red-800"
+            >로그아웃</a
+          >
+        </div>
+      </div>
+    </header>
 
-    <!-- 메인 컨텐츠 -->
-    <div class="flex-1 overflow-y-auto">
-        <!-- 상단 네비게이션 -->
-        <header class="bg-white shadow-sm">
-            <div class="flex justify-between items-center px-6 py-4">
-                <div class="flex items-center">
-                    <h1 class="text-lg font-semibold text-gray-800">미션 문제 관리</h1>
-                    <span class="mx-2 text-gray-400">/</span>
-                    <a href="{% url 'admin_portal:course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">{{ course.title }}</a>
-                    <span class="mx-2 text-gray-400">/</span>
-                    <a href="{% url 'admin_portal:subject_list' course.id %}" class="text-blue-600 hover:text-blue-800">{{ subject.title }}</a>
-                    <span class="mx-2 text-gray-400">/</span>
-                    <a href="{% url 'admin_portal:lecture_detail' course.id subject.id lecture.id %}" class="text-blue-600 hover:text-blue-800">{{ lecture.title }}</a>
-                </div>
-                <div class="flex items-center">
-                    <span class="mr-4 text-gray-700">{{ request.user.username }}</span>
-                    <a href="{% url 'accounts:logout' %}" class="text-sm text-red-600 hover:text-red-800">로그아웃</a>
-                </div>
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="p-6">
+      <!-- 강의 정보 요약 -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-start">
+          <div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">
+              {{ lecture.title }}
+            </h2>
+            <p class="text-sm text-gray-600 mb-2">{{ lecture.description }}</p>
+            <div class="flex items-center text-sm">
+              <span
+                class="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800"
+                >미션</span
+              >
             </div>
-        </header>
+          </div>
+          <a
+            href="{% url 'lecture_detail' course.id subject.id lecture.id %}"
+            class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+          >
+            강의로 돌아가기 →
+          </a>
+        </div>
+      </div>
 
-        <!-- 메인 컨텐츠 영역 -->
-        <main class="p-6">
-            <!-- 강의 정보 요약 -->
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">{{ lecture.title }}</h2>
-                        <p class="text-sm text-gray-600 mb-2">{{ lecture.description }}</p>
-                        <div class="flex items-center text-sm">
-                            <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800">미션</span>
-                        </div>
-                    </div>
-                    <a href="{% url 'admin_portal:lecture_detail' course.id subject.id lecture.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        강의로 돌아가기 →
-                    </a>
-                </div>
+      <!-- 문제 목록 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-lg font-semibold text-gray-800">문제 목록</h2>
+          <a
+            href="{% url 'question_create' course.id subject.id lecture.id %}"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          >
+            <i class="fas fa-plus mr-2"></i>신규 문제 추가
+          </a>
+        </div>
+
+        {% if questions %}
+        <div class="space-y-6">
+          {% for question in questions %}
+          <div class="border border-gray-200 rounded-lg bg-gray-50 p-4">
+            <div class="flex justify-between items-start mb-3">
+              <h3 class="text-lg font-medium text-gray-900">
+                문제 {{ question.order_index }}
+              </h3>
+              <div class="flex space-x-2">
+                <a
+                  href="{% url 'question_edit' course.id subject.id lecture.id question.id %}"
+                  class="text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  <i class="fas fa-edit mr-1"></i>수정
+                </a>
+                <a
+                  href="{% url 'question_delete' course.id subject.id lecture.id question.id %}"
+                  class="text-red-600 hover:text-red-800 text-sm"
+                >
+                  <i class="fas fa-trash-alt mr-1"></i>삭제
+                </a>
+              </div>
             </div>
-            
-            <!-- 문제 목록 -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-semibold text-gray-800">문제 목록</h2>
-                    <a href="{% url 'admin_portal:question_create' course.id subject.id lecture.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-plus mr-2"></i>신규 문제 추가
-                    </a>
-                </div>
-                
-                {% if questions %}
-                    <div class="space-y-6">
-                        {% for question in questions %}
-                            <div class="border border-gray-200 rounded-lg bg-gray-50 p-4">
-                                <div class="flex justify-between items-start mb-3">
-                                    <h3 class="text-lg font-medium text-gray-900">문제 {{ question.order_index }}</h3>
-                                    <div class="flex space-x-2">
-                                        <a href="{% url 'admin_portal:question_edit' course.id subject.id lecture.id question.id %}" class="text-blue-600 hover:text-blue-800 text-sm">
-                                            <i class="fas fa-edit mr-1"></i>수정
-                                        </a>
-                                        <a href="{% url 'admin_portal:question_delete' course.id subject.id lecture.id question.id %}" class="text-red-600 hover:text-red-800 text-sm">
-                                            <i class="fas fa-trash-alt mr-1"></i>삭제
-                                        </a>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <p class="font-medium text-gray-800 mb-2">{{ question.question_text }}</p>
-                                    
-                                    <ol class="list-decimal list-inside ml-2 space-y-1 text-gray-700">
-                                        <li class="{% if question.correct_answer == 1 %}font-semibold text-green-600{% endif %}">{{ question.option1 }}</li>
-                                        <li class="{% if question.correct_answer == 2 %}font-semibold text-green-600{% endif %}">{{ question.option2 }}</li>
-                                        <li class="{% if question.correct_answer == 3 %}font-semibold text-green-600{% endif %}">{{ question.option3 }}</li>
-                                        <li class="{% if question.correct_answer == 4 %}font-semibold text-green-600{% endif %}">{{ question.option4 }}</li>
-                                        <li class="{% if question.correct_answer == 5 %}font-semibold text-green-600{% endif %}">{{ question.option5 }}</li>
-                                    </ol>
-                                </div>
-                                
-                                <div class="text-sm text-gray-500">
-                                    <span>정답: {{ question.correct_answer }}번</span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-10">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">등록된 문제가 없습니다</h3>
-                        <p class="mt-1 text-sm text-gray-500">미션 문제를 추가해주세요.</p>
-                        <div class="mt-6">
-                            <a href="{% url 'admin_portal:question_create' course.id subject.id lecture.id %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                <i class="fas fa-plus mr-2"></i>
-                                신규 문제 추가
-                            </a>
-                        </div>
-                    </div>
-                {% endif %}
+
+            <div class="mb-3">
+              <p class="font-medium text-gray-800 mb-2">
+                {{ question.question_text }}
+              </p>
+
+              <ol class="list-decimal list-inside ml-2 space-y-1 text-gray-700">
+                <li
+                  class="{% if question.correct_answer == 1 %}font-semibold text-green-600{% endif %}"
+                >
+                  {{ question.option1 }}
+                </li>
+                <li
+                  class="{% if question.correct_answer == 2 %}font-semibold text-green-600{% endif %}"
+                >
+                  {{ question.option2 }}
+                </li>
+                <li
+                  class="{% if question.correct_answer == 3 %}font-semibold text-green-600{% endif %}"
+                >
+                  {{ question.option3 }}
+                </li>
+                <li
+                  class="{% if question.correct_answer == 4 %}font-semibold text-green-600{% endif %}"
+                >
+                  {{ question.option4 }}
+                </li>
+                <li
+                  class="{% if question.correct_answer == 5 %}font-semibold text-green-600{% endif %}"
+                >
+                  {{ question.option5 }}
+                </li>
+              </ol>
             </div>
-        </main>
-    </div>
+
+            <div class="text-sm text-gray-500">
+              <span>정답: {{ question.correct_answer }}번</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-10">
+          <svg
+            class="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">
+            등록된 문제가 없습니다
+          </h3>
+          <p class="mt-1 text-sm text-gray-500">미션 문제를 추가해주세요.</p>
+          <div class="mt-6">
+            <a
+              href="{% url 'question_create' course.id subject.id lecture.id %}"
+              class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <i class="fas fa-plus mr-2"></i>
+              신규 문제 추가
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </main>
+  </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+/>
 {% endblock %}

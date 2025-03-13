@@ -12,12 +12,12 @@
         <nav class="mt-4">
             <ul>
                 <li class="mb-1">
-                    <a href="{% url 'admin_portal:admin_dashboard' %}" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
+                    <a href="{% url 'admin_dashboard' %}" class="block px-6 py-3 text-gray-700 hover:bg-gray-50">
                         <i class="fas fa-tachometer-alt mr-2"></i>대시보드
                     </a>
                 </li>
                 <li class="mb-1">
-                    <a href="{% url 'admin_portal:course_list' %}" class="block px-6 py-3 bg-indigo-50 text-indigo-700">
+                    <a href="{% url 'course_list' %}" class="block px-6 py-3 bg-indigo-50 text-indigo-700">
                         <i class="fas fa-graduation-cap mr-2"></i>과정 관리
                     </a>
                 </li>
@@ -48,7 +48,7 @@
                 <div class="flex items-center">
                     <h1 class="text-lg font-semibold text-gray-800">과목 수정</h1>
                     <span class="mx-2 text-gray-400">/</span>
-                    <a href="{% url 'admin_portal:subject_list' course.id %}" class="text-blue-600 hover:text-blue-800">{{ course.title }}</a>
+                    <a href="{% url 'subject_list' course.id %}" class="text-blue-600 hover:text-blue-800">{{ course.title }}</a>
                 </div>
                 <div class="flex items-center">
                     <span class="mr-4 text-gray-700">{{ request.user.username }}</span>
@@ -122,7 +122,7 @@
                     
                     <!-- 버튼 -->
                     <div class="flex justify-end">
-                        <a href="{% url 'admin_portal:subject_detail' course.id subject.id %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md mr-2">
+                        <a href="{% url 'subject_detail' course.id subject.id %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md mr-2">
                             취소
                         </a>
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md">
