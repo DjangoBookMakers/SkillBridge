@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }}
+  진행 상황 | 스킬브릿지 관리자{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="flex items-center mb-4">
+      <a href="{% url 'admin_portal_course_progress' %}" class="text-blue-600 hover:underline mr-2">
+        <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        과정 진행 상황으로 돌아가기
+      </a>
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">{{ course.title }}
+        - 진행 상황 상세</h1>
+      <a href="{% url 'admin_portal_course_attendance' course.id %}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
+        출석부 보기
+      </a>
+    </div>
+
+    <!-- 과정 구성 정보 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">과정 구성</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for subject_info in subject_data %}
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 class="font-medium text-gray-800">
+              {% if subject_info.subject.subject_type == 'midterm' %}
+                <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded mr-1">중간고사</span>
+              {% elif subject_info.subject.subject_type == 'final' %}
+                <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded mr-1">기말고사</span>
+              {% endif %}
+              {{ subject_info.subject.title }}
+            </h3>
+            <p class="text-sm text-gray-500 mt-1">강의 수:
+              {{ subject_info.lecture_count }}개</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 수강생별 진행 상황 표 -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <h2 class="text-xl font-semibold text-gray-800">수강생별 진행 상황</h2>
+      </div>
+
+      <div class="p-6 overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                수강생
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                전체 진행률
+              </th>
+              {% for subject_info in subject_data %}
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {{ subject_info.subject.title }}
+                </th>
+              {% endfor %}
+              <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                수료증
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for student in student_progress %}
+              <tr>
+                <!-- 수강생 정보 -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    {% if student.user.profile_image %}
+                      <img class="h-10 w-10 rounded-full" src="{{ student.user.profile_image.url }}" alt="{{ student.user.username }}">
+                    {% else %}
+                      <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-600 font-medium">{{ student.user.username|first|upper }}</span>
+                      </div>
+                    {% endif %}
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">{{ student.user.username }}</div>
+                      <div class="text-sm text-gray-500">{{ student.user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- 전체 진행률 -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
+                      <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ student.enrollment.progress_percentage }}%"></div>
+                    </div>
+                    <span class="text-sm font-medium">{{ student.enrollment.progress_percentage }}%</span>
+                  </div>
+                  <div class="text-xs text-gray-500 mt-1">
+                    상태:
+                    {% if student.enrollment.status == 'enrolled' %}
+                      <span class="text-blue-600">수강 중</span>
+                    {% elif student.enrollment.status == 'completed' %}
+                      <span class="text-green-600">수료 완료</span>
+                    {% elif student.enrollment.status == 'certified' %}
+                      <span class="text-purple-600">수료증 발급</span>
+                    {% endif %}
+                  </div>
+                </td>
+
+                <!-- 각 과목별 진행 상황 -->
+                {% for subject_progress in student.subject_progress %}
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    {% if subject_progress.subject.subject_type == 'normal' %}
+                      <!-- 일반 과목 -->
+                      <div class="flex flex-col items-center">
+                        <div class="w-20 bg-gray-200 rounded-full h-2.5 mb-1">
+                          <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ subject_progress.percentage }}%"></div>
+                        </div>
+                        <span class="text-xs">{{ subject_progress.completed }}/{{ subject_progress.total }}</span>
+                      </div>
+                    {% else %}
+                      <!-- 중간/기말고사 -->
+                      {% if subject_progress.project_submission %}
+                        {% if subject_progress.project_submission.is_passed %}
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            통과
+                          </span>
+                        {% elif subject_progress.project_submission.reviewed_at %}
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            미통과
+                          </span>
+                        {% else %}
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            검토 중
+                          </span>
+                        {% endif %}
+                      {% else %}
+                        <span class="text-gray-400 text-xs">미제출</span>
+                      {% endif %}
+                    {% endif %}
+                  </td>
+                {% endfor %}
+
+                <!-- 수료증 정보 -->
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  {% if student.certificate %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      {{ student.certificate.issued_at|date:"Y-m-d" }}
+                      발급
+                    </span>
+                  {% elif student.enrollment.status == 'completed' %}
+                    <button class="px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700">
+                      발급 가능
+                    </button>
+                  {% else %}
+                    <span class="text-gray-400 text-xs">미발급</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="{{ subject_data|length|add:3 }}" class="px-6 py-4 text-center text-gray-500">
+                  등록된 수강생이 없습니다.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

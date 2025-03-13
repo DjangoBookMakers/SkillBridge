@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}과정 진행 상황 | 스킬브릿지 관리자{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">과정 진행 상황 모니터링</h1>
+      <a href="{% url 'admin_portal_dashboard' %}" class="text-blue-600 hover:underline">대시보드로 돌아가기</a>
+    </div>
+
+    <!-- 주간 수료증 발급 통계 카드 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">주간 수료증 발급 횟수</h2>
+      <div class="h-64">
+        <canvas id="certificateChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 과정별 진행률 카드 -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <h2 class="text-xl font-semibold text-gray-800">과정별 평균 진행률</h2>
+      </div>
+      <div class="p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="text-left border-b">
+                <th class="pb-2 text-gray-600">과정명</th>
+                <th class="pb-2 text-gray-600 text-center">수강생 수</th>
+                <th class="pb-2 text-gray-600 text-center">평균 진행률</th>
+                <th class="pb-2 text-gray-600 text-center">수료증 발급</th>
+                <th class="pb-2 text-gray-600 text-center">최근 7일간 발급</th>
+                <th class="pb-2 text-gray-600 text-center">액션</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for course_data in courses_progress %}
+                <tr class="border-b border-gray-100">
+                  <td class="py-3">{{ course_data.course.title }}</td>
+                  <td class="py-3 text-center">{{ course_data.student_count }}명</td>
+                  <td class="py-3 text-center">
+                    <div class="flex items-center justify-center">
+                      <div class="w-48 bg-gray-200 rounded-full h-2.5 mr-2">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ course_data.avg_progress }}%"></div>
+                      </div>
+                      <span class="text-sm font-medium">{{ course_data.avg_progress }}%</span>
+                    </div>
+                  </td>
+                  <td class="py-3 text-center">{{ course_data.certificate_count }}건</td>
+                  <td class="py-3 text-center">{{ course_data.weekly_certificates }}건</td>
+                  <td class="py-3 text-center">
+                    <div class="flex space-x-2 justify-center">
+                      <a href="{% url 'admin_portal_course_progress_detail' course_data.course.id %}" class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm">
+                        상세 보기
+                      </a>
+                      <a href="{% url 'admin_portal_course_attendance' course_data.course.id %}" class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-sm">
+                        출석부
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="py-4 text-center text-gray-500">등록된 과정이 없습니다.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 수강생별 진행률 카드 -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <h2 class="text-xl font-semibold text-gray-800">수강생별 진행률 (상위 10명)</h2>
+      </div>
+      <div class="p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="text-left border-b">
+                <th class="pb-2 text-gray-600">수강생</th>
+                <th class="pb-2 text-gray-600 text-center">수강 과정 수</th>
+                <th class="pb-2 text-gray-600 text-center">완료한 과정 수</th>
+                <th class="pb-2 text-gray-600 text-center">평균 진행률</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student_data in top_students %}
+                <tr class="border-b border-gray-100">
+                  <td class="py-3">
+                    <div class="flex items-center">
+                      {% if student_data.student.profile_image %}
+                        <img src="{{ student_data.student.profile_image.url }}" alt="{{ student_data.student.username }}" class="w-8 h-8 rounded-full mr-3">
+                      {% else %}
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                          <span class="text-gray-600 font-medium">{{ student_data.student.username|first|upper }}</span>
+                        </div>
+                      {% endif %}
+                      <div>
+                        <div class="font-medium">{{ student_data.student.username }}</div>
+                        <div class="text-sm text-gray-500">{{ student_data.student.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3 text-center">{{ student_data.total_count }}개</td>
+                  <td class="py-3 text-center">{{ student_data.completed_count }}개</td>
+                  <td class="py-3 text-center">
+                    <div class="flex items-center justify-center">
+                      <div class="w-48 bg-gray-200 rounded-full h-2.5 mr-2">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ student_data.avg_progress }}%"></div>
+                      </div>
+                      <span class="text-sm font-medium">{{ student_data.avg_progress }}%</span>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="py-4 text-center text-gray-500">수강생 데이터가 없습니다.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 주간 수료증 발급 차트 데이터
+      const certificateData = {{ weekly_certificate_data | safe }};
+
+      // 차트 생성
+      const certificateCtx = document
+        .getElementById('certificateChart')
+        .getContext('2d');
+      new Chart(certificateCtx, {
+        type: 'bar',
+        data: {
+          labels: certificateData
+            .weeks
+            .map(week => {
+              const date = new Date(week);
+              return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+            }),
+          datasets: [
+            {
+              label: '주간 수료증 발급 횟수',
+              data: certificateData.counts,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+{% endblock %}
