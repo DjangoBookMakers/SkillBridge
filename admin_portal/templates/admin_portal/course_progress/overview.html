@@ -148,7 +148,20 @@
             .weeks
             .map(week => {
               const date = new Date(week);
-              return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+              // 해당 주의 시작일과 종료일 계산
+              const weekStart = new Date(date);
+              weekStart.setDate(date.getDate() - date.getDay()); // 주의 시작일 (일요일)
+              const weekEnd = new Date(weekStart);
+              weekEnd.setDate(weekStart.getDate() + 6); // 주의 종료일 (토요일)
+
+              // 시작일과 종료일이 같은 달인 경우
+              if (weekStart.getMonth() === weekEnd.getMonth()) {
+                return `${weekStart.getFullYear()}년 ${weekStart.getMonth()+1}월 ${weekStart.getDate()}일~${weekEnd.getDate()}일`;
+              }
+              // 시작일과 종료일이 다른 달인 경우
+              else {
+                return `${weekStart.getFullYear()}년 ${weekStart.getMonth()+1}월 ${weekStart.getDate()}일~${weekEnd.getMonth()+1}월 ${weekEnd.getDate()}일`;
+              }
             }),
           datasets: [
             {

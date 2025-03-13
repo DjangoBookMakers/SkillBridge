@@ -316,19 +316,46 @@ def course_progress_overview(request):
                 }
             )
 
-    # 주간 수료증 발급 횟수 데이터 (최근 8주)
-    eight_weeks_ago = timezone.now() - timedelta(weeks=8)
+    # 주간 수료증 발급 횟수 데이터 (최근 12주)
+    twelve_weeks_ago = timezone.now() - timedelta(weeks=12)
     weekly_certificates = (
-        Certificate.objects.filter(issued_at__gte=eight_weeks_ago)
+        Certificate.objects.filter(issued_at__gte=twelve_weeks_ago)
         .annotate(week=TruncWeek("issued_at"))
         .values("week")
         .annotate(count=Count("id"))
         .order_by("week")
     )
 
+    # 데이터가 없을 경우를 대비해 빈 주간 데이터 생성
+    all_weeks = []
+    current = twelve_weeks_ago
+    today = timezone.now()
+
+    while current <= today:
+        week_start = current - timedelta(days=current.weekday())
+        all_weeks.append(week_start.date())
+        current += timedelta(weeks=1)
+
+    # 실제 데이터가 있는 주만 추출
+    existing_weeks = {cert["week"].date() for cert in weekly_certificates}
+
+    # 모든 주에 대한 데이터 구성
+    weeks_data = []
+    counts_data = []
+
+    for week in all_weeks:
+        weeks_data.append(week)
+        if week in existing_weeks:
+            for cert in weekly_certificates:
+                if cert["week"].date() == week:
+                    counts_data.append(cert["count"])
+                    break
+        else:
+            counts_data.append(0)
+
     weekly_data = {
-        "weeks": [cert["week"].strftime("%Y-%m-%d") for cert in weekly_certificates],
-        "counts": [cert["count"] for cert in weekly_certificates],
+        "weeks": [week.strftime("%Y-%m-%d") for week in weeks_data],
+        "counts": counts_data,
     }
 
     # 전체 수강생별 평균 진행률 (상위 10명)
