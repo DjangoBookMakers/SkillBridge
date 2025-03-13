@@ -20,17 +20,23 @@
         - 출석부</h1>
 
       <div class="flex gap-2">
-        <!-- 날짜 필터 폼 -->
+        <!-- 기간 선택 드롭다운 -->
         <form method="get" class="flex gap-2 items-center">
-          <label for="start_date" class="text-sm font-medium text-gray-700">시작일:</label>
-          <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" class="px-3 py-2 border border-gray-300 rounded-md text-sm" max="{{ end_date|date:'Y-m-d' }}">
+          <label for="period" class="text-sm font-medium text-gray-700">기간:</label>
+          <select id="period" name="period" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+            {% for period_option in period_options %}
+              <option value="{{ period_option.value }}" {% if period_option.value == selected_period %}selected{% endif %}>
+                {{ period_option.label }}
+              </option>
+            {% endfor %}
+          </select>
           <button type="submit" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200 text-sm">
             조회
           </button>
         </form>
 
         <!-- PDF 다운로드 링크 -->
-        <a href="{% url 'admin_portal_course_attendance_pdf' course.id %}?start_date={{ start_date|date:'Y-m-d' }}" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200 flex items-center text-sm">
+        <a href="{% url 'admin_portal_course_attendance_pdf' course.id %}?period={{ selected_period }}" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200 flex items-center text-sm">
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
           </svg>

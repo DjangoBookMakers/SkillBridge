@@ -504,21 +504,36 @@ def course_attendance(request, course_id):
         .order_by("user__username")
     )
 
-    # 날짜 범위 필터링 (기본값: 최근 2주)
-    end_date = timezone.now().date()
-    start_date = request.GET.get("start_date")
-    if start_date:
-        try:
-            start_date = date.fromisoformat(start_date)
-        except ValueError:
-            start_date = end_date - timedelta(days=13)
-    else:
-        start_date = end_date - timedelta(days=13)
+    # 현재 날짜
+    today = timezone.now().date()
 
-    # 날짜 범위 생성 (최대 14일)
+    # 기간 선택 옵션 생성 (6개월 = 약 26주)
+    period_options = []
+    # 2주 단위로 생성, 총 26주 = 13개 옵션
+    for i in range(13):
+        # 현재 주 시작일(월요일)에서 i*2주 이전
+        start_date = today - timedelta(days=(today.weekday() + 14 * i))
+        end_date = start_date + timedelta(days=13)
+        period_value = f"{start_date.isoformat()},{end_date.isoformat()}"
+        label = f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}"
+        period_options.append({"value": period_value, "label": label})
+
+    # 요청된 기간 처리
+    selected_period = request.GET.get("period", period_options[0]["value"])
+
+    try:
+        start_date_str, end_date_str = selected_period.split(",")
+        start_date = date.fromisoformat(start_date_str)
+        end_date = date.fromisoformat(end_date_str)
+    except (ValueError, AttributeError):
+        # 기본값: 이번주 월요일부터 2주일 (14일)
+        start_date = today - timedelta(days=today.weekday())
+        end_date = start_date + timedelta(days=13)
+
+    # 날짜 범위 생성 (항상 14일)
     date_range = []
     current_date = start_date
-    while current_date <= end_date and (end_date - start_date).days <= 13:
+    for _ in range(14):  # 항상 14일로 고정
         date_range.append(current_date)
         current_date += timedelta(days=1)
 
@@ -556,8 +571,8 @@ def course_attendance(request, course_id):
         "course": course,
         "date_range": date_range,
         "attendance_data": attendance_data,
-        "start_date": start_date,
-        "end_date": end_date,
+        "period_options": period_options,
+        "selected_period": selected_period,
     }
 
     return render(request, "admin_portal/course_progress/attendance.html", context)
@@ -579,21 +594,25 @@ def course_attendance_pdf(request, course_id):
         .order_by("user__username")
     )
 
-    # 날짜 범위 (기본값: 최근 2주)
-    end_date = timezone.now().date()
-    start_date = request.GET.get("start_date")
-    if start_date:
-        try:
-            start_date = date.fromisoformat(start_date)
-        except ValueError:
-            start_date = end_date - timedelta(days=13)
-    else:
-        start_date = end_date - timedelta(days=13)
+    # 현재 날짜
+    today = timezone.now().date()
 
-    # 날짜 범위 생성 (최대 14일)
+    # 요청된 기간 처리
+    selected_period = request.GET.get("period", "")
+
+    try:
+        start_date_str, end_date_str = selected_period.split(",")
+        start_date = date.fromisoformat(start_date_str)
+        end_date = date.fromisoformat(end_date_str)
+    except (ValueError, AttributeError):
+        # 기본값: 이번주 월요일부터 2주일 (14일)
+        start_date = today - timedelta(days=today.weekday())
+        end_date = start_date + timedelta(days=13)
+
+    # 날짜 범위 생성 (항상 14일)
     date_range = []
     current_date = start_date
-    while current_date <= end_date and (end_date - start_date).days <= 13:
+    for _ in range(14):  # 항상 14일로 고정
         date_range.append(current_date)
         current_date += timedelta(days=1)
 
