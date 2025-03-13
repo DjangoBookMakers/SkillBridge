@@ -2,14 +2,22 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db.models import Count, Avg, Q
-from datetime import timedelta
+from django.db.models.functions import TruncWeek
+from datetime import timedelta, date
 import json
+import io
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib.enums import TA_CENTER
 
 from accounts.models import User
-from courses.models import Course
+from courses.models import Course, Subject, Lecture
 from learning.models import Enrollment, Certificate, LectureProgress, ProjectSubmission
 from .models import DailyStatistics
 
@@ -261,3 +269,408 @@ def evaluate_project(request, project_id):
     }
 
     return render(request, "admin_portal/evaluate_project.html", context)
+
+
+@login_required
+def course_progress_overview(request):
+    """과정 진행 상황 개요 페이지"""
+    # 관리자만 접근 가능하도록 체크
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    # 모든 과정 목록
+    courses = Course.objects.all().order_by("title")
+
+    # 각 과정별 평균 진행률 계산
+    courses_progress = []
+    for course in courses:
+        enrollments = Enrollment.objects.filter(course=course)
+        enrollment_count = enrollments.count()
+
+        if enrollment_count > 0:
+            avg_progress = enrollments.aggregate(Avg("progress_percentage"))[
+                "progress_percentage__avg"
+            ]
+
+            # 수료증 발급 수
+            certificate_count = Certificate.objects.filter(
+                enrollment__course=course
+            ).count()
+
+            # 최근 일주일간 수료증 발급 수
+            week_ago = timezone.now() - timedelta(days=7)
+            weekly_certificates = Certificate.objects.filter(
+                enrollment__course=course, issued_at__gte=week_ago
+            ).count()
+
+            # 수강생 수
+            student_count = enrollment_count
+
+            courses_progress.append(
+                {
+                    "course": course,
+                    "avg_progress": round(avg_progress if avg_progress else 0, 1),
+                    "student_count": student_count,
+                    "certificate_count": certificate_count,
+                    "weekly_certificates": weekly_certificates,
+                }
+            )
+
+    # 주간 수료증 발급 횟수 데이터 (최근 8주)
+    eight_weeks_ago = timezone.now() - timedelta(weeks=8)
+    weekly_certificates = (
+        Certificate.objects.filter(issued_at__gte=eight_weeks_ago)
+        .annotate(week=TruncWeek("issued_at"))
+        .values("week")
+        .annotate(count=Count("id"))
+        .order_by("week")
+    )
+
+    weekly_data = {
+        "weeks": [cert["week"].strftime("%Y-%m-%d") for cert in weekly_certificates],
+        "counts": [cert["count"] for cert in weekly_certificates],
+    }
+
+    # 전체 수강생별 평균 진행률 (상위 10명)
+    student_progress = []
+    students = User.objects.filter(is_admin=False)
+    for student in students:
+        enrollments = Enrollment.objects.filter(user=student)
+        if enrollments.exists():
+            avg_progress = enrollments.aggregate(Avg("progress_percentage"))[
+                "progress_percentage__avg"
+            ]
+            completed_count = enrollments.filter(
+                status__in=["completed", "certified"]
+            ).count()
+            total_count = enrollments.count()
+
+            student_progress.append(
+                {
+                    "student": student,
+                    "avg_progress": round(avg_progress if avg_progress else 0, 1),
+                    "completed_count": completed_count,
+                    "total_count": total_count,
+                }
+            )
+
+    # 평균 진행률 기준으로 내림차순 정렬 후 상위 10명만 선택
+    student_progress.sort(key=lambda x: x["avg_progress"], reverse=True)
+    top_students = student_progress[:10]
+
+    context = {
+        "courses_progress": courses_progress,
+        "weekly_certificate_data": json.dumps(weekly_data),
+        "top_students": top_students,
+    }
+
+    return render(request, "admin_portal/course_progress/overview.html", context)
+
+
+@login_required
+def course_progress_detail(request, course_id):
+    """특정 과정의 상세 진행 상황 페이지"""
+    # 관리자만 접근 가능하도록 체크
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    course = get_object_or_404(Course, id=course_id)
+
+    # 과정에 등록된 모든 수강생
+    enrollments = Enrollment.objects.filter(course=course).select_related("user")
+
+    # 과목 및 강의 정보
+    subjects = Subject.objects.filter(course=course).order_by("order_index")
+    subject_data = []
+
+    for subject in subjects:
+        lectures = Lecture.objects.filter(subject=subject).order_by("order_index")
+        subject_data.append(
+            {
+                "subject": subject,
+                "lectures": lectures,
+                "lecture_count": lectures.count(),
+            }
+        )
+
+    # 수강생별 진행 상황
+    student_progress = []
+    for enrollment in enrollments:
+        user = enrollment.user
+
+        # 각 과목별 완료된 강의 수 계산
+        subject_progress = []
+        for subject_info in subject_data:
+            subject = subject_info["subject"]
+            lectures = subject_info["lectures"]
+
+            # 완료된 강의 수
+            completed_lectures = LectureProgress.objects.filter(
+                user=user, lecture__subject=subject, is_completed=True
+            ).count()
+
+            # 프로젝트 제출물 (중간/기말고사인 경우)
+            project_submission = None
+            if subject.subject_type in ["midterm", "final"]:
+                project_submission = (
+                    ProjectSubmission.objects.filter(user=user, subject=subject)
+                    .order_by("-submitted_at")
+                    .first()
+                )
+
+            subject_progress.append(
+                {
+                    "subject": subject,
+                    "completed": completed_lectures,
+                    "total": lectures.count(),
+                    "percentage": round(
+                        (
+                            completed_lectures / lectures.count() * 100
+                            if lectures.count() > 0
+                            else 0
+                        ),
+                        1,
+                    ),
+                    "project_submission": project_submission,
+                }
+            )
+
+        # 수료증 정보
+        certificate = None
+        if enrollment.status == "certified":
+            try:
+                certificate = Certificate.objects.get(enrollment=enrollment)
+            except Certificate.DoesNotExist:
+                pass
+
+        student_progress.append(
+            {
+                "user": user,
+                "enrollment": enrollment,
+                "subject_progress": subject_progress,
+                "certificate": certificate,
+            }
+        )
+
+    context = {
+        "course": course,
+        "subject_data": subject_data,
+        "student_progress": student_progress,
+    }
+
+    return render(request, "admin_portal/course_progress/detail.html", context)
+
+
+@login_required
+def course_attendance(request, course_id):
+    """특정 과정의 출석부 페이지"""
+    # 관리자만 접근 가능하도록 체크
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    course = get_object_or_404(Course, id=course_id)
+
+    # 과정에 등록된 모든 수강생
+    enrollments = (
+        Enrollment.objects.filter(course=course)
+        .select_related("user")
+        .order_by("user__username")
+    )
+
+    # 날짜 범위 필터링 (기본값: 최근 2주)
+    end_date = timezone.now().date()
+    start_date = request.GET.get("start_date")
+    if start_date:
+        try:
+            start_date = date.fromisoformat(start_date)
+        except ValueError:
+            start_date = end_date - timedelta(days=13)
+    else:
+        start_date = end_date - timedelta(days=13)
+
+    # 날짜 범위 생성 (최대 14일)
+    date_range = []
+    current_date = start_date
+    while current_date <= end_date and (end_date - start_date).days <= 13:
+        date_range.append(current_date)
+        current_date += timedelta(days=1)
+
+    # 수강생별 활동 내역
+    attendance_data = []
+    for enrollment in enrollments:
+        user = enrollment.user
+
+        # 날짜별 활동 여부
+        daily_activities = {}
+        for day in date_range:
+            day_start = timezone.datetime.combine(day, timezone.datetime.min.time())
+            day_start = timezone.make_aware(day_start)
+            day_end = timezone.datetime.combine(day, timezone.datetime.max.time())
+            day_end = timezone.make_aware(day_end)
+
+            # 해당 날짜에 완료한 강의 수
+            completed_lectures = LectureProgress.objects.filter(
+                user=user,
+                lecture__subject__course=course,
+                completed_at__range=(day_start, day_end),
+            ).count()
+
+            daily_activities[day.isoformat()] = completed_lectures
+
+        attendance_data.append(
+            {
+                "user": user,
+                "enrollment": enrollment,
+                "daily_activities": daily_activities,
+            }
+        )
+
+    context = {
+        "course": course,
+        "date_range": date_range,
+        "attendance_data": attendance_data,
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+
+    return render(request, "admin_portal/course_progress/attendance.html", context)
+
+
+@login_required
+def course_attendance_pdf(request, course_id):
+    """특정 과정의 출석부 PDF 생성"""
+    # 관리자만 접근 가능하도록 체크
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    course = get_object_or_404(Course, id=course_id)
+
+    # 과정에 등록된 모든 수강생
+    enrollments = (
+        Enrollment.objects.filter(course=course)
+        .select_related("user")
+        .order_by("user__username")
+    )
+
+    # 날짜 범위 (기본값: 최근 2주)
+    end_date = timezone.now().date()
+    start_date = request.GET.get("start_date")
+    if start_date:
+        try:
+            start_date = date.fromisoformat(start_date)
+        except ValueError:
+            start_date = end_date - timedelta(days=13)
+    else:
+        start_date = end_date - timedelta(days=13)
+
+    # 날짜 범위 생성 (최대 14일)
+    date_range = []
+    current_date = start_date
+    while current_date <= end_date and (end_date - start_date).days <= 13:
+        date_range.append(current_date)
+        current_date += timedelta(days=1)
+
+    # 출석부 데이터 생성
+    attendance_data = []
+    for enrollment in enrollments:
+        user = enrollment.user
+
+        # 날짜별 활동 여부
+        daily_activities = []
+        for day in date_range:
+            day_start = timezone.datetime.combine(day, timezone.datetime.min.time())
+            day_start = timezone.make_aware(day_start)
+            day_end = timezone.datetime.combine(day, timezone.datetime.max.time())
+            day_end = timezone.make_aware(day_end)
+
+            # 해당 날짜에 완료한 강의 수
+            completed_lectures = LectureProgress.objects.filter(
+                user=user,
+                lecture__subject__course=course,
+                completed_at__range=(day_start, day_end),
+            ).count()
+
+            daily_activities.append(completed_lectures)
+
+        attendance_data.append(
+            [
+                user.username,
+                user.get_full_name() or "-",
+                *daily_activities,
+                enrollment.progress_percentage,
+            ]
+        )
+
+    # PDF 생성
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30,
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "Title",
+        parent=styles["Heading1"],
+        alignment=TA_CENTER,
+        fontSize=16,
+        spaceAfter=12,
+    )
+
+    # 표 데이터 생성
+    data = [
+        # 헤더
+        [
+            "사용자 ID",
+            "이름",
+            *[day.strftime("%m/%d") for day in date_range],
+            "전체 진행률(%)",
+        ],
+        # 데이터 행
+        *attendance_data,
+    ]
+
+    # 표 스타일
+    table_style = TableStyle(
+        [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.lightblue),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ("ALIGN", (2, 1), (-2, -1), "CENTER"),  # 날짜 칼럼은 가운데 정렬
+            ("ALIGN", (-1, 1), (-1, -1), "RIGHT"),  # 진행률 칼럼은 오른쪽 정렬
+        ]
+    )
+
+    table = Table(data)
+    table.setStyle(table_style)
+
+    # 문서 요소
+    elements = [
+        Paragraph(f"{course.title} - 수강생 출석부", title_style),
+        Paragraph(
+            f"기간: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}",
+            styles["Normal"],
+        ),
+        Spacer(1, 0.2 * inch),
+        table,
+    ]
+
+    # PDF 생성
+    doc.build(elements)
+
+    # PDF 파일 응답
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type="application/pdf")
+    filename = f'attendance_{course.title}_{start_date.strftime("%Y%m%d")}_{end_date.strftime("%Y%m%d")}.pdf'
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response

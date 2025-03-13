@@ -21,4 +21,25 @@ urlpatterns = [
         views.evaluate_project,
         name="admin_portal_evaluate_project",
     ),
+    # 과정 진행 상황 모니터링 관련
+    path(
+        "courses/progress/",
+        views.course_progress_overview,
+        name="admin_portal_course_progress",
+    ),
+    path(
+        "courses/<int:course_id>/progress/",
+        views.course_progress_detail,
+        name="admin_portal_course_progress_detail",
+    ),
+    path(
+        "courses/<int:course_id>/attendance/",
+        views.course_attendance,
+        name="admin_portal_course_attendance",
+    ),
+    path(
+        "courses/<int:course_id>/attendance/pdf/",
+        views.course_attendance_pdf,
+        name="admin_portal_course_attendance_pdf",
+    ),
 ]
