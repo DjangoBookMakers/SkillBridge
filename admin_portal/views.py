@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
-from django.db.models import Count, Avg, Q
+from django.db.models import Count, Avg, Q, Min
 from django.db.models.functions import TruncWeek
 from datetime import timedelta, date
 import json
@@ -580,7 +580,7 @@ def course_attendance(request, course_id):
 
 @login_required
 def course_attendance_pdf(request, course_id):
-    """특정 과정의 출석부 PDF 생성"""
+    """특정 과정의 출석부 PDF 생성 - 시작일부터 현재까지의 전체 기간 포함"""
     # 관리자만 접근 가능하도록 체크
     if not request.user.is_admin:
         return redirect("learning_dashboard")
@@ -597,22 +597,41 @@ def course_attendance_pdf(request, course_id):
     # 현재 날짜
     today = timezone.now().date()
 
-    # 요청된 기간 처리
+    # 과정의 첫 번째 활동 시작일 확인 (가장 오래된 수강 신청 또는 활동 날짜)
+    oldest_enrollment_date = Enrollment.objects.filter(course=course).aggregate(
+        Min("enrolled_at")
+    )["enrolled_at__min"]
+
+    oldest_activity_date = LectureProgress.objects.filter(
+        lecture__subject__course=course
+    ).aggregate(Min("created_at"))["created_at__min"]
+
+    # 둘 중 더 오래된 날짜를 시작일로 설정
+    if oldest_enrollment_date and oldest_activity_date:
+        start_date = min(oldest_enrollment_date.date(), oldest_activity_date.date())
+    elif oldest_enrollment_date:
+        start_date = oldest_enrollment_date.date()
+    elif oldest_activity_date:
+        start_date = oldest_activity_date.date()
+    else:
+        # 데이터가 없는 경우, 기본적으로 3개월 전으로 설정
+        start_date = today - timedelta(days=90)
+
+    # 요청에서 넘어온 기간은 현재 화면에 표시할 기간으로만 사용
     selected_period = request.GET.get("period", "")
+    display_start_date = None
 
     try:
-        start_date_str, end_date_str = selected_period.split(",")
-        start_date = date.fromisoformat(start_date_str)
-        end_date = date.fromisoformat(end_date_str)
+        start_date_str, _ = selected_period.split(",")
+        display_start_date = date.fromisoformat(start_date_str)
     except (ValueError, AttributeError):
-        # 기본값: 이번주 월요일부터 2주일 (14일)
-        start_date = today - timedelta(days=today.weekday())
-        end_date = start_date + timedelta(days=13)
+        # 기본값: 이번주 월요일
+        display_start_date = today - timedelta(days=today.weekday())
 
-    # 날짜 범위 생성 (항상 14일)
+    # 날짜 범위 생성 (시작일부터 오늘까지)
     date_range = []
     current_date = start_date
-    for _ in range(14):  # 항상 14일로 고정
+    while current_date <= today:
         date_range.append(current_date)
         current_date += timedelta(days=1)
 
@@ -647,13 +666,13 @@ def course_attendance_pdf(request, course_id):
             ]
         )
 
-    # PDF 생성
+    # PDF 생성 (가로 방향으로)
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
         pagesize=landscape(A4),
-        rightMargin=30,
-        leftMargin=30,
+        rightMargin=20,
+        leftMargin=20,
         topMargin=30,
         bottomMargin=30,
     )
@@ -667,13 +686,36 @@ def course_attendance_pdf(request, course_id):
         spaceAfter=12,
     )
 
+    subtitle_style = ParagraphStyle(
+        "Subtitle",
+        parent=styles["Normal"],
+        alignment=TA_CENTER,
+        fontSize=12,
+        spaceAfter=12,
+    )
+
+    # 현재 화면에 표시된 기간 하이라이트를 위한 열 인덱스 계산
+    highlight_start_idx = None
+    highlight_end_idx = None
+
+    if display_start_date:
+        # 시작일 + 13일(2주)까지의 인덱스 계산
+        display_end_date = display_start_date + timedelta(days=13)
+
+        # 날짜 범위 내 인덱스 찾기
+        for i, day in enumerate(date_range):
+            if day == display_start_date:
+                highlight_start_idx = i + 2  # username과 fullname 열 이후
+            if day == display_end_date:
+                highlight_end_idx = i + 2
+
     # 표 데이터 생성
     data = [
         # 헤더
         [
             "사용자 ID",
             "이름",
-            *[day.strftime("%m/%d") for day in date_range],
+            *[day.strftime("%y/%m/%d") for day in date_range],
             "전체 진행률(%)",
         ],
         # 데이터 행
@@ -683,28 +725,49 @@ def course_attendance_pdf(request, course_id):
     # 표 스타일
     table_style = TableStyle(
         [
+            # 기본 스타일
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightblue),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
             ("ALIGN", (0, 0), (-1, 0), "CENTER"),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("FONTSIZE", (0, 0), (-1, 0), 8),  # 작은 글씨로 표시
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
             ("BACKGROUND", (0, 1), (-1, -1), colors.white),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
             ("ALIGN", (2, 1), (-2, -1), "CENTER"),  # 날짜 칼럼은 가운데 정렬
             ("ALIGN", (-1, 1), (-1, -1), "RIGHT"),  # 진행률 칼럼은 오른쪽 정렬
+            ("FONTSIZE", (2, 0), (-2, -1), 7),  # 날짜 칼럼은 더 작은 글씨로
         ]
     )
 
-    table = Table(data)
+    # 현재 화면에 표시된 기간 하이라이트
+    if highlight_start_idx is not None and highlight_end_idx is not None:
+        table_style.add(
+            "BACKGROUND",
+            (highlight_start_idx, 0),
+            (highlight_end_idx, 0),
+            colors.lightgreen,
+        )
+
+    # 컬럼 너비 계산
+    col_widths = [80, 80]  # 사용자 ID, 이름
+
+    # 날짜 칼럼 (가능한 한 좁게 설정)
+    date_width = min(20, 650 / len(date_range))  # 적절한 너비 계산
+    col_widths.extend([date_width] * len(date_range))
+
+    # 진행률 칼럼
+    col_widths.append(50)
+
+    table = Table(data, colWidths=col_widths)
     table.setStyle(table_style)
 
     # 문서 요소
     elements = [
-        Paragraph(f"{course.title} - 수강생 출석부", title_style),
+        Paragraph(f"{course.title} - 전체 수강생 출석부", title_style),
         Paragraph(
-            f"기간: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}",
-            styles["Normal"],
+            f"기간: {start_date.strftime('%Y-%m-%d')} ~ {today.strftime('%Y-%m-%d')} (총 {len(date_range)}일)",
+            subtitle_style,
         ),
         Spacer(1, 0.2 * inch),
         table,
@@ -716,7 +779,7 @@ def course_attendance_pdf(request, course_id):
     # PDF 파일 응답
     buffer.seek(0)
     response = HttpResponse(buffer, content_type="application/pdf")
-    filename = f'attendance_{course.title}_{start_date.strftime("%Y%m%d")}_{end_date.strftime("%Y%m%d")}.pdf'
+    filename = f'attendance_{course.title}_full_{today.strftime("%Y%m%d")}.pdf'
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     return response
