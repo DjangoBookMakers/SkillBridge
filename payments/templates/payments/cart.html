@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}장바구니 | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">장바구니</h1>
+
+    {% if cart_items %}
+      <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="py-3 px-4 text-left">과정</th>
+              <th class="py-3 px-4 text-right">가격</th>
+              <th class="py-3 px-4 text-center">관리</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for item in cart_items %}
+              <tr class="hover:bg-gray-50">
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    {% if item.course.thumbnail_image %}
+                      <img src="{{ item.course.thumbnail_image.url }}" alt="{{ item.course.title }}" class="w-12 h-12 object-cover rounded mr-4">
+                    {% else %}
+                      <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center mr-4">
+                        <span class="text-gray-500 text-xs">이미지 없음</span>
+                      </div>
+                    {% endif %}
+                    <div>
+                      <a href="{% url 'course_detail' item.course.id %}" class="text-blue-600 hover:text-blue-800 font-medium">{{ item.course.title }}</a>
+                      <p class="text-xs text-gray-500">{{ item.course.get_difficulty_level_display }}
+                        ·
+                        {{ item.course.estimated_time }}시간</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4 px-4 text-right">{{ item.course.price|floatformat:0 }}원</td>
+                <td class="py-4 px-4 text-center">
+                  <form method="post" action="{% url 'remove_from_cart' item.id %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-600 hover:text-red-800">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-between items-center mb-8">
+        <a href="{% url 'clear_cart' %}" class="text-red-600 hover:text-red-800 text-sm font-medium" onclick="return confirm('장바구니를 비우시겠습니까?')">
+          장바구니 비우기
+        </a>
+        <a href="{% url 'course_list' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+          계속 쇼핑하기
+        </a>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between mb-2">
+          <span class="text-gray-700">상품 금액</span>
+          <span class="font-medium">{{ total_price|floatformat:0 }}원</span>
+        </div>
+        <div class="flex justify-between mb-4">
+          <span class="text-gray-700">할인 금액</span>
+          <span class="font-medium">0원</span>
+        </div>
+        <div class="border-t pt-4 border-gray-200">
+          <div class="flex justify-between">
+            <span class="text-gray-900 font-bold">총 결제 금액</span>
+            <span class="text-xl font-bold text-blue-600">{{ total_price|floatformat:0 }}원</span>
+          </div>
+        </div>
+        <div class="mt-6">
+          <button id="checkout-button" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-300">
+            결제하기
+          </button>
+          <p class="text-xs text-gray-500 text-center mt-2">결제 버튼을 클릭하면 결제가 진행됩니다.</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="bg-white rounded-lg shadow-md p-8 text-center">
+        <div class="text-gray-400 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-600 mb-3">장바구니가 비어있습니다</h2>
+        <p class="text-gray-500 mb-6">관심 있는 과정을 장바구니에 추가해보세요.</p>
+        <a href="{% url 'course_list' %}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
+          과정 둘러보기
+        </a>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const checkoutButton = document.getElementById('checkout-button');
+
+      if (checkoutButton) {
+        checkoutButton.addEventListener('click', function () {
+          // 현재는 결제 기능이 구현되지 않았으므로 메시지만 표시
+          alert('결제 기능이 아직 구현되지 않았습니다.');
+        });
+      }
+    });
+  </script>
+{% endblock %}
