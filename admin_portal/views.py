@@ -16,7 +16,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER
 
-from accounts.models import User
+from accounts.models import User, InstructorProfile
 from courses.models import Course, Subject, Lecture, MissionQuestion
 from learning.models import Enrollment, Certificate, LectureProgress, ProjectSubmission
 from .models import DailyStatistics
@@ -838,22 +838,26 @@ def course_create(request):
         estimated_time = request.POST.get("estimated_time")
         credits = request.POST.get("credits")
         price = request.POST.get("price")
+        instructor_profile, created = InstructorProfile.objects.get_or_create(
+            user=request.user,
+            defaults={"bio": "", "experience": "", "qualification": ""},
+        )
 
         # 과정 생성
         course = Course(
             title=title,
             description=description,
-            difficulty=difficulty,
+            difficulty_level=difficulty,
             target_audience=target_audience,
             estimated_time=estimated_time,
-            credits=credits,
+            credit=credits,
             price=price,
-            created_by=request.user,
+            instructor=instructor_profile,
         )
 
         # 썸네일 이미지 처리
         if "thumbnail" in request.FILES:
-            course.thumbnail = request.FILES["thumbnail"]
+            course.thumbnail_image = request.FILES["thumbnail"]
 
         course.save()
         messages.success(request, f'과정 "{title}"이(가) 성공적으로 생성되었습니다.')
