@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404, render, redirect
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -9,12 +10,15 @@ from django.db.models.functions import TruncWeek
 from datetime import timedelta, date
 import json
 import io
+import os
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 from accounts.models import User
 from courses.models import Course, Subject, Lecture, MissionQuestion
@@ -666,11 +670,34 @@ def course_attendance_pdf(request, course_id):
             ]
         )
 
+    # 한글 폰트 등록
+    font_path = os.path.join(
+        settings.BASE_DIR, "static", "fonts", "NanumGothic-Regular.ttf"
+    )
+    # ReportLab에서 한글 지원 폰트 설정
+    if os.path.exists(font_path):
+        pdfmetrics.registerFont(TTFont("NanumGothic", font_path))
+        font_name = "NanumGothic"
+    else:
+        # 파일이 없으면 기본 폰트 사용 (한글이 깨질 수 있음)
+        font_name = "Helvetica"
+
     # PDF 생성 (가로 방향으로)
     buffer = io.BytesIO()
+
+    # A4 가로 크기보다 더 넓은 페이지 사이즈 설정 - 날짜가 많을 경우 적용
+    # 날짜 수가 30일 이상일 경우 더 넓은 페이지 사용
+    if len(date_range) > 30:
+        pagesize = (
+            landscape(A4)[0] * 1.5,
+            landscape(A4)[1],
+        )  # 가로 길이를 1.5배로 확장
+    else:
+        pagesize = landscape(A4)
+
     doc = SimpleDocTemplate(
         buffer,
-        pagesize=landscape(A4),
+        pagesize=pagesize,
         rightMargin=20,
         leftMargin=20,
         topMargin=30,
@@ -681,6 +708,7 @@ def course_attendance_pdf(request, course_id):
     title_style = ParagraphStyle(
         "Title",
         parent=styles["Heading1"],
+        fontName=font_name,
         alignment=TA_CENTER,
         fontSize=16,
         spaceAfter=12,
@@ -689,6 +717,7 @@ def course_attendance_pdf(request, course_id):
     subtitle_style = ParagraphStyle(
         "Subtitle",
         parent=styles["Normal"],
+        fontName=font_name,
         alignment=TA_CENTER,
         fontSize=12,
         spaceAfter=12,
@@ -729,14 +758,20 @@ def course_attendance_pdf(request, course_id):
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightblue),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
             ("ALIGN", (0, 0), (-1, 0), "CENTER"),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 8),  # 작은 글씨로 표시
+            ("FONTNAME", (0, 0), (-1, 0), font_name),  # 한글 폰트 적용
+            ("FONTSIZE", (0, 0), (-1, 0), 8),
             ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
             ("BACKGROUND", (0, 1), (-1, -1), colors.white),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
             ("ALIGN", (2, 1), (-2, -1), "CENTER"),  # 날짜 칼럼은 가운데 정렬
             ("ALIGN", (-1, 1), (-1, -1), "RIGHT"),  # 진행률 칼럼은 오른쪽 정렬
-            ("FONTSIZE", (2, 0), (-2, -1), 7),  # 날짜 칼럼은 더 작은 글씨로
+            ("FONTSIZE", (2, 0), (-2, 0), 7),  # 날짜 헤더 칼럼은 더 작은 글씨로
+            ("FONTSIZE", (2, 1), (-2, -1), 8),  # 날짜 데이터는 읽기 좋게 약간 키움
+            ("FONTNAME", (0, 1), (-1, -1), font_name),  # 데이터 행도 한글 폰트 적용
+            ("WORDWRAP", (0, 0), (-1, -1), True),  # 텍스트 자동 줄바꿈 활성화
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),  # 모든 셀 내용 세로 가운데 정렬
+            ("TOPPADDING", (0, 0), (-1, -1), 4),  # 위쪽 패딩 추가
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),  # 아래쪽 패딩 추가
         ]
     )
 
@@ -749,17 +784,34 @@ def course_attendance_pdf(request, course_id):
             colors.lightgreen,
         )
 
-    # 컬럼 너비 계산
-    col_widths = [80, 80]  # 사용자 ID, 이름
+    # 컬럼 너비 계산 개선
+    # 날짜 수에 따라 동적으로 페이지 및 셀 너비 조정
+    date_count = len(date_range)
 
-    # 날짜 칼럼 (가능한 한 좁게 설정)
-    date_width = min(20, 650 / len(date_range))  # 적절한 너비 계산
-    col_widths.extend([date_width] * len(date_range))
+    # 사용자 ID와 이름은 고정된 너비로, 진행률은 고정, 날짜 칼럼은 균등 분배
+    username_width = 80  # 사용자 ID 확장
+    fullname_width = 80  # 이름 확장
+    progress_width = 60  # 진행률 확장
 
-    # 진행률 칼럼
-    col_widths.append(50)
+    # 나머지 가용 너비 계산
+    available_width = doc.width - (username_width + fullname_width + progress_width)
 
-    table = Table(data, colWidths=col_widths)
+    # 날짜가 많을 경우 최소 너비 보장하면서 균등 분배
+    if date_count > 0:
+        # 날짜 수가 적을 때는 더 넓게, 많을 때는 최소 너비 보장
+        if date_count <= 14:
+            date_width = available_width / date_count
+        else:
+            # 최소 너비 30으로 설정하여 숫자가 잘 보이도록 함
+            date_width = max(30, available_width / date_count)
+    else:
+        date_width = 30
+
+    col_widths = [username_width, fullname_width]  # 사용자 ID, 이름
+    col_widths.extend([date_width] * date_count)  # 날짜 열
+    col_widths.append(progress_width)  # 진행률 칼럼
+
+    table = Table(data, colWidths=col_widths, repeatRows=1)
     table.setStyle(table_style)
 
     # 문서 요소
