@@ -10,7 +10,7 @@ from django.db.models.functions import TruncWeek
 from datetime import timedelta, date
 import json
 import io
-import os
+from pathlib import Path
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
@@ -671,12 +671,10 @@ def course_attendance_pdf(request, course_id):
         )
 
     # 한글 폰트 등록
-    font_path = os.path.join(
-        settings.BASE_DIR, "static", "fonts", "NanumGothic-Regular.ttf"
-    )
+    font_path = Path(settings.BASE_DIR) / "static" / "fonts" / "NanumGothic-Regular.ttf"
     # ReportLab에서 한글 지원 폰트 설정
-    if os.path.exists(font_path):
-        pdfmetrics.registerFont(TTFont("NanumGothic", font_path))
+    if font_path.exists():
+        pdfmetrics.registerFont(TTFont("NanumGothic", str(font_path)))
         font_name = "NanumGothic"
     else:
         # 파일이 없으면 기본 폰트 사용 (한글이 깨질 수 있음)
