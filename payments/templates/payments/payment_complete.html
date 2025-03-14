@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}결제 완료 | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center py-8">
+      <div class="text-green-500 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-3">결제가 완료되었습니다!</h1>
+      <p class="text-gray-600 mb-8">결제해주셔서 감사합니다. 강의 내용을 즐겁게 학습하세요.</p>
+
+      <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <a href="{% url 'learning_dashboard' %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
+          학습 대시보드로 이동
+        </a>
+        <a href="{% url 'payment_history' %}" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md transition duration-200">
+          결제 내역 확인
+        </a>
+      </div>
+    </div>
+
+    {% if recent_payments %}
+      <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">최근 결제 내역</h2>
+
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="py-3 px-4 text-left">과정</th>
+                <th class="py-3 px-4 text-right">금액</th>
+                <th class="py-3 px-4 text-center">결제 방법</th>
+                <th class="py-3 px-4 text-center">결제일</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for payment in recent_payments %}
+                <tr class="hover:bg-gray-50">
+                  <td class="py-4 px-4">
+                    <a href="{% url 'course_detail' payment.course.id %}" class="text-blue-600 hover:text-blue-800">
+                      {{ payment.course.title }}
+                    </a>
+                  </td>
+                  <td class="py-4 px-4 text-right">{{ payment.amount|floatformat:0 }}원</td>
+                  <td class="py-4 px-4 text-center">{{ payment.get_payment_method_display|default:"기타" }}</td>
+                  <td class="py-4 px-4 text-center">{{ payment.created_at|date:"Y.m.d H:i" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
