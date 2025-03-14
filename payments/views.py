@@ -2,16 +2,25 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
+from django.conf import settings
+from django.db import transaction
+from django.urls import reverse
+import json
+import logging
 
 from courses.models import Course
-from .models import Cart, CartItem
+from learning.models import Enrollment
+from .models import Cart, CartItem, Payment
+from .payment_client import payment_client
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
 def cart_view(request):
     """장바구니 조회 페이지"""
     # 사용자의 장바구니를 가져오거나 새로 생성
-    cart, _created = Cart.objects.get_or_create(user=request.user)
+    cart, created = Cart.objects.get_or_create(user=request.user)
 
     # 장바구니 아이템과 관련 과정 정보 가져오기
     cart_items = CartItem.objects.filter(cart=cart).select_related("course")
@@ -120,3 +129,158 @@ def clear_cart(request):
 
     # 일반 요청인 경우 리다이렉트
     return redirect("cart_view")
+
+
+@login_required
+def checkout(request):
+    """결제 페이지"""
+    # 사용자의 장바구니를 가져오거나 새로 생성
+    cart, _created = Cart.objects.get_or_create(user=request.user)
+
+    # 장바구니 아이템과 관련 과정 정보 가져오기
+    cart_items = CartItem.objects.filter(cart=cart).select_related("course")
+
+    # 장바구니가 비어있는 경우
+    if not cart_items.exists():
+        messages.warning(request, "장바구니가 비어있습니다.")
+        return redirect("cart_view")
+
+    # 장바구니 합계 계산
+    total_price = cart.get_total_price()
+
+    # 결제 정보 생성 (포트원 API 호출)
+    course_titles = ", ".join([item.course.title for item in cart_items[:3]])
+    if len(cart_items) > 3:
+        course_titles += f" 외 {len(cart_items) - 3}개"
+
+    payment_name = f"{course_titles} - 스킬브릿지"
+    merchant_uid = payment_client.generate_merchant_uid()
+
+    context = {
+        "cart_items": cart_items,
+        "total_price": total_price,
+        "payment_name": payment_name,
+        "merchant_uid": merchant_uid,
+        "portone_shop_id": settings.PORTONE_SHOP_ID,
+        "portone_pg": settings.PORTONE_PG,
+    }
+
+    return render(request, "payments/checkout.html", context)
+
+
+@login_required
+def validate_payment(request):
+    """결제 검증 API"""
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "잘못된 요청 방식입니다."})
+
+    try:
+        data = json.loads(request.body)
+        imp_uid = data.get("imp_uid")
+        merchant_uid = data.get("merchant_uid")
+        amount = data.get("amount")
+
+        # 필수 파라미터 확인
+        if not all([imp_uid, merchant_uid, amount]):
+            return JsonResponse(
+                {"success": False, "message": "필수 파라미터가 누락되었습니다."}
+            )
+
+        # 결제 검증 (포트원 API 호출)
+        is_valid, result = payment_client.verify_payment(imp_uid, merchant_uid, amount)
+
+        if is_valid:
+            # 결제 성공 처리 로직
+            with transaction.atomic():
+                # 사용자의 장바구니 가져오기
+                cart = Cart.objects.get(user=request.user)
+                cart_items = CartItem.objects.filter(cart=cart).select_related("course")
+
+                # 결제 정보 저장
+                payment_method = result.get("pay_method", "")
+
+                # 과정별로 결제 내역 생성 및 수강 등록
+                for cart_item in cart_items:
+                    course = cart_item.course
+
+                    # 결제 내역 생성
+                    Payment.objects.create(
+                        user=request.user,
+                        course=course,
+                        amount=course.price,
+                        payment_method=payment_method,
+                        payment_status="completed",
+                        merchant_uid=merchant_uid,
+                        imp_uid=imp_uid,
+                    )
+
+                    # 수강 등록
+                    Enrollment.objects.get_or_create(
+                        user=request.user,
+                        course=course,
+                        defaults={"status": "enrolled", "progress_percentage": 0},
+                    )
+
+                # 장바구니 비우기
+                cart_items.delete()
+
+            # 결제 완료 페이지 URL
+            redirect_url = reverse("payment_complete")
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "결제가 성공적으로 처리되었습니다.",
+                    "redirect_url": redirect_url,
+                }
+            )
+        else:
+            # 결제 검증 실패
+            logger.error(f"결제 검증 실패: {result}")
+            return JsonResponse({"success": False, "message": result})
+
+    except Exception as e:
+        logger.exception("결제 검증 중 오류 발생")
+        return JsonResponse(
+            {"success": False, "message": f"결제 처리 중 오류가 발생했습니다: {str(e)}"}
+        )
+
+
+@login_required
+def payment_complete(request):
+    """결제 완료 페이지"""
+    # 최근 결제 내역
+    recent_payments = Payment.objects.filter(
+        user=request.user, payment_status="completed"
+    ).order_by("-created_at")[:5]
+
+    context = {
+        "recent_payments": recent_payments,
+    }
+
+    return render(request, "payments/payment_complete.html", context)
+
+
+@login_required
+def payment_history(request):
+    """결제 내역 페이지"""
+    # 사용자의 모든 결제 내역
+    payments = Payment.objects.filter(user=request.user).order_by("-created_at")
+
+    context = {
+        "payments": payments,
+    }
+
+    return render(request, "payments/payment_history.html", context)
+
+
+@login_required
+def payment_detail(request, payment_id):
+    """결제 상세 페이지"""
+    payment = get_object_or_404(Payment, id=payment_id, user=request.user)
+
+    context = {
+        "payment": payment,
+    }
+
+    return render(request, "payments/payment_detail.html", context)

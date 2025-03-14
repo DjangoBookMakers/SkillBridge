@@ -187,3 +187,9 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {"access_type": "online", "prompt": "select_account"},
     },
 }
+
+# 포트원(구 아임포트) 설정
+PORTONE_PG = os.environ.get("PORTONE_PG_PROVIDER", "")
+PORTONE_SHOP_ID = os.environ.get("PORTONE_SHOP_ID", "")
+PORTONE_API_KEY = os.environ.get("PORTONE_API_KEY", "")
+PORTONE_API_SECRET = os.environ.get("PORTONE_API_SECRET", "")
