@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+
+{% block title %}사용자 학습 기록 | 스킬브릿지 관리자{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">사용자 학습 기록</h1>
+      <a href="{% url 'admin_portal_dashboard' %}" class="text-blue-600 hover:underline">대시보드로 돌아가기</a>
+    </div>
+
+    <!-- 사용자 필터링 -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+      <form method="get" class="flex flex-wrap gap-4 items-end">
+        <div class="w-full md:w-1/3">
+          <label for="user" class="block text-sm font-medium text-gray-700 mb-1">사용자</label>
+          <select id="user" name="user_id" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            <option value="">모든 사용자</option>
+            {% for user in all_users %}
+              <option value="{{ user.id }}" {% if selected_user_id == user.id %}selected{% endif %}>
+                {{ user.username }} ({{ user.email }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="w-full md:w-1/4">
+          <label for="date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+          <input type="date" id="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+
+        <div class="w-full md:w-1/6">
+          <button type="submit" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200">
+            조회
+          </button>
+        </div>
+      </form>
+    </div>
+
+    {% if selected_user %}
+      <!-- 선택된 사용자 요약 정보 -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex items-center mb-4">
+          {% if selected_user.profile_image %}
+            <img src="{{ selected_user.profile_image.url }}" alt="{{ selected_user.username }}" class="w-16 h-16 rounded-full object-cover mr-4">
+          {% else %}
+            <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-2xl font-medium mr-4">
+              {{ selected_user.username|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900">{{ selected_user.username }}</h2>
+            <p class="text-gray-600">{{ selected_user.email }}</p>
+            <p class="text-sm text-gray-500">가입일: {{ selected_user.date_joined|date:"Y년 m월 d일" }}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">수강 중인 과정</p>
+            <p class="text-2xl font-bold text-blue-700">{{ enrolled_courses_count }}</p>
+          </div>
+          <div class="bg-green-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">완료한 과정</p>
+            <p class="text-2xl font-bold text-green-700">{{ completed_courses_count }}</p>
+          </div>
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">평균 진행률</p>
+            <p class="text-2xl font-bold text-purple-700">{{ avg_progress|floatformat:1 }}%</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- 일간 영상 시청 현황 -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <h2 class="text-lg font-semibold text-gray-800">
+          일간 학습 활동 현황 ({{ selected_date|date:"Y년 m월 d일" }})
+          {% if selected_user %}
+            - {{ selected_user.username }}님
+          {% endif %}
+        </h2>
+      </div>
+
+      <div class="p-6 overflow-x-auto">
+        {% if daily_activities %}
+          <div class="mb-4 flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+              전체 {{ daily_activities.paginator.count }}개 항목 중
+              {{ daily_activities.start_index }} - {{ daily_activities.end_index }}번째 항목
+            </div>
+            <div>
+              <span class="text-sm text-gray-600">페이지당 항목 수: 20</span>
+            </div>
+          </div>
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">시간</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사용자</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">과정</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">과목</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">강의</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">활동</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% for activity in daily_activities %}
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ activity.completed_at|date:"H:i:s" }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      {% if activity.user.profile_image %}
+                        <img class="h-8 w-8 rounded-full object-cover mr-2" src="{{ activity.user.profile_image.url }}" alt="{{ activity.user.username }}">
+                      {% else %}
+                        <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                          <span class="text-gray-600 font-medium">{{ activity.user.username|first|upper }}</span>
+                        </div>
+                      {% endif %}
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">{{ activity.user.username }}</div>
+                        <div class="text-xs text-gray-500">{{ activity.user.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm font-medium text-gray-900">{{ activity.lecture.subject.course.title }}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm text-gray-900">{{ activity.lecture.subject.title }}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm text-gray-900">{{ activity.lecture.title }}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {% if activity.lecture.lecture_type == 'video' %}
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        동영상 시청
+                      </span>
+                    {% elif activity.lecture.lecture_type == 'mission' %}
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        미션 완료
+                      </span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- 페이지네이션 -->
+          {% if daily_activities.has_other_pages %}
+            <div class="mt-6 flex justify-center">
+              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                {% if daily_activities.has_previous %}
+                  <a href="?page={{ daily_activities.previous_page_number }}&user_id={{ selected_user_id|default:'' }}&date={{ selected_date|date:'Y-m-d' }}"
+                     class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">이전</span>
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
+                {% endif %}
+
+                {% for num in daily_activities.paginator.page_range %}
+                  {% if daily_activities.number == num %}
+                    <span class="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-50 text-sm font-medium text-indigo-600">
+                      {{ num }}
+                    </span>
+                  {% elif num > daily_activities.number|add:'-3' and num < daily_activities.number|add:'3' %}
+                    <a href="?page={{ num }}&user_id={{ selected_user_id|default:'' }}&date={{ selected_date|date:'Y-m-d' }}"
+                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                      {{ num }}
+                    </a>
+                  {% endif %}
+                {% endfor %}
+
+                {% if daily_activities.has_next %}
+                  <a href="?page={{ daily_activities.next_page_number }}&user_id={{ selected_user_id|default:'' }}&date={{ selected_date|date:'Y-m-d' }}"
+                     class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">다음</span>
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
+                {% endif %}
+              </nav>
+            </div>
+          {% endif %}
+
+        {% else %}
+          <div class="text-center py-10">
+            <p class="text-gray-500">
+              {% if selected_user %}
+                {{ selected_date|date:"Y년 m월 d일" }}에 {{ selected_user.username }}님의 학습 활동이 없습니다.
+              {% else %}
+                {{ selected_date|date:"Y년 m월 d일" }}에 기록된 학습 활동이 없습니다. 다른 날짜를 선택하거나 특정 사용자를 선택해 보세요.
+              {% endif %}
+            </p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 사용자별 진도 현황 -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <h2 class="text-lg font-semibold text-gray-800">
+          {% if selected_user %}
+            {{ selected_user.username }}님의 과정별 진행 현황
+          {% else %}
+            사용자별 과정 진행 현황
+          {% endif %}
+        </h2>
+      </div>
+
+      <div class="p-6 overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {% if not selected_user %}사용자{% endif %}
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">과정</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">진행률</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수강 시작일</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">마지막 활동</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for enrollment in enrollments %}
+              <tr>
+                {% if not selected_user %}
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      {% if enrollment.user.profile_image %}
+                        <img class="h-8 w-8 rounded-full object-cover" src="{{ enrollment.user.profile_image.url }}" alt="{{ enrollment.user.username }}">
+                      {% else %}
+                        <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span class="text-gray-600 font-medium">{{ enrollment.user.username|first|upper }}</span>
+                        </div>
+                      {% endif %}
+                      <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">{{ enrollment.user.username }}</p>
+                        <p class="text-xs text-gray-500">{{ enrollment.user.email }}</p>
+                      </div>
+                    </div>
+                  </td>
+                {% endif %}
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <p class="text-sm font-medium text-gray-900">{{ enrollment.course.title }}</p>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
+                      <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ enrollment.progress_percentage }}%"></div>
+                    </div>
+                    <span class="text-sm font-medium">{{ enrollment.progress_percentage }}%</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  {% if enrollment.status == 'enrolled' %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      수강 중
+                    </span>
+                  {% elif enrollment.status == 'completed' %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      수료 완료
+                    </span>
+                  {% elif enrollment.status == 'certified' %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      수료증 발급
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ enrollment.enrolled_at|date:"Y년 m월 d일" }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ enrollment.last_activity_at|date:"Y년 m월 d일 H:i" }}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="{% if selected_user %}5{% else %}6{% endif %}" class="px-6 py-4 text-center text-gray-500">
+                  {% if selected_user %}
+                    {{ selected_user.username }}님의 수강 중인 과정이 없습니다.
+                  {% else %}
+                    수강 중인 과정이 없습니다.
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
