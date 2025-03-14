@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 class User(AbstractUser):
-    profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    profile_image = models.ImageField(upload_to="profiles/", null=True, blank=True)
     phone_number = models.CharField(max_length=15, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, blank=True)
@@ -13,8 +14,11 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+
 class InstructorProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='instructor_profile')
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="instructor_profile"
+    )
     bio = models.TextField(blank=True)
     experience = models.TextField(blank=True)
     qualification = models.TextField(blank=True)

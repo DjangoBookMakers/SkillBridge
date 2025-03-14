@@ -2,53 +2,57 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import render, redirect
 from django.utils import timezone
 from .forms import LoginForm, SignupForm, ProfileEditForm, CustomPasswordChangeForm
 
+
 def login_view(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
             user = authenticate(username=username, password=password)
-            
+
             if user is not None:
                 login(request, user)
-                user.login_at = timezone.now()  
+                user.login_at = timezone.now()
                 user.save()
-                return redirect('/')  # 사용자 -> 메인 화면
+                return redirect("/")  # 사용자 -> 메인 화면
             else:
-                messages.error(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
+                messages.error(request, "아이디 또는 비밀번호가 올바르지 않습니다.")
         else:
-            messages.error(request, '입력 정보를 확인해주세요.')        
+            messages.error(request, "입력 정보를 확인해주세요.")
     else:
         form = LoginForm()
-    
-    return render(request, 'accounts/login.html', {'form': form})
+
+    return render(request, "accounts/login.html", {"form": form})
+
 
 def logout_view(request):
     if request.user.is_authenticated:
         from django.contrib.messages import get_messages
+
         storage = get_messages(request)
         storage.used = True
 
         request.user.logout_at = timezone.now()
         request.user.save()
         logout(request)
-    return redirect('/')
+    return redirect("/")
+
 
 def signup_view(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = SignupForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            return redirect('accounts:login')
+            form.save()
+            return redirect("accounts:login")
     else:
         form = SignupForm()
-    
-    return render(request, 'accounts/signup.html', {'form': form})
+
+    return render(request, "accounts/signup.html", {"form": form})
+
 
 @login_required
 def profile_view(request):
@@ -58,49 +62,53 @@ def profile_view(request):
     # 사용자가 구매한 과정 목록 (임시)
     purchases = []
     for course in Course.objects.all()[:3]:  # 최대 3개의 과정을 가져옴
-        purchases.append({
-            'course': course,
-            'purchase_date': course.created_at,
-            'price': course.price,
-            'status': '결제 완료'
-        })
+        purchases.append(
+            {
+                "course": course,
+                "purchase_date": course.created_at,
+                "price": course.price,
+                "status": "결제 완료",
+            }
+        )
 
     context = {
-        'user': request.user,
-        'purchases': purchases,
+        "user": request.user,
+        "purchases": purchases,
     }
-    return render(request, 'accounts/profile.html', context)
+    return render(request, "accounts/profile.html", context)
+
 
 @login_required
 def profile_edit_view(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, '프로필이 성공적으로 업데이트되었습니다.')
-            return redirect('accounts:profile')
+            messages.success(request, "프로필이 성공적으로 업데이트되었습니다.")
+            return redirect("accounts:profile")
     else:
         form = ProfileEditForm(instance=request.user)
-    
+
     context = {
-        'form': form,
+        "form": form,
     }
-    return render(request, 'accounts/profile_edit.html', context)
+    return render(request, "accounts/profile_edit.html", context)
+
 
 @login_required
 def change_password_view(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
             # 세션 유지를 위해 필요
             update_session_auth_hash(request, user)
-            messages.success(request, '비밀번호가 성공적으로 변경되었습니다.')
-            return redirect('accounts:profile')
+            messages.success(request, "비밀번호가 성공적으로 변경되었습니다.")
+            return redirect("accounts:profile")
     else:
         form = CustomPasswordChangeForm(request.user)
-    
+
     context = {
-        'form': form,
+        "form": form,
     }
-    return render(request, 'accounts/change_password.html', context)    
+    return render(request, "accounts/change_password.html", context)
