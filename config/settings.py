@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "admin_portal",
     "courses",
     "learning",
+    "payments",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
