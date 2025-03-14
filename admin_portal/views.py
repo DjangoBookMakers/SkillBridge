@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.db.models import Count, Avg, Q
 from django.db.models.functions import TruncWeek
 from datetime import timedelta, date
@@ -17,7 +18,7 @@ from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER
 
 from accounts.models import User
-from courses.models import Course, Subject, Lecture, MissionQuestion
+from courses.models import Course, Subject, Lecture, QnAQuestion as Question
 from learning.models import Enrollment, Certificate, LectureProgress, ProjectSubmission
 from .models import DailyStatistics
 
@@ -105,7 +106,7 @@ def admin_dashboard(request):
         "recent_users": recent_users,
         "recent_enrollments": recent_enrollments,
         "pending_projects": pending_projects,
-        "chart_data": json.dumps(chart_data),
+        "chart_data": mark_safe(json.dumps(chart_data)),
         "today_stats": DailyStatistics.objects.filter(date=today).first(),
     }
 
@@ -702,6 +703,7 @@ def course_attendance_pdf(request, course_id):
 
     return response
 
+
 # 과정 관리 관련 뷰 함수
 @login_required
 def course_management(request):
@@ -710,16 +712,16 @@ def course_management(request):
         return redirect("learning_dashboard")
 
     # 검색 기능
-    search_query = request.GET.get('search', '')
+    search_query = request.GET.get("search", "")
     if search_query:
         courses = Course.objects.filter(title__icontains=search_query)
     else:
-        courses = Course.objects.all().order_by('title')
+        courses = Course.objects.all().order_by("title")
 
     # 페이지네이션
     paginator = Paginator(courses, 10)  # 한 페이지에 10개씩 표시
-    page = request.GET.get('page')
-    
+    page = request.GET.get("page")
+
     try:
         courses_page = paginator.page(page)
     except PageNotAnInteger:
@@ -733,28 +735,29 @@ def course_management(request):
         course.subject_count = Subject.objects.filter(course=course).count()
 
     context = {
-        'courses': courses_page,
-        'search_query': search_query,
+        "courses": courses_page,
+        "search_query": search_query,
     }
-    
-    return render(request, 'admin_portal/course_management/course_list.html', context)
+
+    return render(request, "admin_portal/course_management/course_list.html", context)
+
 
 @login_required
 def course_create(request):
     """과정 생성 페이지"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
-    if request.method == 'POST':
+
+    if request.method == "POST":
         # 폼 데이터 처리
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        difficulty = request.POST.get('difficulty')
-        target_audience = request.POST.get('target_audience')
-        estimated_time = request.POST.get('estimated_time')
-        credits = request.POST.get('credits')
-        price = request.POST.get('price')
-        
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        difficulty = request.POST.get("difficulty")
+        target_audience = request.POST.get("target_audience")
+        estimated_time = request.POST.get("estimated_time")
+        credits = request.POST.get("credits")
+        price = request.POST.get("price")
+
         # 과정 생성
         course = Course(
             title=title,
@@ -764,75 +767,80 @@ def course_create(request):
             estimated_time=estimated_time,
             credits=credits,
             price=price,
-            created_by=request.user
+            created_by=request.user,
         )
-        
+
         # 썸네일 이미지 처리
-        if 'thumbnail' in request.FILES:
-            course.thumbnail = request.FILES['thumbnail']
-            
+        if "thumbnail" in request.FILES:
+            course.thumbnail = request.FILES["thumbnail"]
+
         course.save()
         messages.success(request, f'과정 "{title}"이(가) 성공적으로 생성되었습니다.')
-        return redirect('admin_portal_course_management')
-        
-    return render(request, 'admin_portal/course_management/course_create.html')
+        return redirect("admin_portal_course_management")
+
+    return render(request, "admin_portal/course_management/course_create.html")
+
 
 @login_required
 def course_detail(request, course_id):
     """과정 상세 및 수정 페이지"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
+
     course = get_object_or_404(Course, id=course_id)
-    
-    if request.method == 'POST':
+
+    if request.method == "POST":
         # 과정 업데이트
-        course.title = request.POST.get('title')
-        course.description = request.POST.get('description')
-        course.difficulty = request.POST.get('difficulty')
-        course.target_audience = request.POST.get('target_audience')
-        course.estimated_time = request.POST.get('estimated_time')
-        course.credits = request.POST.get('credits')
-        course.price = request.POST.get('price')
-        
+        course.title = request.POST.get("title")
+        course.description = request.POST.get("description")
+        course.difficulty = request.POST.get("difficulty")
+        course.target_audience = request.POST.get("target_audience")
+        course.estimated_time = request.POST.get("estimated_time")
+        course.credits = request.POST.get("credits")
+        course.price = request.POST.get("price")
+
         # 썸네일 이미지 처리
-        if 'thumbnail' in request.FILES:
-            course.thumbnail = request.FILES['thumbnail']
-            
+        if "thumbnail" in request.FILES:
+            course.thumbnail = request.FILES["thumbnail"]
+
         course.updated_at = timezone.now()
         course.save()
-        
-        messages.success(request, f'과정 "{course.title}"이(가) 성공적으로 업데이트되었습니다.')
-        return redirect('admin_portal_course_management')
-    
+
+        messages.success(
+            request, f'과정 "{course.title}"이(가) 성공적으로 업데이트되었습니다.'
+        )
+        return redirect("admin_portal_course_management")
+
     # 과정에 등록된 학생 수 및 과목 수
     student_count = Enrollment.objects.filter(course=course).count()
     subject_count = Subject.objects.filter(course=course).count()
-    
+
     context = {
-        'course': course,
-        'student_count': student_count,
-        'subject_count': subject_count,
+        "course": course,
+        "student_count": student_count,
+        "subject_count": subject_count,
     }
-    
-    return render(request, 'admin_portal/course_management/course_detail.html', context)
+
+    return render(request, "admin_portal/course_management/course_detail.html", context)
+
 
 @login_required
 def course_delete(request, course_id):
     """과정 삭제 처리"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
+
     course = get_object_or_404(Course, id=course_id)
-    
-    if request.method == 'POST':
+
+    if request.method == "POST":
         title = course.title
         course.delete()
         messages.success(request, f'과정 "{title}"이(가) 성공적으로 삭제되었습니다.')
-        return redirect('admin_portal_course_management')
-    
+        return redirect("admin_portal_course_management")
+
     # GET 요청은 허용하지 않음
-    return redirect('admin_portal_course_detail', course_id=course.id)
+    return redirect("admin_portal_course_detail", course_id=course.id)
+
 
 # 과목 관리 관련 뷰 함수
 @login_required
@@ -840,100 +848,111 @@ def subject_management(request, course_id):
     """과목 관리 페이지"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
+
     course = get_object_or_404(Course, id=course_id)
-    subjects = Subject.objects.filter(course=course).order_by('order_index')
-    
+    subjects = Subject.objects.filter(course=course).order_by("order_index")
+
     # 각 과목의 강의 수 가져오기
     for subject in subjects:
         subject.lecture_count = Lecture.objects.filter(subject=subject).count()
-    
+
     context = {
-        'course': course,
-        'subjects': subjects,
+        "course": course,
+        "subjects": subjects,
     }
-    
-    return render(request, 'admin_portal/course_management/subject_list.html', context)
+
+    return render(request, "admin_portal/course_management/subject_list.html", context)
+
 
 @login_required
 def subject_create(request, course_id):
     """과목 생성 페이지"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
+
     course = get_object_or_404(Course, id=course_id)
-    
-    if request.method == 'POST':
+
+    if request.method == "POST":
         # 폼 데이터 처리
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        subject_type = request.POST.get('subject_type')
-        order_index = request.POST.get('order_index')
-        
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        subject_type = request.POST.get("subject_type")
+        order_index = request.POST.get("order_index")
+
         # 과목 생성
         subject = Subject(
             course=course,
             title=title,
             description=description,
             subject_type=subject_type,
-            order_index=order_index
+            order_index=order_index,
         )
         subject.save()
-        
+
         messages.success(request, f'과목 "{title}"이(가) 성공적으로 생성되었습니다.')
-        return redirect('admin_portal_subject_management', course_id=course.id)
-    
+        return redirect("admin_portal_subject_management", course_id=course.id)
+
     # 현재 과목 수 가져오기 (기본 순서 인덱스 설정용)
     current_subject_count = Subject.objects.filter(course=course).count()
-    
+
     context = {
-        'course': course,
-        'next_order_index': current_subject_count + 1,
+        "course": course,
+        "next_order_index": current_subject_count + 1,
     }
-    
-    return render(request, 'admin_portal/course_management/subject_create.html', context)
+
+    return render(
+        request, "admin_portal/course_management/subject_create.html", context
+    )
+
 
 @login_required
 def subject_detail(request, course_id, subject_id):
     """과목 상세 및 수정 페이지"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
+
     course = get_object_or_404(Course, id=course_id)
     subject = get_object_or_404(Subject, id=subject_id, course=course)
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        
-        if action == 'update':
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "update":
             # 과목 업데이트
-            subject.title = request.POST.get('title')
-            subject.description = request.POST.get('description')
-            subject.subject_type = request.POST.get('subject_type')
-            subject.order_index = request.POST.get('order_index')
+            subject.title = request.POST.get("title")
+            subject.description = request.POST.get("description")
+            subject.subject_type = request.POST.get("subject_type")
+            subject.order_index = request.POST.get("order_index")
             subject.save()
-            
-            messages.success(request, f'과목 "{subject.title}"이(가) 성공적으로 업데이트되었습니다.')
-        
-        elif action == 'delete':
+
+            messages.success(
+                request, f'과목 "{subject.title}"이(가) 성공적으로 업데이트되었습니다.'
+            )
+
+        elif action == "delete":
             # 과목 삭제
             title = subject.title
             subject.delete()
-            messages.success(request, f'과목 "{title}"이(가) 성공적으로 삭제되었습니다.')
-            return redirect('admin_portal_subject_management', course_id=course.id)
-            
-        return redirect('admin_portal_subject_management', course_id=course.id)
-    
+            messages.success(
+                request, f'과목 "{title}"이(가) 성공적으로 삭제되었습니다.'
+            )
+            return redirect("admin_portal_subject_management", course_id=course.id)
+
+        return redirect("admin_portal_subject_management", course_id=course.id)
+
     # 과목의 강의 수 가져오기
     lecture_count = Lecture.objects.filter(subject=subject).count()
-    
+
     context = {
-        'course': course,
-        'subject': subject,
-        'lecture_count': lecture_count,
+        "course": course,
+        "subject": subject,
+        "lecture_count": lecture_count,
     }
-    
-    return render(request, 'admin_portal/course_management/subject_detail.html', context)
+
+    return render(
+        request, "admin_portal/course_management/subject_detail.html", context
+    )
+
 
 # 강의 관리 관련 뷰 함수
 @login_required
@@ -941,148 +960,170 @@ def lecture_management(request, course_id, subject_id):
     """강의 관리 페이지"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
+
     course = get_object_or_404(Course, id=course_id)
     subject = get_object_or_404(Subject, id=subject_id, course=course)
-    lectures = Lecture.objects.filter(subject=subject).order_by('order_index')
-    
+    lectures = Lecture.objects.filter(subject=subject).order_by("order_index")
+
     context = {
-        'course': course,
-        'subject': subject,
-        'lectures': lectures,
+        "course": course,
+        "subject": subject,
+        "lectures": lectures,
     }
-    
-    return render(request, 'admin_portal/course_management/lecture_list.html', context)
+
+    return render(request, "admin_portal/course_management/lecture_list.html", context)
+
 
 @login_required
 def lecture_create(request, course_id, subject_id):
     """강의 생성 페이지"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
+
     course = get_object_or_404(Course, id=course_id)
     subject = get_object_or_404(Subject, id=subject_id, course=course)
-    
-    if request.method == 'POST':
+
+    if request.method == "POST":
         # 폼 데이터 처리
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        lecture_type = request.POST.get('lecture_type')
-        order_index = request.POST.get('order_index')
-        
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        lecture_type = request.POST.get("lecture_type")
+        order_index = request.POST.get("order_index")
+
         # 강의 생성
         lecture = Lecture(
             subject=subject,
             title=title,
             description=description,
             lecture_type=lecture_type,
-            order_index=order_index
+            order_index=order_index,
         )
-        
+
         # 동영상 강의인 경우 비디오 파일 처리
-        if lecture_type == 'video' and 'video_file' in request.FILES:
-            lecture.video_file = request.FILES['video_file']
-        
+        if lecture_type == "video" and "video_file" in request.FILES:
+            lecture.video_file = request.FILES["video_file"]
+
         lecture.save()
-        
+
         # 미션(퀴즈) 강의인 경우 문제 처리
-        if lecture_type == 'quiz' and 'questions' in request.POST:
-            questions_data = json.loads(request.POST.get('questions'))
-            
+        if lecture_type == "quiz" and "questions" in request.POST:
+            questions_data = json.loads(request.POST.get("questions"))
+
             for q_data in questions_data:
                 question = Question(
                     lecture=lecture,
-                    text=q_data['text'],
-                    option1=q_data['options'][0],
-                    option2=q_data['options'][1],
-                    option3=q_data['options'][2],
-                    option4=q_data['options'][3],
-                    option5=q_data['options'][4],
-                    correct_answer=q_data['correct_answer']
+                    text=q_data["text"],
+                    option1=q_data["options"][0],
+                    option2=q_data["options"][1],
+                    option3=q_data["options"][2],
+                    option4=q_data["options"][3],
+                    option5=q_data["options"][4],
+                    correct_answer=q_data["correct_answer"],
                 )
                 question.save()
-        
+
         messages.success(request, f'강의 "{title}"이(가) 성공적으로 생성되었습니다.')
-        return redirect('admin_portal_lecture_management', course_id=course.id, subject_id=subject.id)
-    
+        return redirect(
+            "admin_portal_lecture_management",
+            course_id=course.id,
+            subject_id=subject.id,
+        )
+
     # 현재 강의 수 가져오기 (기본 순서 인덱스 설정용)
     current_lecture_count = Lecture.objects.filter(subject=subject).count()
-    
+
     context = {
-        'course': course,
-        'subject': subject,
-        'next_order_index': current_lecture_count + 1,
+        "course": course,
+        "subject": subject,
+        "next_order_index": current_lecture_count + 1,
     }
-    
-    return render(request, 'admin_portal/course_management/lecture_create.html', context)
+
+    return render(
+        request, "admin_portal/course_management/lecture_create.html", context
+    )
+
 
 @login_required
 def lecture_detail(request, course_id, subject_id, lecture_id):
     """강의 상세 및 수정 페이지"""
     if not request.user.is_admin:
         return redirect("learning_dashboard")
-        
+
     course = get_object_or_404(Course, id=course_id)
     subject = get_object_or_404(Subject, id=subject_id, course=course)
     lecture = get_object_or_404(Lecture, id=lecture_id, subject=subject)
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        
-        if action == 'update':
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "update":
             # 강의 업데이트
-            lecture.title = request.POST.get('title')
-            lecture.description = request.POST.get('description')
-            lecture.order_index = request.POST.get('order_index')
-            
+            lecture.title = request.POST.get("title")
+            lecture.description = request.POST.get("description")
+            lecture.order_index = request.POST.get("order_index")
+
             # 동영상 강의인 경우 비디오 파일 처리
-            if lecture.lecture_type == 'video' and 'video_file' in request.FILES:
-                lecture.video_file = request.FILES['video_file']
-            
+            if lecture.lecture_type == "video" and "video_file" in request.FILES:
+                lecture.video_file = request.FILES["video_file"]
+
             lecture.save()
-            
+
             # 미션(퀴즈) 강의인 경우 문제 업데이트
-            if lecture.lecture_type == 'quiz' and 'questions' in request.POST:
+            if lecture.lecture_type == "quiz" and "questions" in request.POST:
                 # 기존 문제 삭제
                 Question.objects.filter(lecture=lecture).delete()
-                
+
                 # 새 문제 추가
-                questions_data = json.loads(request.POST.get('questions'))
-                
+                questions_data = json.loads(request.POST.get("questions"))
+
                 for q_data in questions_data:
                     question = Question(
                         lecture=lecture,
-                        text=q_data['text'],
-                        option1=q_data['options'][0],
-                        option2=q_data['options'][1],
-                        option3=q_data['options'][2],
-                        option4=q_data['options'][3],
-                        option5=q_data['options'][4],
-                        correct_answer=q_data['correct_answer']
+                        text=q_data["text"],
+                        option1=q_data["options"][0],
+                        option2=q_data["options"][1],
+                        option3=q_data["options"][2],
+                        option4=q_data["options"][3],
+                        option5=q_data["options"][4],
+                        correct_answer=q_data["correct_answer"],
                     )
                     question.save()
-            
-            messages.success(request, f'강의 "{lecture.title}"이(가) 성공적으로 업데이트되었습니다.')
-        
-        elif action == 'delete':
+
+            messages.success(
+                request, f'강의 "{lecture.title}"이(가) 성공적으로 업데이트되었습니다.'
+            )
+
+        elif action == "delete":
             # 강의 삭제
             title = lecture.title
             lecture.delete()
-            messages.success(request, f'강의 "{title}"이(가) 성공적으로 삭제되었습니다.')
-            return redirect('admin_portal_lecture_management', course_id=course.id, subject_id=subject.id)
-            
-        return redirect('admin_portal_lecture_management', course_id=course.id, subject_id=subject.id)
-    
+            messages.success(
+                request, f'강의 "{title}"이(가) 성공적으로 삭제되었습니다.'
+            )
+            return redirect(
+                "admin_portal_lecture_management",
+                course_id=course.id,
+                subject_id=subject.id,
+            )
+
+        return redirect(
+            "admin_portal_lecture_management",
+            course_id=course.id,
+            subject_id=subject.id,
+        )
+
     # 퀴즈 강의인 경우 문제 목록 가져오기
     questions = []
-    if lecture.lecture_type == 'quiz':
+    if lecture.lecture_type == "quiz":
         questions = Question.objects.filter(lecture=lecture)
-    
+
     context = {
-        'course': course,
-        'subject': subject,
-        'lecture': lecture,
-        'questions': questions,
+        "course": course,
+        "subject": subject,
+        "lecture": lecture,
+        "questions": questions,
     }
-    
-    return render(request, 'admin_portal/course_management/lecture_detail.html', context)
+
+    return render(
+        request, "admin_portal/course_management/lecture_detail.html", context
+    )

@@ -13,22 +13,22 @@
             과정 관리로 돌아가기
         </a>
     </div>
-    
+
     <div class="flex justify-between items-start mb-6">
         <h1 class="text-3xl font-bold text-gray-900">{{ course.title }} 관리</h1>
-        
+
         <div class="flex space-x-2">
-            <a href="{% url 'admin_portal_subject_management' course.id %}" 
+            <a href="{% url 'admin_portal_subject_management' course.id %}"
                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
                 과목 관리
             </a>
-            <button id="delete-course-btn" 
+            <button id="delete-course-btn"
                     class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
                 과정 삭제
             </button>
         </div>
     </div>
-    
+
     <!-- 과정 정보 요약 -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <div class="flex justify-between">
@@ -51,13 +51,13 @@
                 </div>
                 <p class="text-gray-600">{{ course.description|truncatechars:100 }}</p>
             </div>
-            
+
             <div class="text-right">
                 <p class="text-gray-600">생성일: {{ course.created_at|date:"Y년 m월 d일" }}</p>
                 <p class="text-gray-600">마지막 수정일: {{ course.updated_at|date:"Y년 m월 d일" }}</p>
             </div>
         </div>
-        
+
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
             <div class="bg-gray-50 p-3 rounded border border-gray-200">
                 <p class="text-xs text-gray-500">학점</p>
@@ -81,10 +81,10 @@
     <!-- 과정 수정 폼 -->
     <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">과정 정보 수정</h2>
-        
+
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- 제목 -->
                 <div class="md:col-span-2">
@@ -92,14 +92,14 @@
                     <input type="text" id="title" name="title" value="{{ course.title }}" required
                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                
+
                 <!-- 설명 -->
                 <div class="md:col-span-2">
                     <label for="description" class="block text-sm font-medium text-gray-700 mb-1">과정 설명 *</label>
                     <textarea id="description" name="description" rows="4" required
                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">{{ course.description }}</textarea>
                 </div>
-                
+
                 <!-- 난이도 -->
                 <div>
                     <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-1">난이도 *</label>
@@ -110,7 +110,7 @@
                         <option value="advanced" {% if course.difficulty == 'advanced' %}selected{% endif %}>고급</option>
                     </select>
                 </div>
-                
+
                 <!-- 대상 -->
                 <div>
                     <label for="target_audience" class="block text-sm font-medium text-gray-700 mb-1">수강 대상</label>
@@ -118,32 +118,32 @@
                            placeholder="예: 프로그래밍을 처음 접하는 분"
                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                
+
                 <!-- 예상 학습 시간 -->
                 <div>
                     <label for="estimated_time" class="block text-sm font-medium text-gray-700 mb-1">예상 학습 시간 (시간)</label>
                     <input type="number" id="estimated_time" name="estimated_time" min="1" value="{{ course.estimated_time }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                
+
                 <!-- 학점 -->
                 <div>
                     <label for="credits" class="block text-sm font-medium text-gray-700 mb-1">학점 *</label>
                     <input type="number" id="credits" name="credits" min="1" value="{{ course.credits }}" required
                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                
+
                 <!-- 가격 -->
                 <div>
                     <label for="price" class="block text-sm font-medium text-gray-700 mb-1">가격 (원) *</label>
                     <input type="number" id="price" name="price" min="0" value="{{ course.price }}" required
                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                
+
                 <!-- 썸네일 이미지 -->
                 <div class="md:col-span-2">
                     <label for="thumbnail" class="block text-sm font-medium text-gray-700 mb-1">썸네일 이미지</label>
-                    
+
                     <div class="flex items-center mb-2">
                         {% if course.thumbnail %}
                         <div class="h-20 w-20 rounded overflow-hidden bg-gray-100 mr-3">
@@ -159,28 +159,28 @@
                         <p class="text-sm text-gray-600">이미지 없음</p>
                         {% endif %}
                     </div>
-                    
+
                     <input type="file" id="thumbnail" name="thumbnail" accept="image/*"
                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <p class="mt-1 text-xs text-gray-500">새 이미지를 업로드하면 기존 이미지가 대체됩니다. 권장 크기: 400 x 300 픽셀, 최대 2MB</p>
                 </div>
             </div>
-            
+
             <div class="mt-8 flex justify-end">
-                <button type="submit" 
+                <button type="submit"
                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
                     정보 저장
                 </button>
             </div>
         </form>
     </div>
-    
+
     <!-- 과정 삭제 모달 -->
     <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
             <h3 class="text-lg font-bold text-gray-900 mb-4">과정 삭제</h3>
             <p class="text-gray-700 mb-6">정말로 <span class="font-semibold">{{ course.title }}</span> 과정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며, 모든 관련 과목과 강의도 함께 삭제됩니다.</p>
-            
+
             <div class="flex justify-end space-x-3">
                 <button id="cancel-delete" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
                     취소

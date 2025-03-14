@@ -12,14 +12,14 @@
             과정 관리로 돌아가기
         </a>
     </div>
-    
+
     <div class="flex justify-between items-start mb-6">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">{{ course.title }} - 과목 관리</h1>
             <p class="text-gray-600 mt-1">총 {{ subjects|length }}개의 과목이 등록되어 있습니다.</p>
         </div>
-        
-        <a href="{% url 'admin_portal_subject_create' course.id %}" 
+
+        <a href="{% url 'admin_portal_subject_create' course.id %}"
            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -27,7 +27,7 @@
             새 과목 추가
         </a>
     </div>
-    
+
     <!-- 과목 목록 -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
         {% if subjects %}
@@ -101,7 +101,7 @@
             <h3 class="mt-2 text-sm font-medium text-gray-900">등록된 과목이 없습니다.</h3>
             <p class="mt-1 text-sm text-gray-500">이 과정에 대한 과목을 추가해주세요.</p>
             <div class="mt-6">
-                <a href="{% url 'admin_portal_subject_create' course.id %}" 
+                <a href="{% url 'admin_portal_subject_create' course.id %}"
                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -112,11 +112,11 @@
         </div>
         {% endif %}
     </div>
-    
+
     <!-- 과정 구성 가이드 -->
     <div class="mt-8 bg-white rounded-lg shadow-md p-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">과정 구성 가이드</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="p-4 border border-gray-200 rounded-md bg-gray-50">
                 <div class="flex items-center mb-2">
@@ -125,7 +125,7 @@
                 </div>
                 <p class="text-sm text-gray-600">일반적인 이론 학습 과목으로, 여러 개의 강의로 구성됩니다. 동영상 강의나 미션 강의를 포함할 수 있습니다.</p>
             </div>
-            
+
             <div class="p-4 border border-gray-200 rounded-md bg-gray-50">
                 <div class="flex items-center mb-2">
                     <div class="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-800 font-semibold mr-2">2</div>
@@ -133,7 +133,7 @@
                 </div>
                 <p class="text-sm text-gray-600">과정 중간에 학습자의 이해도를 평가하기 위한 프로젝트 과목입니다. 학습자는 프로젝트 파일을 제출하고 평가를 받습니다.</p>
             </div>
-            
+
             <div class="p-4 border border-gray-200 rounded-md bg-gray-50">
                 <div class="flex items-center mb-2">
                     <div class="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-800 font-semibold mr-2">3</div>
@@ -142,7 +142,7 @@
                 <p class="text-sm text-gray-600">과정 마지막에 전체 내용에 대한 학습자의 이해도를 평가하는 프로젝트 과목입니다. 학습자는 최종 프로젝트를 제출합니다.</p>
             </div>
         </div>
-        
+
         <div class="mt-4 p-4 border border-gray-200 rounded-md bg-yellow-50">
             <p class="text-sm text-gray-800 flex items-start">
                 <svg class="h-5 w-5 text-yellow-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
