@@ -1208,3 +1208,117 @@ def lecture_detail(request, course_id, subject_id, lecture_id):
     return render(
         request, "admin_portal/course_management/lecture_detail.html", context
     )
+
+
+@login_required
+def user_learning_records(request):
+    """사용자 학습 기록 페이지"""
+    # 관리자만 접근 가능하도록 체크
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")  # 일반 사용자 대시보드로 리디렉션
+
+    # 모든 학생 사용자 목록 (관리자 제외)
+    all_users = User.objects.filter(is_admin=False).order_by("username")
+
+    # 필터링 옵션
+    selected_user_id = request.GET.get("user_id")
+    selected_date_str = request.GET.get("date")
+
+    # 날짜 필터링 (기본값: 오늘)
+    today = timezone.now().date()
+
+    try:
+        selected_date = (
+            date.fromisoformat(selected_date_str) if selected_date_str else today
+        )
+    except ValueError:
+        selected_date = today
+
+    # 사용자 필터링
+    selected_user = None
+    enrolled_courses_count = 0
+    completed_courses_count = 0
+    avg_progress = 0
+
+    if selected_user_id:
+        try:
+            selected_user = User.objects.get(id=selected_user_id)
+            # 수강 중인 과정 수
+            enrollments = Enrollment.objects.filter(user=selected_user)
+            enrolled_courses_count = enrollments.count()
+
+            # 완료한 과정 수
+            completed_courses_count = enrollments.filter(
+                status__in=["completed", "certified"]
+            ).count()
+
+            # 평균 진행률
+            if enrolled_courses_count > 0:
+                avg_progress = (
+                    enrollments.aggregate(Avg("progress_percentage"))[
+                        "progress_percentage__avg"
+                    ]
+                    or 0
+                )
+        except User.DoesNotExist:
+            selected_user = None
+
+    # 일간 영상 시청 현황 데이터
+    daily_activities_query = (
+        LectureProgress.objects.select_related(
+            "user", "lecture", "lecture__subject", "lecture__subject__course"
+        )
+        .filter(
+            is_completed=True,
+            completed_at__date=selected_date,
+        )
+        .order_by("-completed_at")
+    )  # 최근 활동이 상단에 오도록 변경
+
+    # 특정 사용자에 대한 필터링
+    if selected_user:
+        daily_activities_query = daily_activities_query.filter(user=selected_user)
+        # 해당 사용자의 모든 수강 신청
+        enrollments = (
+            Enrollment.objects.filter(user=selected_user)
+            .select_related("course")
+            .order_by("-enrolled_at")
+        )
+    else:
+        # 모든 사용자의 수강 신청 (최근 50개)
+        enrollments = (
+            Enrollment.objects.all()
+            .select_related("user", "course")
+            .order_by("-last_activity_at")[:50]
+        )
+
+    # 페이지네이션 적용
+    paginator = Paginator(daily_activities_query, 20)  # 페이지당 20개 항목
+    page = request.GET.get("page")
+
+    try:
+        daily_activities = paginator.page(page)
+    except PageNotAnInteger:
+        # 페이지가 정수가 아니면 첫 페이지
+        daily_activities = paginator.page(1)
+    except EmptyPage:
+        # 페이지가 범위를 벗어나면 마지막 페이지
+        daily_activities = paginator.page(paginator.num_pages)
+
+    context = {
+        "all_users": all_users,
+        "selected_user": selected_user,
+        "selected_user_id": (
+            int(selected_user_id)
+            if selected_user_id and selected_user_id.isdigit()
+            else None
+        ),
+        "selected_date": selected_date,
+        "daily_activities": daily_activities,
+        "enrollments": enrollments,
+        "enrolled_courses_count": enrolled_courses_count,
+        "completed_courses_count": completed_courses_count,
+        "avg_progress": avg_progress,
+    }
+
+    return render(request, "admin_portal/user_learning_records.html", context)

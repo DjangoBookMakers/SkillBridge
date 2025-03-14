@@ -86,4 +86,10 @@ urlpatterns = [
         views.lecture_detail,
         name="admin_portal_lecture_detail",
     ),
+    # 사용자 학습 기록 관련
+    path(
+        "users/learning-records/",
+        views.user_learning_records,
+        name="admin_portal_user_learning_records",
+    ),
 ]
