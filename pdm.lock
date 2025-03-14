@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:e3ae7b44ef83a046097882c99b85df7fbd5a6ef72bde2fefcb09d1e0b90a384c"
+content_hash = "sha256:a2d9ad8436e630796a604cdf9a4a3631dc5f8de9d31e76d34d96a90ca72268dc"
 
 [[metadata.targets]]
 requires_python = ">=3.13"
@@ -254,21 +254,6 @@ groups = ["default"]
 files = [
     {file = "django-widget-tweaks-1.5.0.tar.gz", hash = "sha256:1c2180681ebb994e922c754804c7ffebbe1245014777ac47897a81f57cc629c7"},
     {file = "django_widget_tweaks-1.5.0-py3-none-any.whl", hash = "sha256:a41b7b2f05bd44d673d11ebd6c09a96f1d013ee98121cb98c384fe84e33b881e"},
-]
-
-[[package]]
-name = "djangorestframework"
-version = "3.15.2"
-requires_python = ">=3.8"
-summary = "Web APIs for Django, made easy."
-groups = ["default"]
-dependencies = [
-    "backports-zoneinfo; python_version < \"3.9\"",
-    "django>=4.2",
-]
-files = [
-    {file = "djangorestframework-3.15.2-py3-none-any.whl", hash = "sha256:2b8871b062ba1aefc2de01f773875441a961fefbf79f5eed1e32b2f096944b20"},
-    {file = "djangorestframework-3.15.2.tar.gz", hash = "sha256:36fe88cd2d6c6bec23dca9804bab2ba5517a8bb9d8f47ebc68981b56840107ad"},
 ]
 
 [[package]]
