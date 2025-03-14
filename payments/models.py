@@ -72,12 +72,11 @@ class Payment(models.Model):
     payment_status = models.CharField(
         max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
     )
-    merchant_uid = models.CharField(max_length=100, unique=True, help_text="주문번호")
+    merchant_uid = models.CharField(max_length=100, help_text="주문번호")
     imp_uid = models.CharField(
         max_length=100,
         null=True,
         blank=True,
-        unique=True,
         help_text="포트원 거래 고유번호",
     )
     refund_reason = models.TextField(null=True, blank=True)
