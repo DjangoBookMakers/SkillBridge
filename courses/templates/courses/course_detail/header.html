@@ -47,9 +47,12 @@
                 이어서 학습하기
               </a>
             {% else %}
-              <a href="#" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
+              <a href="{% url 'add_to_cart' course.id %}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
                 장바구니에 담기
               </a>
+              <button id="direct-checkout" class="block w-full bg-gray-800 hover:bg-gray-900 text-white text-center py-3 rounded-md transition duration-200">
+                바로 구매하기
+              </button>
             {% endif %}
           </div>
         </div>
@@ -57,3 +60,18 @@
     </div>
   </div>
 </div>
+
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 바로 구매하기 버튼
+      const directCheckoutBtn = document.getElementById('direct-checkout');
+      if (directCheckoutBtn) {
+        directCheckoutBtn.addEventListener('click', function () {
+          // 결제 기능 구현 전까지는 메시지만 표시
+          alert('결제 기능이 아직 구현되지 않았습니다.');
+        });
+      }
+    });
+  </script>
+{% endblock %}

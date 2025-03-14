@@ -27,5 +27,6 @@ urlpatterns = [
     path("admin-portal/", include("admin_portal.urls")),
     path("courses/", include("courses.urls")),
     path("learning/", include("learning.urls")),
+    path("payments/", include("payments.urls")),
     path("", include("courses.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
