@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.files.storage import default_storage
 from django.utils import timezone
 from .forms import LoginForm, SignupForm, ProfileEditForm, CustomPasswordChangeForm
 
@@ -112,3 +113,29 @@ def change_password_view(request):
         "form": form,
     }
     return render(request, "accounts/change_password.html", context)
+
+
+@login_required
+def delete_account_view(request):
+    if request.method == "POST":
+        user = request.user
+
+        # 프로필 이미지 삭제
+        if user.profile_image:
+            # Django의 storage 시스템을 사용하여 파일 삭제
+            default_storage.delete(user.profile_image.name)
+
+        # 소셜 계정 연결 확인 및 삭제
+        social_accounts = request.user.socialaccount_set.all()
+        if social_accounts.exists():
+            social_accounts.delete()
+
+        # 사용자 계정 삭제
+        logout(request)
+        user.delete()
+
+        messages.success(request, "회원 탈퇴가 완료되었습니다.")
+        return redirect("accounts:login")
+
+    # GET 요청시 확인 페이지 표시
+    return render(request, "accounts/delete_account.html")
