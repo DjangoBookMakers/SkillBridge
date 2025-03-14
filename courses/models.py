@@ -222,3 +222,24 @@ class CourseReview(models.Model):
 
     def __str__(self):
         return f"{self.user.username}의 {self.course.title} 리뷰"
+
+
+class Question(models.Model):
+    """강의 문제 모델"""
+
+    lecture = models.ForeignKey(
+        Lecture, on_delete=models.CASCADE, related_name="questions"
+    )
+    text = models.TextField()
+    option1 = models.TextField()
+    option2 = models.TextField()
+    option3 = models.TextField()
+    option4 = models.TextField()
+    option5 = models.TextField()
+    correct_answer = models.IntegerField(help_text="1~5 정답 번호")
+    order_index = models.IntegerField(default=0, help_text="문제 순서")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"문제: {self.text[:50]}..."
