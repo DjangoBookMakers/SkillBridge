@@ -12,12 +12,12 @@
     {% block extra_css %}{% endblock %}
   </head>
 
-  <body class="bg-gray-50 min-h-screen">
+  <body class="bg-gray-50 min-h-screen flex flex-col">
     <!-- 네비게이션 바 -->
     {% include 'navbar.html' %}
 
     <!-- 메인 콘텐츠 영역 -->
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8 flex-grow">
       {% block content %}
         <!-- 홈페이지 기본 콘텐츠 -->
         {% include 'home_intro.html' %}
