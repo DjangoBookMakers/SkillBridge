@@ -5,11 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
-from django.db.models import Count, Avg, Q, Min
+from django.db import transaction
+from django.db.models import Count, Avg, Q, Min, Sum
 from django.db.models.functions import TruncWeek
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 import json
 import io
+import logging
 from pathlib import Path
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
@@ -23,7 +25,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 from accounts.models import User, InstructorProfile
 from courses.models import Course, Subject, Lecture, MissionQuestion
 from learning.models import Enrollment, Certificate, LectureProgress, ProjectSubmission
+from payments.models import Payment
+from payments.payment_client import payment_client
 from .models import DailyStatistics
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -1376,3 +1382,175 @@ def user_learning_records(request):
     }
 
     return render(request, "admin_portal/user_learning_records.html", context)
+
+
+@login_required
+def payment_management(request):
+    """결제 내역 관리 페이지"""
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    # 검색 및 필터링
+    search_query = request.GET.get("search", "")
+    status_filter = request.GET.get("status", "all")
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
+
+    # 기본 쿼리셋 생성
+    payments = Payment.objects.all().select_related("user", "course")
+
+    # 상태 필터 적용
+    if status_filter != "all":
+        payments = payments.filter(payment_status=status_filter)
+
+    # 검색 필터 적용
+    if search_query:
+        payments = payments.filter(
+            Q(user__username__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+            | Q(course__title__icontains=search_query)
+            | Q(merchant_uid__icontains=search_query)
+        )
+
+    # 날짜 필터링
+    if date_from:
+        try:
+            date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+            payments = payments.filter(created_at__date__gte=date_from)
+        except ValueError:
+            pass
+
+    if date_to:
+        try:
+            date_to = datetime.strptime(date_to, "%Y-%m-%d").date()
+            payments = payments.filter(created_at__date__lte=date_to)
+        except ValueError:
+            pass
+
+    # 정렬
+    payments = payments.order_by("-created_at")
+
+    # 통계 데이터
+    total_sales = (
+        payments.filter(payment_status="completed").aggregate(Sum("amount"))[
+            "amount__sum"
+        ]
+        or 0
+    )
+    today_sales = (
+        payments.filter(
+            payment_status="completed", created_at__date=timezone.now().date()
+        ).aggregate(Sum("amount"))["amount__sum"]
+        or 0
+    )
+
+    # 최근 7일 매출 추이
+    today = timezone.now().date()
+    daily_sales = []
+    daily_dates = []
+
+    for i in range(6, -1, -1):
+        date = today - timedelta(days=i)
+        daily_dates.append(date.strftime("%m/%d"))
+
+        day_sales = (
+            payments.filter(
+                payment_status="completed", created_at__date=date
+            ).aggregate(Sum("amount"))["amount__sum"]
+            or 0
+        )
+
+        daily_sales.append(day_sales)
+
+    # 결제 방법별 비율
+    payment_methods = (
+        payments.filter(payment_status="completed")
+        .values("payment_method")
+        .annotate(count=Count("id"), sum=Sum("amount"))
+        .order_by("-sum")
+    )
+
+    # 페이지네이션
+    paginator = Paginator(payments, 20)
+    page = request.GET.get("page")
+
+    try:
+        payments_page = paginator.page(page)
+    except PageNotAnInteger:
+        payments_page = paginator.page(1)
+    except EmptyPage:
+        payments_page = paginator.page(paginator.num_pages)
+
+    context = {
+        "payments": payments_page,
+        "search_query": search_query,
+        "status_filter": status_filter,
+        "date_from": (
+            date_from
+            if isinstance(date_from, str)
+            else date_from.strftime("%Y-%m-%d") if date_from else ""
+        ),
+        "date_to": (
+            date_to
+            if isinstance(date_to, str)
+            else date_to.strftime("%Y-%m-%d") if date_to else ""
+        ),
+        "total_sales": total_sales,
+        "today_sales": today_sales,
+        "daily_dates": json.dumps(daily_dates),
+        "daily_sales": json.dumps(daily_sales),
+        "payment_methods": payment_methods,
+    }
+
+    return render(request, "admin_portal/payments/payment_list.html", context)
+
+
+@login_required
+def payment_detail_admin(request, payment_id):
+    """결제 상세 관리 페이지"""
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    payment = get_object_or_404(Payment, id=payment_id)
+
+    # 환불 처리
+    if request.method == "POST" and "refund" in request.POST:
+        refund_reason = request.POST.get("refund_reason", "관리자 환불 처리").strip()
+
+        try:
+            with transaction.atomic():
+                # 포트원 API 호출하여 환불 처리
+                is_successful, result = payment_client.refund_payment(
+                    reason=refund_reason,
+                    imp_uid=payment.imp_uid,
+                    merchant_uid=payment.merchant_uid,
+                    amount=payment.amount,
+                )
+
+                if is_successful:
+                    # 환불 성공 시 결제 정보 업데이트
+                    payment.refund_reason = refund_reason
+                    payment.payment_status = "refunded"
+                    payment.updated_at = timezone.now()
+                    payment.save()
+
+                    # 수강 등록 정보도 삭제
+                    Enrollment.objects.filter(
+                        user=payment.user, course=payment.course
+                    ).delete()
+
+                    messages.success(request, "환불이 성공적으로 처리되었습니다.")
+                else:
+                    messages.error(
+                        request, f"환불 처리 중 오류가 발생했습니다: {result}"
+                    )
+
+        except Exception as e:
+            logger.exception("환불 처리 중 오류 발생")
+            messages.error(request, f"환불 처리 중 오류가 발생했습니다: {str(e)}")
+
+    context = {
+        "payment": payment,
+    }
+
+    return render(request, "admin_portal/payments/payment_detail.html", context)
