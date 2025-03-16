@@ -13,4 +13,6 @@ urlpatterns = [
     path("complete/", views.payment_complete, name="payment_complete"),
     path("history/", views.payment_history, name="payment_history"),
     path("detail/<int:payment_id>/", views.payment_detail, name="payment_detail"),
+    # 환불 요청 URL
+    path("refund/<int:payment_id>/", views.refund_request, name="refund_request"),
 ]

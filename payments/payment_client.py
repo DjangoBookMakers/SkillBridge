@@ -73,6 +73,40 @@ class PortOneClient:
             logger.error(str(e), exc_info=e)
             return False, str(e)
 
+    def refund_payment(self, reason, imp_uid=None, merchant_uid=None, amount=None):
+        """
+        포트원 결제 환불 메서드 (부분 환불 지원)
+
+        Parameters:
+        - reason: 환불 사유
+        - imp_uid: 포트원 결제 고유 ID
+        - merchant_uid: 상품 ID
+        - amount: 환불 금액 (부분 환불 시 필요)
+
+        Returns:
+        - (bool, dict/str): 성공 여부와 환불 정보 또는 오류 메시지
+        """
+        try:
+            params = {"reason": reason}
+
+            # 필수 파라미터 설정
+            if imp_uid:
+                params["imp_uid"] = imp_uid
+            elif merchant_uid:
+                params["merchant_uid"] = merchant_uid
+            else:
+                return False, "imp_uid 또는 merchant_uid가 필요합니다."
+
+            # 부분 환불인 경우 금액 전달
+            if amount:
+                params["amount"] = amount
+
+            response = self.iamport.cancel(**params)
+            return True, response
+        except (Iamport.ResponseError, Iamport.HttpError) as e:
+            logger.error(str(e), exc_info=e)
+            return False, str(e)
+
 
 # 클라이언트 인스턴스 생성
 payment_client = PortOneClient()
