@@ -110,7 +110,7 @@
       </div>
     {% endif %}
 
-    {% if payment.payment_status == 'completed' and not payment.refund_reason %}
+    {% if payment.payment_status == 'completed' %}
       <div class="mt-6 text-center">
         <button id="refund-button" class="text-red-600 hover:text-red-800 text-sm font-medium">
           환불 요청

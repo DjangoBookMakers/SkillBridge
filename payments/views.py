@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.db import transaction
 from django.urls import reverse
+from django.utils import timezone
 import json
 import logging
 
@@ -284,3 +285,63 @@ def payment_detail(request, payment_id):
     }
 
     return render(request, "payments/payment_detail.html", context)
+
+
+@login_required
+def refund_request(request, payment_id):
+    """환불 요청 처리"""
+    payment = get_object_or_404(Payment, id=payment_id, user=request.user)
+
+    # 이미 환불된 경우
+    if payment.payment_status == "refunded":
+        messages.error(request, "이미 환불된 결제입니다.")
+        return redirect("payment_detail", payment_id=payment.id)
+
+    if request.method == "POST":
+        refund_reason = request.POST.get("refund_reason", "").strip()
+
+        if not refund_reason:
+            messages.error(request, "환불 사유를 입력해주세요.")
+            return redirect("payment_detail", payment_id=payment.id)
+
+        try:
+            with transaction.atomic():
+                # 부분 환불 금액 계산
+                refund_amount = payment.amount
+
+                # 포트원 API 호출하여 환불 처리
+                is_successful, result = payment_client.refund_payment(
+                    reason=refund_reason,
+                    imp_uid=payment.imp_uid,
+                    merchant_uid=payment.merchant_uid,
+                    amount=refund_amount,
+                )
+
+                if is_successful:
+                    # 환불 성공 시 결제 정보 업데이트
+                    payment.refund_reason = refund_reason
+                    payment.payment_status = "refunded"
+                    payment.updated_at = timezone.now()
+                    payment.save()
+
+                    # 수강 등록 정보도 삭제
+                    Enrollment.objects.filter(
+                        user=request.user, course=payment.course
+                    ).delete()
+
+                    messages.success(request, "환불이 성공적으로 처리되었습니다.")
+                else:
+                    messages.error(
+                        request, f"환불 처리 중 오류가 발생했습니다: {result}"
+                    )
+                    return redirect("payment_detail", payment_id=payment.id)
+
+                return redirect("payment_history")
+
+        except Exception as e:
+            logger.exception("환불 처리 중 오류 발생")
+            messages.error(request, f"환불 처리 중 오류가 발생했습니다: {str(e)}")
+            return redirect("payment_detail", payment_id=payment.id)
+
+    # GET 요청은 결제 상세 페이지로 리다이렉트
+    return redirect("payment_detail", payment_id=payment.id)
