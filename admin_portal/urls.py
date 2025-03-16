@@ -92,4 +92,11 @@ urlpatterns = [
         views.user_learning_records,
         name="admin_portal_user_learning_records",
     ),
+    # admin_portal/urls.py에 추가
+    path("payments/", views.payment_management, name="admin_portal_payments"),
+    path(
+        "payments/<int:payment_id>/",
+        views.payment_detail_admin,
+        name="admin_portal_payment_detail",
+    ),
 ]
