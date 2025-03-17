@@ -51,6 +51,18 @@ def admin_dashboard(request):
     total_enrollments = Enrollment.objects.count()
     total_certificates = Certificate.objects.count()
     total_video_views = LectureProgress.objects.filter(is_completed=True).count()
+    total_sales = (
+        Payment.objects.filter(payment_status="completed").aggregate(Sum("amount"))[
+            "amount__sum"
+        ]
+        or 0
+    )
+    today_sales = (
+        Payment.objects.filter(
+            payment_status="completed", created_at__date=today
+        ).aggregate(Sum("amount"))["amount__sum"]
+        or 0
+    )
 
     # 최근 30일간 통계
     last_30_days = today - timedelta(days=30)
@@ -64,22 +76,6 @@ def admin_dashboard(request):
         .values("title", "student_count")
         .order_by("-student_count")[:10]
     )
-
-    # 평균 평점이 높은 과정
-    top_rated_courses = (
-        Course.objects.annotate(avg_rating=Avg("reviews__rating"))
-        .filter(avg_rating__isnull=False)
-        .values("title", "avg_rating")
-        .order_by("-avg_rating")[:5]
-    )
-
-    # 최근 등록 사용자
-    recent_users = User.objects.order_by("-date_joined")[:10]
-
-    # 최근 수강 신청
-    recent_enrollments = Enrollment.objects.select_related("user", "course").order_by(
-        "-enrolled_at"
-    )[:10]
 
     # 평가 대기 중인 프로젝트
     pending_projects = (
@@ -111,12 +107,11 @@ def admin_dashboard(request):
         "total_certificates": total_certificates,
         "total_video_views": total_video_views,
         "course_enrollments": course_enrollments,
-        "top_rated_courses": top_rated_courses,
-        "recent_users": recent_users,
-        "recent_enrollments": recent_enrollments,
         "pending_projects": pending_projects,
         "chart_data": json.dumps(chart_data),
         "today_stats": DailyStatistics.objects.filter(date=today).first(),
+        "total_sales": total_sales,
+        "today_sales": today_sales,
     }
 
     return render(request, "admin_portal/dashboard.html", context)
