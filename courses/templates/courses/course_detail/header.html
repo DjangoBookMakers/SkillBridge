@@ -47,12 +47,15 @@
                 이어서 학습하기
               </a>
             {% else %}
-              <a href="{% url 'add_to_cart' course.id %}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
-                장바구니에 담기
-              </a>
-              <button id="direct-checkout" class="block w-full bg-gray-800 hover:bg-gray-900 text-white text-center py-3 rounded-md transition duration-200">
-                바로 구매하기
-              </button>
+              {% if is_in_cart %}
+                <a href="{% url 'cart_view' %}" class="block w-full bg-gray-600 hover:bg-gray-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
+                  장바구니에 담겨 있음
+                </a>
+              {% else %}
+                <a href="{% url 'add_to_cart' course.id %}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-md transition duration-200 mb-3">
+                  장바구니에 담기
+                </a>
+              {% endif %}
             {% endif %}
           </div>
         </div>

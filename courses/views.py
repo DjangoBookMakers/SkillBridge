@@ -1,10 +1,13 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from django.db.models import Avg
 from django.http import HttpResponseForbidden, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 import json
+
+from payments.models import Cart, CartItem
 from .models import Course, Subject, Lecture, QnAQuestion, QnAAnswer, CourseReview
 
 
@@ -57,24 +60,28 @@ def course_detail(request, course_id):
 
     # 사용자가 이미 이 과정을 구매했는지 확인
     is_enrolled = False
+    is_in_cart = False
+
     if request.user.is_authenticated:
         is_enrolled = (
             hasattr(request.user, "enrollments")
             and request.user.enrollments.filter(course=course).exists()
         )
 
+        # 장바구니에 담겨있는지 확인
+        cart = Cart.objects.filter(user=request.user).first()
+        if cart:
+            is_in_cart = CartItem.objects.filter(cart=cart, course=course).exists()
+
     context = {
         "course": course,
         "subjects": subjects,
         "reviews": reviews,
         "is_enrolled": is_enrolled,
+        "is_in_cart": is_in_cart,
     }
 
     return render(request, "courses/course_detail.html", context)
-
-
-from django.shortcuts import redirect
-from django.contrib.auth.decorators import login_required
 
 
 @login_required
