@@ -17,12 +17,37 @@
             </h3>
 
             {% if subject.subject_type == 'midterm' or subject.subject_type == 'final' %}
-              <a href="{% url 'learning_submit_project' subject.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
-                프로젝트 제출
-                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </a>
+              {% if is_enrolled %}
+                {% if subject.id in passed_projects %}
+                  <div class="flex items-center text-green-600">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">통과 완료</span>
+                  </div>
+                {% elif subject.id in submitted_projects %}
+                  <div class="flex items-center text-yellow-600">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">검토 중</span>
+                  </div>
+                {% else %}
+                  <a href="{% url 'learning_submit_project' subject.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                    프로젝트 제출
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </a>
+                {% endif %}
+              {% else %}
+                <a href="{% url 'learning_submit_project' subject.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                  프로젝트 제출
+                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </a>
+              {% endif %}
             {% else %}
               <button class="text-blue-600 hover:text-blue-800 focus:outline-none subject-toggle-btn">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
