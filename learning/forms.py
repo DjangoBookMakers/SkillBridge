@@ -11,7 +11,6 @@ class ProjectSubmissionForm(forms.ModelForm):
         widgets = {
             "project_file": forms.FileInput(
                 attrs={
-                    "class": "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100",
                     "accept": ".zip,.rar,.7z,.pdf",
                 }
             ),
@@ -57,7 +56,7 @@ class MissionAnswerForm(forms.Form):
                 ]
                 self.fields[field_name] = forms.ChoiceField(
                     choices=choices,
-                    widget=forms.RadioSelect(attrs={"class": "form-radio"}),
+                    widget=forms.RadioSelect(),
                     label=question.question_text,
                     required=True,
                 )

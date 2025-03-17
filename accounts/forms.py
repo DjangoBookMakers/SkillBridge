@@ -83,29 +83,13 @@ class ProfileEditForm(forms.ModelForm):
             "gender",
         ]
         widgets = {
-            "email": forms.EmailInput(
-                attrs={"class": "w-full px-3 py-2 border border-gray-300 rounded-md"}
-            ),
-            "first_name": forms.TextInput(
-                attrs={"class": "w-full px-3 py-2 border border-gray-300 rounded-md"}
-            ),
-            "last_name": forms.TextInput(
-                attrs={"class": "w-full px-3 py-2 border border-gray-300 rounded-md"}
-            ),
-            "profile_image": forms.FileInput(
-                attrs={"class": "w-full px-3 py-2 border border-gray-300 rounded-md"}
-            ),
-            "phone_number": forms.TextInput(
-                attrs={"class": "w-full px-3 py-2 border border-gray-300 rounded-md"}
-            ),
-            "birth_date": forms.DateInput(
-                attrs={
-                    "class": "w-full px-3 py-2 border border-gray-300 rounded-md",
-                    "type": "date",
-                }
-            ),
+            "email": forms.EmailInput(),
+            "first_name": forms.TextInput(),
+            "last_name": forms.TextInput(),
+            "profile_image": forms.FileInput(),
+            "phone_number": forms.TextInput(),
+            "birth_date": forms.DateInput(attrs={"type": "date"}),
             "gender": forms.Select(
-                attrs={"class": "w-full px-3 py-2 border border-gray-300 rounded-md"},
                 choices=[("", "성별 선택"), ("남성", "남성"), ("여성", "여성")],
             ),
         }
@@ -114,12 +98,3 @@ class ProfileEditForm(forms.ModelForm):
 class CustomPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["old_password"].widget.attrs.update(
-            {"class": "w-full px-3 py-2 border border-gray-300 rounded-md"}
-        )
-        self.fields["new_password1"].widget.attrs.update(
-            {"class": "w-full px-3 py-2 border border-gray-300 rounded-md"}
-        )
-        self.fields["new_password2"].widget.attrs.update(
-            {"class": "w-full px-3 py-2 border border-gray-300 rounded-md"}
-        )
