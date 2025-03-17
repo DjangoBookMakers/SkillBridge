@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load humanize %}
 
 {% block title %}관리자 대시보드 | 스킬브릿지{% endblock %}
 
@@ -47,7 +48,7 @@
 
       {% include 'admin_portal/dashboard_components/stats_card.html' with title='오늘 동영상 조회 수' value=today_stats.completed_lectures|default:0 icon_class='text-red-600' bg_class='bg-red-100' today_caption='총 누적 조회 수' today_value=total_video_views|default:0 svg_path='M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z' %}
 
-      {% include 'admin_portal/dashboard_components/stats_card.html' with title='오늘 매출' value=today_sales|floatformat:0|add:'원' icon_class='text-green-600' bg_class='bg-green-100' today_caption='총 매출' today_value=total_sales|floatformat:0|add:'원' svg_path='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' %}
+      {% include 'admin_portal/dashboard_components/stats_card.html' with title='오늘 매출' value=today_sales|floatformat:0|intcomma|add:'원' icon_class='text-green-600' bg_class='bg-green-100' today_caption='총 매출' today_value=total_sales|floatformat:0|intcomma|add:'원' svg_path='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' %}
     </div>
 
     <!-- 차트 및 통계 영역 -->
