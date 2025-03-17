@@ -7,7 +7,7 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 import json
 
-from learning.models import LectureProgress
+from learning.models import LectureProgress, ProjectSubmission
 from payments.models import Cart, CartItem
 from .models import Course, Subject, Lecture, QnAQuestion, QnAAnswer, CourseReview
 
@@ -81,6 +81,24 @@ def course_detail(request, course_id):
             user=request.user, lecture__subject__course=course, is_completed=True
         ).values_list("lecture_id", flat=True)
 
+    # 프로젝트 제출/통과 상태 확인
+    passed_projects = []
+    submitted_projects = []
+
+    if request.user.is_authenticated and is_enrolled:
+        # 통과한 프로젝트
+        passed_projects = ProjectSubmission.objects.filter(
+            user=request.user, subject__course=course, is_passed=True
+        ).values_list("subject_id", flat=True)
+
+        # 제출했지만 아직 검토 중인 프로젝트
+        submitted_projects = ProjectSubmission.objects.filter(
+            user=request.user,
+            subject__course=course,
+            is_passed=False,
+            reviewed_at__isnull=True,
+        ).values_list("subject_id", flat=True)
+
     context = {
         "course": course,
         "subjects": subjects,
@@ -88,6 +106,8 @@ def course_detail(request, course_id):
         "is_enrolled": is_enrolled,
         "is_in_cart": is_in_cart,
         "completed_lectures": completed_lectures,
+        "passed_projects": passed_projects,
+        "submitted_projects": submitted_projects,
     }
 
     return render(request, "courses/course_detail.html", context)
