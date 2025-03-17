@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.utils import timezone
+
+from payments.models import Payment
 from .forms import LoginForm, SignupForm, ProfileEditForm, CustomPasswordChangeForm
 
 
@@ -57,18 +59,23 @@ def signup_view(request):
 
 @login_required
 def profile_view(request):
-    # 임시 구매 내역 데이터 생성 (나중에 실제 결제 모델과 연동 필요)
-    from courses.models import Course
-
-    # 사용자가 구매한 과정 목록 (임시)
+    # 사용자의 실제 결제 내역 가져오기
     purchases = []
-    for course in Course.objects.all()[:3]:  # 최대 3개의 과정을 가져옴
+
+    # 완료된 결제 내역에서 과정 정보 가져오기
+    payments = (
+        Payment.objects.filter(user=request.user, payment_status="completed")
+        .select_related("course")
+        .order_by("-created_at")
+    )
+
+    for payment in payments:
         purchases.append(
             {
-                "course": course,
-                "purchase_date": course.created_at,
-                "price": course.price,
-                "status": "결제 완료",
+                "course": payment.course,
+                "purchase_date": payment.created_at,
+                "price": payment.amount,
+                "status": payment.get_payment_status_display(),
             }
         )
 
