@@ -85,7 +85,7 @@ class Lecture(models.Model):
     description = models.TextField(blank=True)
     order_index = models.IntegerField(help_text="강의 순서")
     lecture_type = models.CharField(max_length=20, choices=LECTURE_TYPE_CHOICES)
-    video_url = models.FileField(upload_to="videos/", null=True, blank=True)
+    video_file = models.FileField(upload_to="videos/", null=True, blank=True)
     duration = models.IntegerField(help_text="동영상 길이(분)", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

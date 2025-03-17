@@ -26,9 +26,9 @@
         <!-- 왼쪽: 비디오 플레이어 -->
         <div class="lg:w-2/3">
           <div class="bg-black rounded-lg overflow-hidden">
-            {% if lecture.video_url %}
+            {% if lecture.video_file %}
               <video id="lectureVideo" class="w-full aspect-video" controls="controls" poster="/static/images/video_poster.jpg" controlslist="nodownload">
-                <source src="{{ lecture.video_url.url }}" type="video/mp4">
+                <source src="{{ lecture.video_file.url }}" type="video/mp4">
                 브라우저가 비디오 태그를 지원하지 않습니다.
               </video>
             {% else %}
