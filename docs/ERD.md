@@ -39,7 +39,7 @@ Table Course {
   short_description varchar
   difficulty_level varchar [note: "입문, 초급, 중급, 고급"]
   target_audience text
-  estimated_time int [note: "예상 학습시간(분)"]
+  estimated_time int [note: "예상 학습시간(시간)"]
   credit int [note: "학점"]
   price decimal [not null]
   instructor_id int [ref: > InstructorProfile.id, not null]
@@ -68,7 +68,7 @@ Table Lecture {
   order_index int [not null]
   lecture_type varchar [note: "동영상, 미션"]
   video_url varchar
-  duration int [note: "동영상 길이(초)"]
+  duration int [note: "동영상 길이(분)"]
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`]
 }
@@ -134,6 +134,12 @@ Table LectureProgress {
   lecture_id int [ref: > Lecture.id, not null]
   is_completed boolean [default: false, note: "강의를 완료했는지 여부"]
   completed_at timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  indexes {
+    (user_id, lecture_id) [unique]
+  }
 }
 
 // 미션(쪽지 시험 성적 및 결과)
@@ -143,9 +149,13 @@ Table MissionAttempt {
   lecture_id int [ref: > Lecture.id, not null]
   score int
   is_passed boolean [default: false]
-  user_answers text [note: "JSON 형식으로 저장된 사용자 답변"]
+  user_answers json [note: "JSON 형식으로 저장된 사용자 답변"]
   started_at timestamp [default: `now()`]
   completed_at timestamp
+
+  indexes {
+    (user_id, lecture_id)
+  }
 }
 
 // 중간고사 및 기말고사 파일 제출
@@ -153,12 +163,12 @@ Table ProjectSubmission {
   id int [pk, increment]
   user_id int [ref: > User.id, not null]
   subject_id int [ref: > Subject.id, not null]
-  project_file_url varchar [not null]
+  project_file varchar [not null]
   is_passed boolean [default: false]
   feedback text
   submitted_at timestamp [default: `now()`]
   reviewed_at timestamp
-  reviewed_by int [ref: > InstructorProfile.id]
+  reviewed_by int [ref: > User.id]
 }
 
 // 결제 관련
@@ -185,6 +195,10 @@ Table CourseReview {
   content text
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`]
+
+  indexes {
+    (user_id, course_id) [unique]
+  }
 }
 
 // 장바구니
@@ -201,5 +215,33 @@ Table CartItem {
   cart_id int [ref: > Cart.id, not null]
   course_id int [ref: > Course.id, not null]
   created_at timestamp [default: `now()`]
+
+  indexes {
+    (cart_id, course_id) [unique]
+  }
+}
+
+// 수료증
+Table Certificate {
+  id int [pk, increment]
+  user_id int [ref: > User.id, not null]
+  enrollment_id int [ref: > Enrollment.id, not null, unique]
+  certificate_number varchar [unique]
+  issued_at timestamp [default: `now()`]
+  pdf_file varchar
+}
+
+// 일별 통계 정보
+Table DailyStatistics {
+  id int [pk, increment]
+  date date [unique]
+  new_users int [default: 0, note: "신규 가입자 수"]
+  active_users int [default: 0, note: "활성 사용자 수"]
+  new_enrollments int [default: 0, note: "신규 수강 신청 수"]
+  completed_lectures int [default: 0, note: "완료된 강의 수"]
+  certificates_issued int [default: 0, note: "발급된 수료증 수"]
+  revenue decimal [default: 0, note: "일일 매출액"]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
 }
 ```
