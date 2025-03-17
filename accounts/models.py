@@ -7,9 +7,9 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, blank=True)
-    is_admin = models.BooleanField(default=False)
-    login_at = models.DateTimeField(null=True, blank=True)
-    logout_at = models.DateTimeField(null=True, blank=True)
+    is_admin = models.BooleanField(default=False, db_index=True)
+    login_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    logout_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     def __str__(self):
         return self.username

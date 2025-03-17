@@ -19,14 +19,16 @@ class Enrollment(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name="enrollments"
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="enrolled")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="enrolled", db_index=True
+    )
     progress_percentage = models.IntegerField(
         default=0, help_text="과정 전체 진행률(%)"
     )
     certificate_number = models.CharField(max_length=50, blank=True, null=True)
     certificate_issued_at = models.DateTimeField(blank=True, null=True)
-    enrolled_at = models.DateTimeField(auto_now_add=True)
-    last_activity_at = models.DateTimeField(auto_now=True)
+    enrolled_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    last_activity_at = models.DateTimeField(auto_now=True, db_index=True)
     completed_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
@@ -196,8 +198,8 @@ class LectureProgress(models.Model):
     lecture = models.ForeignKey(
         Lecture, on_delete=models.CASCADE, related_name="progresses"
     )
-    is_completed = models.BooleanField(default=False)
-    completed_at = models.DateTimeField(blank=True, null=True)
+    is_completed = models.BooleanField(default=False, db_index=True)
+    completed_at = models.DateTimeField(blank=True, null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -299,10 +301,10 @@ class ProjectSubmission(models.Model):
         Subject, on_delete=models.CASCADE, related_name="submissions"
     )
     project_file = models.FileField(upload_to=project_file_upload_path)
-    is_passed = models.BooleanField(default=False)
+    is_passed = models.BooleanField(default=False, db_index=True)
     feedback = models.TextField(blank=True)
-    submitted_at = models.DateTimeField(auto_now_add=True)
-    reviewed_at = models.DateTimeField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    reviewed_at = models.DateTimeField(blank=True, null=True, db_index=True)
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -332,8 +334,8 @@ class Certificate(models.Model):
     enrollment = models.OneToOneField(
         Enrollment, on_delete=models.CASCADE, related_name="certificate"
     )
-    certificate_number = models.CharField(max_length=50, unique=True)
-    issued_at = models.DateTimeField(auto_now_add=True)
+    certificate_number = models.CharField(max_length=50, unique=True, db_index=True)
+    issued_at = models.DateTimeField(auto_now_add=True, db_index=True)
     pdf_file = models.FileField(
         upload_to=certificate_upload_path, blank=True, null=True
     )

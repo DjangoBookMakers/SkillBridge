@@ -18,17 +18,19 @@ class Course(models.Model):
     thumbnail_image = models.ImageField(
         upload_to="courses/thumbnails/", null=True, blank=True
     )
-    difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES)
+    difficulty_level = models.CharField(
+        max_length=20, choices=DIFFICULTY_CHOICES, db_index=True
+    )
     target_audience = models.TextField(blank=True)
     estimated_time = models.IntegerField(help_text="예상 학습시간(시간)")
     credit = models.IntegerField(help_text="학점")
     price = models.DecimalField(
-        max_digits=10, decimal_places=0, help_text="원 단위 가격"
+        max_digits=10, decimal_places=0, help_text="원 단위 가격", db_index=True
     )
     instructor = models.ForeignKey(
         InstructorProfile, on_delete=models.CASCADE, related_name="courses"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -59,9 +61,9 @@ class Subject(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    order_index = models.IntegerField(help_text="과목 순서")
+    order_index = models.IntegerField(help_text="과목 순서", db_index=True)
     subject_type = models.CharField(
-        max_length=20, choices=SUBJECT_TYPE_CHOICES, default="normal"
+        max_length=20, choices=SUBJECT_TYPE_CHOICES, default="normal", db_index=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -83,8 +85,10 @@ class Lecture(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    order_index = models.IntegerField(help_text="강의 순서")
-    lecture_type = models.CharField(max_length=20, choices=LECTURE_TYPE_CHOICES)
+    order_index = models.IntegerField(help_text="강의 순서", db_index=True)
+    lecture_type = models.CharField(
+        max_length=20, choices=LECTURE_TYPE_CHOICES, db_index=True
+    )
     video_file = models.FileField(upload_to="videos/", null=True, blank=True)
     duration = models.IntegerField(help_text="동영상 길이(분)", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

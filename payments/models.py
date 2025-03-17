@@ -67,20 +67,25 @@ class Payment(models.Model):
     )
     amount = models.PositiveIntegerField(help_text="결제 금액")
     payment_method = models.CharField(
-        max_length=20, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        null=True,
+        blank=True,
+        db_index=True,
     )
     payment_status = models.CharField(
-        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
+        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending", db_index=True
     )
-    merchant_uid = models.CharField(max_length=100, help_text="주문번호")
+    merchant_uid = models.CharField(max_length=100, help_text="주문번호", db_index=True)
     imp_uid = models.CharField(
         max_length=100,
         null=True,
         blank=True,
         help_text="포트원 거래 고유번호",
+        db_index=True,
     )
     refund_reason = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
