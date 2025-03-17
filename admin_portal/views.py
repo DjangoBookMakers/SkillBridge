@@ -1549,3 +1549,74 @@ def payment_detail_admin(request, payment_id):
     }
 
     return render(request, "admin_portal/payments/payment_detail.html", context)
+
+
+@login_required
+def manage_student_enrollment(request):
+    """관리자가 학생의 과정 등록/취소 관리"""
+    if not request.user.is_admin:
+        return redirect("learning_dashboard")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        user_id = request.POST.get("user_id")
+        course_id = request.POST.get("course_id")
+
+        try:
+            user = User.objects.get(id=user_id)
+            course = Course.objects.get(id=course_id)
+
+            if action == "enroll":
+                # 등록 처리
+                enrollment, created = Enrollment.objects.get_or_create(
+                    user=user,
+                    course=course,
+                    defaults={"status": "enrolled", "progress_percentage": 0},
+                )
+
+                if created:
+                    messages.success(
+                        request,
+                        f"{user.username}님을 {course.title} 과정에 성공적으로 등록했습니다.",
+                    )
+                else:
+                    messages.info(
+                        request,
+                        f"{user.username}님은 이미 {course.title} 과정에 등록되어 있습니다.",
+                    )
+
+            elif action == "unenroll":
+                # 등록 취소 처리
+                deleted, _ = Enrollment.objects.filter(
+                    user=user, course=course
+                ).delete()
+                if deleted:
+                    messages.success(
+                        request,
+                        f"{user.username}님의 {course.title} 과정 등록이 취소되었습니다.",
+                    )
+                else:
+                    messages.info(
+                        request,
+                        f"{user.username}님은 {course.title} 과정에 등록되어 있지 않습니다.",
+                    )
+
+        except (User.DoesNotExist, Course.DoesNotExist):
+            messages.error(request, "사용자 또는 과정을 찾을 수 없습니다.")
+
+        return redirect("admin_portal_manage_enrollment")
+
+    # 현재 등록된 내역 가져오기
+    enrollments = (
+        Enrollment.objects.all()
+        .select_related("user", "course")
+        .order_by("-enrolled_at")
+    )
+
+    # 사용자 및 과정 목록 가져오기
+    users = User.objects.filter(is_admin=False).order_by("username")
+    courses = Course.objects.all().order_by("title")
+
+    context = {"users": users, "courses": courses, "enrollments": enrollments}
+
+    return render(request, "admin_portal/manage_enrollment.html", context)
