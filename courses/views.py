@@ -7,6 +7,7 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 import json
 
+from learning.models import LectureProgress
 from payments.models import Cart, CartItem
 from .models import Course, Subject, Lecture, QnAQuestion, QnAAnswer, CourseReview
 
@@ -73,12 +74,20 @@ def course_detail(request, course_id):
         if cart:
             is_in_cart = CartItem.objects.filter(cart=cart, course=course).exists()
 
+    # 완료된 강의 ID 목록
+    completed_lectures = []
+    if request.user.is_authenticated and is_enrolled:
+        completed_lectures = LectureProgress.objects.filter(
+            user=request.user, lecture__subject__course=course, is_completed=True
+        ).values_list("lecture_id", flat=True)
+
     context = {
         "course": course,
         "subjects": subjects,
         "reviews": reviews,
         "is_enrolled": is_enrolled,
         "is_in_cart": is_in_cart,
+        "completed_lectures": completed_lectures,
     }
 
     return render(request, "courses/course_detail.html", context)
