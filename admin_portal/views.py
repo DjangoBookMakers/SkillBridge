@@ -884,10 +884,10 @@ def course_create(request):
         # 폼 데이터 처리
         title = request.POST.get("title")
         description = request.POST.get("description")
-        difficulty = request.POST.get("difficulty")
+        difficulty_level = request.POST.get("difficulty_level")
         target_audience = request.POST.get("target_audience")
         estimated_time = request.POST.get("estimated_time")
-        credits = request.POST.get("credits")
+        credit = request.POST.get("credit")
         price = request.POST.get("price")
         instructor_profile, created = InstructorProfile.objects.get_or_create(
             user=request.user,
@@ -898,10 +898,10 @@ def course_create(request):
         course = Course(
             title=title,
             description=description,
-            difficulty_level=difficulty,
+            difficulty_level=difficulty_level,
             target_audience=target_audience,
             estimated_time=estimated_time,
-            credit=credits,
+            credit=credit,
             price=price,
             instructor=instructor_profile,
         )
@@ -929,10 +929,10 @@ def course_detail(request, course_id):
         # 과정 업데이트
         course.title = request.POST.get("title")
         course.description = request.POST.get("description")
-        course.difficulty = request.POST.get("difficulty")
+        course.difficulty_level = request.POST.get("difficulty_level")
         course.target_audience = request.POST.get("target_audience")
         course.estimated_time = request.POST.get("estimated_time")
-        course.credits = request.POST.get("credits")
+        course.credit = request.POST.get("credit")
         course.price = request.POST.get("price")
 
         # 썸네일 이미지 처리
