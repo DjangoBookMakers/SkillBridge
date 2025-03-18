@@ -63,6 +63,8 @@ def resume_course(request, course_id):
     elif item_type == "project":
         return redirect("learning:submit_project", subject_id=item.id)
     else:  # 'completed'
+        enrollment.status = "completed"
+        enrollment.save()
         return redirect("courses:course_detail", course_id=course.id)
 
 
@@ -83,6 +85,11 @@ def next_item(request, lecture_id):
     elif item_type == "project":
         return redirect("learning:submit_project", subject_id=item.id)
     else:  # 'completed'
+        enrollment = get_object_or_404(
+            Enrollment, user=request.user, course=lecture.subject.course
+        )
+        enrollment.status = "completed"
+        enrollment.save()
         return redirect("courses:course_detail", course_id=item.id)
 
 
