@@ -55,7 +55,7 @@
           <!-- 이전/다음 강의 버튼 -->
           <div class="mt-8 flex justify-between">
             {% if prev_lecture %}
-              <a href="{% url 'learning_video_lecture' prev_lecture.id %}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
+              <a href="{% url 'learning:video_lecture' prev_lecture.id %}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
@@ -67,7 +67,7 @@
             {% endif %}
 
             {% if next_lecture %}
-              <a href="{% if next_lecture.lecture_type == 'video' %}{% url 'learning_video_lecture' next_lecture.id %}{% else %}{% url 'learning_mission' next_lecture.id %}{% endif %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+              <a href="{% if next_lecture.lecture_type == 'video' %}{% url 'learning:video_lecture' next_lecture.id %}{% else %}{% url 'learning:mission' next_lecture.id %}{% endif %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
                 다음 강의
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -108,7 +108,7 @@
                   <ul class="space-y-1 pl-2">
                     {% for lecture_item in subject_item.lectures.all %}
                       <li>
-                        <a href="{% if lecture_item.lecture_type == 'video' %}{% url 'learning_video_lecture' lecture_item.id %}{% else %}{% url 'learning_mission' lecture_item.id %}{% endif %}" class="flex items-center py-1 px-2 rounded text-sm {% if lecture_item.id == lecture.id %}bg-blue-100 text-blue-700{% else %}hover:bg-gray-100{% endif %}">
+                        <a href="{% if lecture_item.lecture_type == 'video' %}{% url 'learning:video_lecture' lecture_item.id %}{% else %}{% url 'learning:mission' lecture_item.id %}{% endif %}" class="flex items-center py-1 px-2 rounded text-sm {% if lecture_item.id == lecture.id %}bg-blue-100 text-blue-700{% else %}hover:bg-gray-100{% endif %}">
                           {% if lecture_item.lecture_type == 'video' %}
                             <svg class="w-4 h-4 mr-2 {% if lecture_item.id == lecture.id %}text-blue-600{% else %}text-gray-400{% endif %}" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>

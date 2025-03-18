@@ -143,7 +143,7 @@ def add_question(request, lecture_id):
         return redirect(referer)
 
     # 기본적으로 강의 비디오 페이지로 리다이렉트
-    return redirect("learning_video_lecture", lecture_id=lecture.id)
+    return redirect("learning:video_lecture", lecture_id=lecture.id)
 
 
 @login_required
@@ -173,7 +173,7 @@ def add_answer(request, question_id):
         return redirect(referer)
 
     # 기본적으로 강의 비디오 페이지로 리다이렉트
-    return redirect("learning_video_lecture", lecture_id=question.lecture.id)
+    return redirect("learning:video_lecture", lecture_id=question.lecture.id)
 
 
 @login_required

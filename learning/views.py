@@ -57,11 +57,11 @@ def resume_course(request, course_id):
 
     # 항목 유형에 따라 적절한 URL로 리다이렉트
     if item_type == "video_lecture":
-        return redirect("learning_video_lecture", lecture_id=item.id)
+        return redirect("learning:video_lecture", lecture_id=item.id)
     elif item_type == "mission":
-        return redirect("learning_mission", lecture_id=item.id)
+        return redirect("learning:mission", lecture_id=item.id)
     elif item_type == "project":
-        return redirect("learning_submit_project", subject_id=item.id)
+        return redirect("learning:submit_project", subject_id=item.id)
     else:  # 'completed'
         return redirect("course_detail", course_id=course.id)
 
@@ -77,11 +77,11 @@ def next_item(request, lecture_id):
 
     # 항목 유형에 따라 적절한 URL로 리다이렉트
     if item_type == "video_lecture":
-        return redirect("learning_video_lecture", lecture_id=item.id)
+        return redirect("learning:video_lecture", lecture_id=item.id)
     elif item_type == "mission":
-        return redirect("learning_mission", lecture_id=item.id)
+        return redirect("learning:mission", lecture_id=item.id)
     elif item_type == "project":
-        return redirect("learning_submit_project", subject_id=item.id)
+        return redirect("learning:submit_project", subject_id=item.id)
     else:  # 'completed'
         return redirect("course_detail", course_id=item.id)
 
@@ -158,7 +158,7 @@ def mission(request, lecture_id):
         logger.info(
             f"User {request.user.username} accessing already passed mission: {lecture.title}"
         )
-        return redirect("learning_mission_result", attempt_id=passed_attempt.id)
+        return redirect("learning:mission_result", attempt_id=passed_attempt.id)
 
     # 시도 중인 미션이 있는지 확인
     active_attempt = MissionAttempt.objects.filter(
@@ -194,7 +194,7 @@ def mission(request, lecture_id):
         attempt.calculate_score()
 
         # 결과 페이지로 리다이렉트
-        return redirect("learning_mission_result", attempt_id=attempt.id)
+        return redirect("learning:mission_result", attempt_id=attempt.id)
 
     context = {
         "lecture": lecture,
@@ -270,7 +270,7 @@ def submit_project(request, subject_id):
             submission.save()
 
             messages.success(request, "프로젝트가 성공적으로 제출되었습니다.")
-            return redirect("learning_project_detail", submission_id=submission.id)
+            return redirect("learning:project_detail", submission_id=submission.id)
     else:
         form = ProjectSubmissionForm()
 
@@ -311,7 +311,7 @@ def issue_certificate(request, enrollment_id):
     if existing_cert:
         logger.info(f"Certificate already issued for enrollment {enrollment_id}")
         messages.info(request, "이미 발급된 수료증이 있습니다.")
-        return redirect("learning_view_certificate", certificate_id=existing_cert.id)
+        return redirect("learning:view_certificate", certificate_id=existing_cert.id)
 
     # 수료 조건 확인
     if enrollment.status != "completed":
@@ -322,7 +322,7 @@ def issue_certificate(request, enrollment_id):
             messages.error(
                 request, "모든 과정을 완료해야 수료증을 발급받을 수 있습니다."
             )
-            return redirect("learning_dashboard")
+            return redirect("learning:dashboard")
 
     # 수료증 발급
     certificate = Certificate(user=request.user, enrollment=enrollment)
@@ -347,7 +347,7 @@ def issue_certificate(request, enrollment_id):
     )
 
     messages.success(request, "수료증이 성공적으로 발급되었습니다.")
-    return redirect("learning_view_certificate", certificate_id=certificate.id)
+    return redirect("learning:view_certificate", certificate_id=certificate.id)
 
 
 # 수료증 보기
@@ -398,4 +398,4 @@ def download_certificate(request, certificate_id):
     except Exception as e:
         logger.error(f"Certificate download failed: {str(e)}")
         messages.error(request, f"파일 다운로드 중 오류가 발생했습니다: {str(e)}")
-        return redirect("learning_view_certificate", certificate_id=certificate.id)
+        return redirect("learning:view_certificate", certificate_id=certificate.id)

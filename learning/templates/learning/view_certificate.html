@@ -7,7 +7,7 @@
     <div class="max-w-4xl mx-auto">
       <!-- 상단 내비게이션 -->
       <div class="flex items-center text-sm mb-6">
-        <a href="{% url 'learning_dashboard' %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'learning:dashboard' %}" class="text-blue-600 hover:text-blue-800">
           대시보드
         </a>
         <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -98,11 +98,11 @@
             </div>
 
             <div class="space-y-4">
-              <a href="{% url 'learning_download_certificate' certificate.id %}" class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center rounded-md transition duration-200">
+              <a href="{% url 'learning:download_certificate' certificate.id %}" class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center rounded-md transition duration-200">
                 PDF 다운로드
               </a>
 
-              <a href="{% url 'learning_dashboard' %}" class="block w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 text-center rounded-md transition duration-200">
+              <a href="{% url 'learning:dashboard' %}" class="block w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 text-center rounded-md transition duration-200">
                 대시보드로 돌아가기
               </a>
             </div>
