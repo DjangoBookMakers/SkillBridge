@@ -41,7 +41,7 @@
               {% for payment in recent_payments %}
                 <tr class="hover:bg-gray-50">
                   <td class="py-4 px-4">
-                    <a href="{% url 'courses:course_detail' payment.course.id %}" class="text-blue-600 hover:text-blue-800">
+                    <a href="{% url 'courses:detail' payment.course.id %}" class="text-blue-600 hover:text-blue-800">
                       {{ payment.course.title }}
                     </a>
                   </td>

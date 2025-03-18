@@ -8,7 +8,7 @@
     <div class="max-w-6xl mx-auto">
       <!-- 상단 내비게이션 -->
       <div class="flex items-center text-sm mb-4">
-        <a href="{% url 'courses:course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'courses:detail' course.id %}" class="text-blue-600 hover:text-blue-800">
           {{ course.title }}
         </a>
         <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -74,7 +74,7 @@
                 </svg>
               </a>
             {% else %}
-              <a href="{% url 'courses:course_detail' course.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
+              <a href="{% url 'courses:detail' course.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
                 과정으로 돌아가기
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>

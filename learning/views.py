@@ -63,7 +63,7 @@ def resume_course(request, course_id):
     elif item_type == "project":
         return redirect("learning:submit_project", subject_id=item.id)
     else:  # 'completed'
-        return redirect("courses:course_detail", course_id=course.id)
+        return redirect("courses:detail", course_id=course.id)
 
 
 # 현재 강의 다음의 학습 항목으로 이동
@@ -83,7 +83,7 @@ def next_item(request, lecture_id):
     elif item_type == "project":
         return redirect("learning:submit_project", subject_id=item.id)
     else:  # 'completed'
-        return redirect("courses:course_detail", course_id=item.id)
+        return redirect("courses:detail", course_id=item.id)
 
 
 # 동영상 강의 시청
@@ -252,7 +252,7 @@ def submit_project(request, subject_id):
     # 중간/기말고사 과목인지 확인
     if subject.subject_type not in ["midterm", "final"]:
         messages.error(request, "유효하지 않은 접근입니다.")
-        return redirect("courses:course_detail", course_id=subject.course.id)
+        return redirect("courses:detail", course_id=subject.course.id)
 
     # 이미 제출한 프로젝트가 있는지 확인
     existing_submission = (

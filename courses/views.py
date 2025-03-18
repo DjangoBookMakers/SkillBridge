@@ -46,7 +46,7 @@ def course_list(request):
     return render(request, "courses/course_list.html", context)
 
 
-def course_detail(request, course_id):
+def detail(request, course_id):
     # 특정 과정 가져오기
     course = get_object_or_404(Course, id=course_id)
 
@@ -204,7 +204,7 @@ def add_review(request, course_id):
                 f"New review created: user={request.user.username}, course={course.title}, rating={rating}, id={review.id}"
             )
 
-    return redirect("courses:course_detail", course_id=course_id)
+    return redirect("courses:detail", course_id=course_id)
 
 
 @login_required

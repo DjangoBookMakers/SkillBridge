@@ -7,7 +7,7 @@
     <div class="max-w-4xl mx-auto">
       <!-- 상단 내비게이션 -->
       <div class="flex items-center text-sm mb-6">
-        <a href="{% url 'courses:course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'courses:detail' course.id %}" class="text-blue-600 hover:text-blue-800">
           {{ course.title }}
         </a>
         <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -84,7 +84,7 @@
                 다시 시도하기
               </a>
             {% endif %}
-            <a href="{% url 'courses:course_detail' course.id %}" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition duration-200 text-center">
+            <a href="{% url 'courses:detail' course.id %}" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition duration-200 text-center">
               과정으로 돌아가기
             </a>
           </div>

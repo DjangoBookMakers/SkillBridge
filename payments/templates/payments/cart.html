@@ -29,7 +29,7 @@
                       </div>
                     {% endif %}
                     <div>
-                      <a href="{% url 'courses:course_detail' item.course.id %}" class="text-blue-600 hover:text-blue-800 font-medium">{{ item.course.title }}</a>
+                      <a href="{% url 'courses:detail' item.course.id %}" class="text-blue-600 hover:text-blue-800 font-medium">{{ item.course.title }}</a>
                       <p class="text-xs text-gray-500">{{ item.course.get_difficulty_level_display }}
                         ·
                         {{ item.course.estimated_time }}시간</p>
