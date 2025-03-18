@@ -33,7 +33,7 @@
                     <span class="text-sm font-medium">검토 중</span>
                   </div>
                 {% else %}
-                  <a href="{% url 'learning_submit_project' subject.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                  <a href="{% url 'learning:submit_project' subject.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
                     프로젝트 제출
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -41,7 +41,7 @@
                   </a>
                 {% endif %}
               {% else %}
-                <a href="{% url 'learning_submit_project' subject.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                <a href="{% url 'learning:submit_project' subject.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
                   프로젝트 제출
                   <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -64,7 +64,7 @@
             {% for lecture_item in subject.lecture_list %}
               <li>
                 {% if is_enrolled %}
-                  <a href="{% if lecture_item.lecture_type == 'video' %}{% url 'learning_video_lecture' lecture_item.id %}{% else %}{% url 'learning_mission' lecture_item.id %}{% endif %}" class="flex items-center py-1 px-2 rounded text-sm hover:bg-gray-100">
+                  <a href="{% if lecture_item.lecture_type == 'video' %}{% url 'learning:video_lecture' lecture_item.id %}{% else %}{% url 'learning:mission' lecture_item.id %}{% endif %}" class="flex items-center py-1 px-2 rounded text-sm hover:bg-gray-100">
                   {% else %}
                     <div class="flex items-center py-1 px-2 rounded text-sm">
                     {% endif %}

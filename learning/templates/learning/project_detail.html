@@ -84,18 +84,18 @@
 
           <!-- 버튼 -->
           <div class="flex justify-between mt-8">
-            <a href="{% url 'learning_submit_project' subject.id %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
+            <a href="{% url 'learning:submit_project' subject.id %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
               돌아가기
             </a>
 
             {% if submission.is_passed %}
-              <a href="{% url 'learning_next_item' lecture_id=subject.lectures.first.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+              <a href="{% url 'learning:next_item' lecture_id=subject.lectures.first.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
                 다음 학습 진행하기
               </a>
             {% elif not submission.reviewed_at %}
               <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded">검토 중입니다</span>
             {% else %}
-              <a href="{% url 'learning_submit_project' subject.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+              <a href="{% url 'learning:submit_project' subject.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
                 다시 제출하기
               </a>
             {% endif %}

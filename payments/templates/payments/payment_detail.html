@@ -104,7 +104,7 @@
 
     {% if payment.payment_status == 'completed' %}
       <div class="mt-6 flex justify-center">
-        <a href="{% url 'learning_resume_course' payment.course.id %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
+        <a href="{% url 'learning:resume_course' payment.course.id %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
           강의 바로가기
         </a>
       </div>

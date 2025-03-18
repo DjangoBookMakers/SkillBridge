@@ -36,7 +36,7 @@
                   </div>
 
                   <div class="flex space-x-2">
-                    <a href="{% url 'learning_resume_course' enrollment.course.id %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                    <a href="{% url 'learning:resume_course' enrollment.course.id %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition duration-200">
                       이어서 학습하기
                     </a>
                     <a href="{% url 'course_detail' enrollment.course.id %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition duration-200">
@@ -86,11 +86,11 @@
 
                   <div class="flex space-x-2">
                     {% if enrollment.status == 'completed' %}
-                      <a href="{% url 'learning_issue_certificate' enrollment.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                      <a href="{% url 'learning:issue_certificate' enrollment.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
                         수료증 발급받기
                       </a>
                     {% elif enrollment.status == 'certified' %}
-                      <a href="{% url 'learning_view_certificate' enrollment.certificate.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                      <a href="{% url 'learning:view_certificate' enrollment.certificate.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
                         수료증 보기
                       </a>
                     {% endif %}
@@ -130,10 +130,10 @@
                   </div>
 
                   <div class="flex space-x-2">
-                    <a href="{% url 'learning_view_certificate' certificate.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                    <a href="{% url 'learning:view_certificate' certificate.id %}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition duration-200">
                       수료증 보기
                     </a>
-                    <a href="{% url 'learning_download_certificate' certificate.id %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition duration-200">
+                    <a href="{% url 'learning:download_certificate' certificate.id %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition duration-200">
                       PDF 다운로드
                     </a>
                   </div>

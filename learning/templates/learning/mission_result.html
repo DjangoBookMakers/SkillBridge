@@ -76,11 +76,11 @@
 
           <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
             {% if attempt.is_passed %}
-              <a href="{% url 'learning_next_item' lecture.id %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200 text-center">
+              <a href="{% url 'learning:next_item' lecture.id %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200 text-center">
                 다음 강의 진행하기
               </a>
             {% else %}
-              <a href="{% url 'learning_mission' lecture.id %}" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-md transition duration-200 text-center">
+              <a href="{% url 'learning:mission' lecture.id %}" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-md transition duration-200 text-center">
                 다시 시도하기
               </a>
             {% endif %}

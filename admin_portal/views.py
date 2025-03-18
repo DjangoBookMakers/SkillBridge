@@ -40,7 +40,7 @@ def admin_dashboard(request):
         logger.warning(
             f"Non-admin user {request.user.username} attempted to access admin dashboard"
         )
-        return redirect("learning_dashboard")  # 일반 사용자 대시보드로 리디렉션
+        return redirect("learning:dashboard")  # 일반 사용자 대시보드로 리디렉션
 
     # 오늘 날짜
     today = timezone.now().date()
@@ -161,7 +161,7 @@ def admin_statistics_api(request):
 def admin_pending_projects(request):
     """평가 대기 중인 프로젝트 목록 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")  # 일반 사용자 대시보드로 리디렉션
+        return redirect("learning:dashboard")  # 일반 사용자 대시보드로 리디렉션
 
     # 검색 및 필터링
     search_query = request.GET.get("search", "")
@@ -217,7 +217,7 @@ def admin_pending_projects(request):
 def project_detail(request, project_id):
     """프로젝트 제출 상세 보기"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     project = get_object_or_404(ProjectSubmission, id=project_id)
 
@@ -237,7 +237,7 @@ def evaluate_project(request, project_id):
         logger.warning(
             f"Non-admin user {request.user.username} attempted to access evaluate_project"
         )
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     project = get_object_or_404(ProjectSubmission, id=project_id)
 
@@ -302,7 +302,7 @@ def course_progress_overview(request):
     """과정 진행 상황 개요 페이지"""
     # 관리자만 접근 가능하도록 체크
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     # 모든 과정 목록
     courses = Course.objects.all().order_by("title")
@@ -425,7 +425,7 @@ def course_progress_detail(request, course_id):
     """특정 과정의 상세 진행 상황 페이지"""
     # 관리자만 접근 가능하도록 체크
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
 
@@ -519,7 +519,7 @@ def course_attendance(request, course_id):
     """특정 과정의 출석부 페이지"""
     # 관리자만 접근 가능하도록 체크
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
 
@@ -609,7 +609,7 @@ def course_attendance_pdf(request, course_id):
     """특정 과정의 출석부 PDF 생성 - 시작일부터 현재까지의 전체 기간 포함"""
     # 관리자만 접근 가능하도록 체크
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
 
@@ -862,7 +862,7 @@ def course_attendance_pdf(request, course_id):
 def course_management(request):
     """과정 관리 메인 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     # 검색 기능
     search_query = request.GET.get("search", "")
@@ -899,7 +899,7 @@ def course_management(request):
 def course_create(request):
     """과정 생성 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     if request.method == "POST":
         # 폼 데이터 처리
@@ -942,7 +942,7 @@ def course_create(request):
 def course_detail(request, course_id):
     """과정 상세 및 수정 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
 
@@ -985,7 +985,7 @@ def course_detail(request, course_id):
 def course_delete(request, course_id):
     """과정 삭제 처리"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
 
@@ -1004,7 +1004,7 @@ def course_delete(request, course_id):
 def subject_management(request, course_id):
     """과목 관리 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
     subjects = Subject.objects.filter(course=course).order_by("order_index")
@@ -1025,7 +1025,7 @@ def subject_management(request, course_id):
 def subject_create(request, course_id):
     """과목 생성 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
 
@@ -1066,7 +1066,7 @@ def subject_create(request, course_id):
 def subject_detail(request, course_id, subject_id):
     """과목 상세 및 수정 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
     subject = get_object_or_404(Subject, id=subject_id, course=course)
@@ -1116,7 +1116,7 @@ def subject_detail(request, course_id, subject_id):
 def lecture_management(request, course_id, subject_id):
     """강의 관리 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
     subject = get_object_or_404(Subject, id=subject_id, course=course)
@@ -1135,7 +1135,7 @@ def lecture_management(request, course_id, subject_id):
 def lecture_create(request, course_id, subject_id):
     """강의 생성 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
     subject = get_object_or_404(Subject, id=subject_id, course=course)
@@ -1206,7 +1206,7 @@ def lecture_create(request, course_id, subject_id):
 def lecture_detail(request, course_id, subject_id, lecture_id):
     """강의 상세 및 수정 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
     subject = get_object_or_404(Subject, id=subject_id, course=course)
@@ -1295,7 +1295,7 @@ def user_learning_records(request):
     """사용자 학습 기록 페이지"""
     # 관리자만 접근 가능하도록 체크
     if not request.user.is_admin:
-        return redirect("learning_dashboard")  # 일반 사용자 대시보드로 리디렉션
+        return redirect("learning:dashboard")  # 일반 사용자 대시보드로 리디렉션
 
     # 모든 학생 사용자 목록 (관리자 제외)
     all_users = User.objects.filter(is_admin=False).order_by("username")
@@ -1411,7 +1411,7 @@ def payment_management(request):
         logger.warning(
             f"Non-admin user {request.user.username} attempted to access payment management"
         )
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     # 검색 및 필터링
     search_query = request.GET.get("search", "")
@@ -1536,7 +1536,7 @@ def payment_management(request):
 def payment_detail_admin(request, payment_id):
     """결제 상세 관리 페이지"""
     if not request.user.is_admin:
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     payment = get_object_or_404(Payment, id=payment_id)
 
@@ -1590,7 +1590,7 @@ def manage_student_enrollment(request):
         logger.warning(
             f"Non-admin user {request.user.username} attempted to access enrollment management"
         )
-        return redirect("learning_dashboard")
+        return redirect("learning:dashboard")
 
     if request.method == "POST":
         action = request.POST.get("action")
