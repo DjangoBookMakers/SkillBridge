@@ -26,7 +26,7 @@
                 <tr class="hover:bg-gray-50">
                   <td class="py-4 px-4 text-sm">{{ payment.merchant_uid }}</td>
                   <td class="py-4 px-4">
-                    <a href="{% url 'course_detail' payment.course.id %}" class="text-blue-600 hover:text-blue-800">
+                    <a href="{% url 'courses:course_detail' payment.course.id %}" class="text-blue-600 hover:text-blue-800">
                       {{ payment.course.title }}
                     </a>
                   </td>
@@ -72,7 +72,7 @@
         </div>
         <h2 class="text-xl font-semibold text-gray-600 mb-3">결제 내역이 없습니다</h2>
         <p class="text-gray-500 mb-6">아직 결제한 과정이 없습니다. 관심 있는 과정을 둘러보세요.</p>
-        <a href="{% url 'course_list' %}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
+        <a href="{% url 'courses:course_list' %}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
           과정 둘러보기
         </a>
       </div>

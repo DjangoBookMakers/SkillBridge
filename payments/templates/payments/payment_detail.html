@@ -88,7 +88,7 @@
           {% endif %}
 
           <div>
-            <a href="{% url 'course_detail' payment.course.id %}" class="text-lg font-medium text-blue-600 hover:text-blue-800">
+            <a href="{% url 'courses:course_detail' payment.course.id %}" class="text-lg font-medium text-blue-600 hover:text-blue-800">
               {{ payment.course.title }}
             </a>
             <p class="text-sm text-gray-500">

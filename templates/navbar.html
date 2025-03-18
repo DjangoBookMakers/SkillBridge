@@ -4,7 +4,7 @@
   <div class="container mx-auto px-4">
     <div class="flex justify-between items-center py-4">
       <div class="flex items-center">
-        <a href="{% url 'course_list' %}" class="text-xl font-bold text-blue-600">스킬브릿지</a>
+        <a href="{% url 'courses:course_list' %}" class="text-xl font-bold text-blue-600">스킬브릿지</a>
       </div>
       <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
