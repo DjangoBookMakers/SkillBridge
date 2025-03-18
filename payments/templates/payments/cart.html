@@ -38,7 +38,7 @@
                 </td>
                 <td class="py-4 px-4 text-right">{{ item.course.price|floatformat:0 }}원</td>
                 <td class="py-4 px-4 text-center">
-                  <form method="post" action="{% url 'remove_from_cart' item.id %}" class="inline">
+                  <form method="post" action="{% url 'payments:remove_from_cart' item.id %}" class="inline">
                     {% csrf_token %}
                     <button type="submit" class="text-red-600 hover:text-red-800">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewbox="0 0 24 24" stroke="currentColor">
@@ -54,7 +54,7 @@
       </div>
 
       <div class="flex justify-between items-center mb-8">
-        <a href="{% url 'clear_cart' %}" class="text-red-600 hover:text-red-800 text-sm font-medium" onclick="return confirm('장바구니를 비우시겠습니까?')">
+        <a href="{% url 'payments:clear_cart' %}" class="text-red-600 hover:text-red-800 text-sm font-medium" onclick="return confirm('장바구니를 비우시겠습니까?')">
           장바구니 비우기
         </a>
         <a href="{% url 'course_list' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
@@ -78,7 +78,7 @@
           </div>
         </div>
         <div class="mt-6">
-          <a href="{% url 'checkout' %}" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-300 inline-block text-center">
+          <a href="{% url 'payments:checkout' %}" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-300 inline-block text-center">
             결제하기
           </a>
           <p class="text-xs text-gray-500 text-center mt-2">결제 버튼을 클릭하면 결제가 진행됩니다.</p>

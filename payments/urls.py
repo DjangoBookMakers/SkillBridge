@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = "payments"
+
 urlpatterns = [
     # 장바구니 관련 URL
     path("cart/", views.cart_view, name="cart_view"),
