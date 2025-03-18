@@ -81,7 +81,7 @@
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                             동영상
                         </span>
-                        {% elif lecture.lecture_type == 'quiz' %}
+                        {% elif lecture.lecture_type == 'mission' %}
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                             미션
                         </span>
@@ -95,7 +95,7 @@
                             <span class="text-red-600 text-sm">동영상 없음</span>
                             {% endif %}
                         {% else %}
-                            {% with question_count=lecture.question_set.count %}
+                            {% with question_count=lecture.mission_questions.count %}
                                 {% if question_count > 0 %}
                                 <span class="text-green-600 text-sm">문제 {{ question_count }}개</span>
                                 {% else %}

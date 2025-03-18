@@ -1142,19 +1142,20 @@ def lecture_create(request, course_id, subject_id):
         lecture.save()
 
         # 미션(퀴즈) 강의인 경우 문제 처리
-        if lecture_type == "quiz" and "questions" in request.POST:
+        if lecture_type == "mission" and "questions" in request.POST:
             questions_data = json.loads(request.POST.get("questions"))
 
-            for q_data in questions_data:
+            for i, q_data in enumerate(questions_data):
                 question = MissionQuestion(
                     lecture=lecture,
-                    text=q_data["text"],
+                    question_text=q_data["text"],
                     option1=q_data["options"][0],
                     option2=q_data["options"][1],
                     option3=q_data["options"][2],
                     option4=q_data["options"][3],
                     option5=q_data["options"][4],
                     correct_answer=q_data["correct_answer"],
+                    order_index=q_data.get("order_index", i + 1),
                 )
                 question.save()
 
@@ -1205,23 +1206,24 @@ def lecture_detail(request, course_id, subject_id, lecture_id):
             lecture.save()
 
             # 미션(퀴즈) 강의인 경우 문제 업데이트
-            if lecture.lecture_type == "quiz" and "questions" in request.POST:
+            if lecture.lecture_type == "mission" and "questions" in request.POST:
                 # 기존 문제 삭제
                 MissionQuestion.objects.filter(lecture=lecture).delete()
 
                 # 새 문제 추가
                 questions_data = json.loads(request.POST.get("questions"))
 
-                for q_data in questions_data:
+                for i, q_data in enumerate(questions_data):
                     question = MissionQuestion(
                         lecture=lecture,
-                        text=q_data["text"],
+                        question_text=q_data["text"],
                         option1=q_data["options"][0],
                         option2=q_data["options"][1],
                         option3=q_data["options"][2],
                         option4=q_data["options"][3],
                         option5=q_data["options"][4],
                         correct_answer=q_data["correct_answer"],
+                        order_index=q_data.get("order_index", i + 1),
                     )
                     question.save()
 
@@ -1250,7 +1252,7 @@ def lecture_detail(request, course_id, subject_id, lecture_id):
 
     # 퀴즈 강의인 경우 문제 목록 가져오기
     questions = []
-    if lecture.lecture_type == "quiz":
+    if lecture.lecture_type == "mission":
         questions = MissionQuestion.objects.filter(lecture=lecture)
 
     context = {

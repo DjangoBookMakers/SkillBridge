@@ -68,7 +68,7 @@
             </div>
 
             <!-- 퀴즈 강의 섹션 -->
-            <div id="quiz-section" class="mt-6 p-6 border border-gray-200 rounded-md bg-gray-50 hidden">
+            <div id="mission-section" class="mt-6 p-6 border border-gray-200 rounded-md bg-gray-50 hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium text-gray-900">퀴즈 문제</h3>
                     <button type="button" id="add-question-btn"
@@ -112,15 +112,15 @@
     // 강의 유형에 따라 섹션 표시/숨김
     const lectureType = document.getElementById('lecture_type');
     const videoSection = document.getElementById('video-section');
-    const quizSection = document.getElementById('quiz-section');
+    const missionSection = document.getElementById('mission-section');
 
     lectureType.addEventListener('change', function() {
         if (this.value === 'video') {
             videoSection.classList.remove('hidden');
-            quizSection.classList.add('hidden');
+            missionSection.classList.add('hidden');
         } else {
             videoSection.classList.add('hidden');
-            quizSection.classList.remove('hidden');
+            missionSection.classList.remove('hidden');
         }
     });
 
