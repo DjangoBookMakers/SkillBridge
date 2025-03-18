@@ -1,145 +1,134 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.core.files.storage import default_storage
+from django.views.generic import CreateView, TemplateView, UpdateView, View
+from django.urls import reverse_lazy
+from django.shortcuts import render, redirect
 from django.utils import timezone
 import logging
 
 from payments.models import Payment
 from .forms import LoginForm, SignupForm, ProfileEditForm, CustomPasswordChangeForm
+from .models import User
 
 logger = logging.getLogger("django")
 
 
-def login_view(request):
-    if request.method == "POST":
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            user = authenticate(username=username, password=password)
+class LoginView(auth_views.LoginView):
+    template_name = "accounts/login.html"
+    form_class = LoginForm
+    redirect_authenticated_user = True
 
-            if user is not None:
-                login(request, user)
-                user.login_at = timezone.now()
-                user.save()
-                logger.info(f"User {username} logged in successfully.")
-                return redirect("/")  # 사용자 -> 메인 화면
-            else:
-                logger.warning(f"Failed login attempt for username: {username}")
-                messages.error(request, "아이디 또는 비밀번호가 올바르지 않습니다.")
-        else:
-            logger.info("Invalid form submission in login_view")
-            messages.error(request, "입력 정보를 확인해주세요.")
-    else:
-        form = LoginForm()
+    def form_valid(self, form):
+        # 로그인 시간 저장
+        user = form.get_user()
+        user.login_at = timezone.now()
+        user.save()
+        logger.info(f"User {user.username} logged in successfully.")
+        return super().form_valid(form)
 
-    return render(request, "accounts/login.html", {"form": form})
+    def form_invalid(self, form):
+        username = form.cleaned_data.get("username", "unknown")
+        logger.warning(f"Failed login attempt for username: {username}")
+        messages.error(self.request, "아이디 또는 비밀번호가 올바르지 않습니다.")
+        return super().form_invalid(form)
 
 
-def logout_view(request):
-    if request.user.is_authenticated:
-        username = request.user.username
-        request.user.logout_at = timezone.now()
-        request.user.save()
-        logout(request)
-        logger.info(f"User {username} logged out successfully")
-    return redirect("/")
+class LogoutView(auth_views.LogoutView):
+    next_page = "/"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            username = request.user.username
+            request.user.logout_at = timezone.now()
+            request.user.save()
+            logger.info(f"User {username} logged out successfully")
+        return super().dispatch(request, *args, **kwargs)
 
 
-def signup_view(request):
-    if request.method == "POST":
-        form = SignupForm(request.POST, request.FILES)
-        if form.is_valid():
-            user = form.save()
-            logger.info(f"New user registered: {user.username}")
-            return redirect("accounts:login")
-    else:
-        form = SignupForm()
+class SignupView(CreateView):
+    model = User
+    form_class = SignupForm
+    template_name = "accounts/signup.html"
+    success_url = reverse_lazy("accounts:login")
 
-    return render(request, "accounts/signup.html", {"form": form})
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        logger.info(f"New user registered: {self.object.username}")
+        messages.success(self.request, "회원가입이 완료되었습니다. 로그인해주세요.")
+        return response
 
 
-@login_required
-def profile_view(request):
-    # 사용자의 실제 결제 내역 가져오기
-    purchases = []
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = "accounts/profile.html"
 
-    # 완료된 결제 내역에서 과정 정보 가져오기
-    payments = (
-        Payment.objects.filter(user=request.user, payment_status="completed")
-        .select_related("course")
-        .order_by("-created_at")
-    )
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    for payment in payments:
-        purchases.append(
-            {
-                "course": payment.course,
-                "purchase_date": payment.created_at,
-                "price": payment.amount,
-                "status": payment.get_payment_status_display(),
-            }
+        # 사용자의 실제 결제 내역 가져오기
+        purchases = []
+
+        # 완료된 결제 내역에서 과정 정보 가져오기
+        payments = (
+            Payment.objects.filter(user=self.request.user, payment_status="completed")
+            .select_related("course")
+            .order_by("-created_at")
         )
 
-    context = {
-        "user": request.user,
-        "purchases": purchases,
-    }
-    return render(request, "accounts/profile.html", context)
-
-
-@login_required
-def profile_edit_view(request):
-    if request.method == "POST":
-        form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            logger.info(f"User {request.user.username} updated own profile")
-            messages.success(request, "프로필이 성공적으로 업데이트되었습니다.")
-            return redirect("accounts:profile")
-        else:
-            logger.warning(
-                f"Profile edit form errors for user {request.user.username}: {form.errors}"
+        for payment in payments:
+            purchases.append(
+                {
+                    "course": payment.course,
+                    "purchase_date": payment.created_at,
+                    "price": payment.amount,
+                    "status": payment.get_payment_status_display(),
+                }
             )
-    else:
-        form = ProfileEditForm(instance=request.user)
 
-    context = {
-        "form": form,
-    }
-    return render(request, "accounts/profile_edit.html", context)
+        context["user"] = self.request.user
+        context["purchases"] = purchases
+        return context
 
 
-@login_required
-def change_password_view(request):
-    if request.method == "POST":
-        form = CustomPasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            # 세션 유지를 위해 필요
-            update_session_auth_hash(request, user)
-            messages.success(request, "비밀번호가 성공적으로 변경되었습니다.")
-            return redirect("accounts:profile")
-    else:
-        form = CustomPasswordChangeForm(request.user)
+class ProfileEditView(LoginRequiredMixin, UpdateView):
+    model = User
+    template_name = "accounts/profile_edit.html"
+    form_class = ProfileEditForm
+    success_url = reverse_lazy("accounts:profile")
 
-    context = {
-        "form": form,
-    }
-    return render(request, "accounts/change_password.html", context)
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        logger.info(f"User {self.request.user.username} updated own profile")
+        messages.success(self.request, "프로필이 성공적으로 업데이트되었습니다.")
+        return response
 
 
-@login_required
-def delete_account_view(request):
-    if request.method == "POST":
+class ChangePasswordView(auth_views.PasswordChangeView):
+    template_name = "accounts/change_password.html"
+    form_class = CustomPasswordChangeForm
+    success_url = reverse_lazy("accounts:profile")
+
+    def form_valid(self, form):
+        messages.success(self.request, "비밀번호가 성공적으로 변경되었습니다.")
+        return super().form_valid(form)
+
+
+class DeleteAccountView(LoginRequiredMixin, View):
+    template_name = "accounts/delete_account.html"
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
         user = request.user
         username = user.username
 
         # 프로필 이미지 삭제
         if user.profile_image:
-            # Django의 storage 시스템을 사용하여 파일 삭제
             default_storage.delete(user.profile_image.name)
             logger.info(f"Profile image deleted for user: {username}")
 
@@ -153,11 +142,7 @@ def delete_account_view(request):
 
         # 사용자 계정 삭제
         logger.warning(f"User account deleted: {username}")
-        logout(request)
         user.delete()
 
         messages.success(request, "회원 탈퇴가 완료되었습니다.")
         return redirect("accounts:login")
-
-    # GET 요청시 확인 페이지 표시
-    return render(request, "accounts/delete_account.html")
