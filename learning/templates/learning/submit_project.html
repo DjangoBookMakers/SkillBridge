@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% load form_utils %}
 
-{% block title %}{{ subject.title }} 프로젝트 제출 | 스킬브릿지{% endblock %}
+{% block title %}{{ subject.title }}
+  프로젝트 제출 | 스킬브릿지{% endblock %}
 
 {% block content %}
   <div class="container mx-auto px-4 py-6">
     <div class="max-w-4xl mx-auto">
       <!-- 상단 내비게이션 -->
       <div class="flex items-center text-sm mb-6">
-        <a href="{% url 'courses:course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'courses:detail' course.id %}" class="text-blue-600 hover:text-blue-800">
           {{ course.title }}
         </a>
         <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">

@@ -58,7 +58,7 @@ def add_to_cart(request, course_id):
             f"User {request.user.username} attempted to add already enrolled course to cart: {course.title}"
         )
         messages.warning(request, f"이미 수강 중인 과정입니다: {course.title}")
-        return redirect("courses:course_detail", course_id=course.id)
+        return redirect("courses:detail", course_id=course.id)
 
     # 사용자의 장바구니를 가져오거나 새로 생성
     cart, created = Cart.objects.get_or_create(user=request.user)
