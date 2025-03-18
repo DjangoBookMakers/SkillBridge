@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
+import logging
 
 from courses.models import Course, Subject, Lecture, MissionQuestion, QnAQuestion
 from .forms import ProjectSubmissionForm
@@ -13,6 +14,8 @@ from .models import (
     ProjectSubmission,
     Certificate,
 )
+
+logger = logging.getLogger("django")
 
 
 # 학습 대시보드
@@ -47,6 +50,10 @@ def resume_course(request, course_id):
 
     # 다음 학습 항목 가져오기
     item_type, item = enrollment.get_next_learning_item()
+
+    logger.info(
+        f"User {request.user.username} resuming course {course.title}: next item type={item_type}"
+    )
 
     # 항목 유형에 따라 적절한 URL로 리다이렉트
     if item_type == "video_lecture":
@@ -96,6 +103,9 @@ def video_lecture(request, lecture_id):
 
     # 시청 완료 처리 (강의에 접근하는 것만으로도 완료 처리)
     if not lecture_progress.is_completed:
+        logger.info(
+            f"User {request.user.username} completed lecture: {lecture.title} (id: {lecture_id})"
+        )
         lecture_progress.mark_as_completed()
 
     # 이전/다음 강의 찾기
@@ -145,6 +155,9 @@ def mission(request, lecture_id):
     ).first()
 
     if passed_attempt:
+        logger.info(
+            f"User {request.user.username} accessing already passed mission: {lecture.title}"
+        )
         return redirect("learning_mission_result", attempt_id=passed_attempt.id)
 
     # 시도 중인 미션이 있는지 확인
@@ -156,6 +169,10 @@ def mission(request, lecture_id):
     questions = MissionQuestion.objects.filter(lecture=lecture).order_by("order_index")
 
     if request.method == "POST":
+        logger.info(
+            f"User {request.user.username} submitted answers for mission: {lecture.title}"
+        )
+
         # POST 요청에서 사용자 답안 수집
         user_answers = {}
         for key, value in request.POST.items():
@@ -292,12 +309,16 @@ def issue_certificate(request, enrollment_id):
     # 이미 발급된 수료증이 있는지 확인
     existing_cert = Certificate.objects.filter(enrollment=enrollment).first()
     if existing_cert:
+        logger.info(f"Certificate already issued for enrollment {enrollment_id}")
         messages.info(request, "이미 발급된 수료증이 있습니다.")
         return redirect("learning_view_certificate", certificate_id=existing_cert.id)
 
     # 수료 조건 확인
     if enrollment.status != "completed":
         if not enrollment.check_completion():
+            logger.warning(
+                f"Certificate issuance failed: User {request.user.username} has not completed course {enrollment.course.title}"
+            )
             messages.error(
                 request, "모든 과정을 완료해야 수료증을 발급받을 수 있습니다."
             )
@@ -308,6 +329,9 @@ def issue_certificate(request, enrollment_id):
 
     # 고유 번호 생성
     certificate.generate_certificate_number()
+    logger.info(
+        f"Certificate created with number {certificate.certificate_number} for user {request.user.username}"
+    )
 
     # PDF 생성 (실제 구현 필요)
     # certificate.generate_pdf()
@@ -349,15 +373,22 @@ def download_certificate(request, certificate_id):
 
     # 권한 확인 (본인의 수료증만 다운로드 가능)
     if certificate.user != request.user and not request.user.is_admin:
+        logger.warning(
+            f"Unauthorized certificate download attempt: user={request.user.username}, certificate={certificate_id}"
+        )
         raise PermissionDenied
 
     # 수료증 PDF 파일이 없으면 생성
     if not certificate.pdf_file:
+        logger.info(f"Generating PDF for certificate {certificate_id}")
         certificate.generate_pdf()
         certificate.save()
 
     # PDF 파일 제공
     try:
+        logger.info(
+            f"User {request.user.username} downloading certificate {certificate_id}"
+        )
         return FileResponse(
             open(certificate.pdf_file.path, "rb"),
             content_type="application/pdf",
@@ -365,5 +396,6 @@ def download_certificate(request, certificate_id):
             filename=f"수료증_{certificate.certificate_number}.pdf",
         )
     except Exception as e:
+        logger.error(f"Certificate download failed: {str(e)}")
         messages.error(request, f"파일 다운로드 중 오류가 발생했습니다: {str(e)}")
         return redirect("learning_view_certificate", certificate_id=certificate.id)

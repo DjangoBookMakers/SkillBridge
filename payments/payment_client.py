@@ -5,7 +5,7 @@ from datetime import datetime
 import uuid
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 
 class PortOneClient:
@@ -36,16 +36,24 @@ class PortOneClient:
         - (bool, dict/str): 성공 여부와 결제 정보 또는 오류 메시지
         """
         try:
+            logger.info(
+                f"Verifying payment: imp_uid={imp_uid}, merchant_uid={merchant_uid}, amount={amount}"
+            )
+
             # 결제 정보 조회
             payment = self.iamport.find(imp_uid=imp_uid, merchant_uid=merchant_uid)
 
             # 결제 상태 및 금액 검증
             if payment["status"] == "paid" and payment["amount"] == amount:
+                logger.info(f"Payment verification successful: {merchant_uid}")
                 return True, payment
             else:
+                logger.warning(
+                    f"Payment verification failed - status or amount mismatch: {payment}"
+                )
                 return False, "포트원을 통해 검증한 결과, 결제한 내역이 맞지 않습니다."
         except (Iamport.ResponseError, Iamport.HttpError) as e:
-            logger.error(str(e), exc_info=e)
+            logger.error(f"Payment verification error: {str(e)}")
             return False, str(e)
 
     def cancel_payment(self, reason, imp_uid=None, merchant_uid=None):

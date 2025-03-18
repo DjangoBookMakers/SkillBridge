@@ -14,7 +14,7 @@ from learning.models import Enrollment
 from .models import Cart, CartItem, Payment
 from .payment_client import payment_client
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 
 @login_required
@@ -22,12 +22,18 @@ def cart_view(request):
     """장바구니 조회 페이지"""
     # 사용자의 장바구니를 가져오거나 새로 생성
     cart, created = Cart.objects.get_or_create(user=request.user)
+    if created:
+        logger.info(f"New cart created for user {request.user.username}")
 
     # 장바구니 아이템과 관련 과정 정보 가져오기
     cart_items = CartItem.objects.filter(cart=cart).select_related("course")
 
     # 장바구니 합계 계산
     total_price = cart.get_total_price()
+
+    logger.debug(
+        f"Cart viewed: user={request.user.username}, items={cart_items.count()}, total={total_price}"
+    )
 
     context = {
         "cart": cart,
@@ -48,6 +54,9 @@ def add_to_cart(request, course_id):
         hasattr(request.user, "enrollments")
         and request.user.enrollments.filter(course=course).exists()
     ):
+        logger.info(
+            f"User {request.user.username} attempted to add already enrolled course to cart: {course.title}"
+        )
         messages.warning(request, f"이미 수강 중인 과정입니다: {course.title}")
         return redirect("course_detail", course_id=course.id)
 
@@ -143,6 +152,9 @@ def checkout(request):
 
     # 장바구니가 비어있는 경우
     if not cart_items.exists():
+        logger.warning(
+            f"User {request.user.username} attempted checkout with empty cart"
+        )
         messages.warning(request, "장바구니가 비어있습니다.")
         return redirect("cart_view")
 
@@ -156,6 +168,10 @@ def checkout(request):
 
     payment_name = f"{course_titles} - 스킬브릿지"
     merchant_uid = payment_client.generate_merchant_uid()
+
+    logger.info(
+        f"Checkout initiated: user={request.user.username}, items={cart_items.count()}, total={total_price}, merchant_uid={merchant_uid}"
+    )
 
     context = {
         "cart_items": cart_items,
@@ -173,6 +189,7 @@ def checkout(request):
 def validate_payment(request):
     """결제 검증 API"""
     if request.method != "POST":
+        logger.warning(f"Invalid request method for validate_payment: {request.method}")
         return JsonResponse({"success": False, "message": "잘못된 요청 방식입니다."})
 
     try:
@@ -183,14 +200,22 @@ def validate_payment(request):
 
         # 필수 파라미터 확인
         if not all([imp_uid, merchant_uid, amount]):
+            logger.error(
+                f"Missing required parameters: imp_uid={imp_uid}, merchant_uid={merchant_uid}, amount={amount}"
+            )
             return JsonResponse(
                 {"success": False, "message": "필수 파라미터가 누락되었습니다."}
             )
+
+        logger.info(
+            f"Validating payment: imp_uid={imp_uid}, merchant_uid={merchant_uid}, amount={amount}"
+        )
 
         # 결제 검증 (포트원 API 호출)
         is_valid, result = payment_client.verify_payment(imp_uid, merchant_uid, amount)
 
         if is_valid:
+            logger.info(f"Payment validation successful: {merchant_uid}")
             # 결제 성공 처리 로직
             with transaction.atomic():
                 # 사용자의 장바구니 가져오기
@@ -205,7 +230,7 @@ def validate_payment(request):
                     course = cart_item.course
 
                     # 결제 내역 생성
-                    Payment.objects.create(
+                    payment = Payment.objects.create(
                         user=request.user,
                         course=course,
                         amount=course.price,
@@ -214,16 +239,31 @@ def validate_payment(request):
                         merchant_uid=merchant_uid,
                         imp_uid=imp_uid,
                     )
+                    logger.info(
+                        f"Payment record created: id={payment.id}, user={request.user.username}, course={course.title}"
+                    )
 
                     # 수강 등록
-                    Enrollment.objects.get_or_create(
+                    enrollment, created = Enrollment.objects.get_or_create(
                         user=request.user,
                         course=course,
                         defaults={"status": "enrolled", "progress_percentage": 0},
                     )
+                    if created:
+                        logger.info(
+                            f"New enrollment created: user={request.user.username}, course={course.title}"
+                        )
+                    else:
+                        logger.info(
+                            f"Existing enrollment found: user={request.user.username}, course={course.title}"
+                        )
 
                 # 장바구니 비우기
+                items_count = cart_items.count()
                 cart_items.delete()
+                logger.info(
+                    f"Cart cleared for user {request.user.username}: {items_count} items removed"
+                )
 
             # 결제 완료 페이지 URL
             redirect_url = reverse("payment_complete")
@@ -237,11 +277,11 @@ def validate_payment(request):
             )
         else:
             # 결제 검증 실패
-            logger.error(f"결제 검증 실패: {result}")
+            logger.error(f"Payment validation failed: {result}")
             return JsonResponse({"success": False, "message": result})
 
     except Exception as e:
-        logger.exception("결제 검증 중 오류 발생")
+        logger.exception(f"Error during payment validation: {str(e)}")
         return JsonResponse(
             {"success": False, "message": f"결제 처리 중 오류가 발생했습니다: {str(e)}"}
         )
@@ -294,6 +334,9 @@ def refund_request(request, payment_id):
 
     # 이미 환불된 경우
     if payment.payment_status == "refunded":
+        logger.warning(
+            f"User {request.user.username} attempted to refund already refunded payment: {payment_id}"
+        )
         messages.error(request, "이미 환불된 결제입니다.")
         return redirect("payment_detail", payment_id=payment.id)
 
@@ -301,10 +344,16 @@ def refund_request(request, payment_id):
         refund_reason = request.POST.get("refund_reason", "").strip()
 
         if not refund_reason:
+            logger.warning(
+                f"Refund request missing reason: user={request.user.username}, payment={payment_id}"
+            )
             messages.error(request, "환불 사유를 입력해주세요.")
             return redirect("payment_detail", payment_id=payment.id)
 
         try:
+            logger.info(
+                f"Processing refund: payment={payment_id}, user={request.user.username}, amount={payment.amount}, reason={refund_reason}"
+            )
             with transaction.atomic():
                 # 부분 환불 금액 계산
                 refund_amount = payment.amount

@@ -4,9 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.utils import timezone
+import logging
 
 from payments.models import Payment
 from .forms import LoginForm, SignupForm, ProfileEditForm, CustomPasswordChangeForm
+
+logger = logging.getLogger("django")
 
 
 def login_view(request):
@@ -21,10 +24,13 @@ def login_view(request):
                 login(request, user)
                 user.login_at = timezone.now()
                 user.save()
+                logger.info(f"User {username} logged in successfully.")
                 return redirect("/")  # 사용자 -> 메인 화면
             else:
+                logger.warning(f"Failed login attempt for username: {username}")
                 messages.error(request, "아이디 또는 비밀번호가 올바르지 않습니다.")
         else:
+            logger.info("Invalid form submission in login_view")
             messages.error(request, "입력 정보를 확인해주세요.")
     else:
         form = LoginForm()
@@ -34,14 +40,11 @@ def login_view(request):
 
 def logout_view(request):
     if request.user.is_authenticated:
-        from django.contrib.messages import get_messages
-
-        storage = get_messages(request)
-        storage.used = True
-
+        username = request.user.username
         request.user.logout_at = timezone.now()
         request.user.save()
         logout(request)
+        logger.info(f"User {username} logged out successfully")
     return redirect("/")
 
 
@@ -49,7 +52,8 @@ def signup_view(request):
     if request.method == "POST":
         form = SignupForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            logger.info(f"New user registered: {user.username}")
             return redirect("accounts:login")
     else:
         form = SignupForm()
@@ -92,8 +96,13 @@ def profile_edit_view(request):
         form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
+            logger.info(f"User {request.user.username} updated own profile")
             messages.success(request, "프로필이 성공적으로 업데이트되었습니다.")
             return redirect("accounts:profile")
+        else:
+            logger.warning(
+                f"Profile edit form errors for user {request.user.username}: {form.errors}"
+            )
     else:
         form = ProfileEditForm(instance=request.user)
 
@@ -126,18 +135,24 @@ def change_password_view(request):
 def delete_account_view(request):
     if request.method == "POST":
         user = request.user
+        username = user.username
 
         # 프로필 이미지 삭제
         if user.profile_image:
             # Django의 storage 시스템을 사용하여 파일 삭제
             default_storage.delete(user.profile_image.name)
+            logger.info(f"Profile image deleted for user: {username}")
 
         # 소셜 계정 연결 확인 및 삭제
         social_accounts = request.user.socialaccount_set.all()
         if social_accounts.exists():
+            logger.info(
+                f"Deleting {social_accounts.count()} social accounts for user: {username}"
+            )
             social_accounts.delete()
 
         # 사용자 계정 삭제
+        logger.warning(f"User account deleted: {username}")
         logout(request)
         user.delete()
 

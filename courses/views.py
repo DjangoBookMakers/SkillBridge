@@ -6,10 +6,13 @@ from django.db.models import Avg
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 import json
+import logging
 
 from learning.models import LectureProgress, ProjectSubmission
 from payments.models import Cart, CartItem
 from .models import Course, Subject, Lecture, QnAQuestion, QnAAnswer, CourseReview
+
+logger = logging.getLogger("django")
 
 
 def course_list(request):
@@ -67,6 +70,10 @@ def course_detail(request, course_id):
         is_enrolled = (
             hasattr(request.user, "enrollments")
             and request.user.enrollments.filter(course=course).exists()
+        )
+
+        logger.info(
+            f"User {request.user.username} viewing course detail: {course.title} (enrolled: {is_enrolled})"
         )
 
         # 장바구니에 담겨있는지 확인
@@ -185,10 +192,16 @@ def add_review(request, course_id):
             existing_review.rating = rating
             existing_review.content = content
             existing_review.save()
+            logger.info(
+                f"Review updated: user={request.user.username}, course={course.title}, rating={rating}"
+            )
         else:
             # 새 리뷰 생성
-            CourseReview.objects.create(
+            review = CourseReview.objects.create(
                 user=request.user, course=course, rating=rating, content=content
+            )
+            logger.info(
+                f"New review created: user={request.user.username}, course={course.title}, rating={rating}, id={review.id}"
             )
 
     return redirect("course_detail", course_id=course_id)
@@ -201,6 +214,9 @@ def update_review(request, review_id):
 
     # 권한 체크 (본인의 리뷰만 수정 가능)
     if review.user != request.user:
+        logger.warning(
+            f"User {request.user.username} attempted to update review {review_id} belonging to {review.user.username}"
+        )
         return JsonResponse(
             {"success": False, "message": "수정 권한이 없습니다."}, status=403
         )
@@ -221,6 +237,10 @@ def update_review(request, review_id):
             review.content = content
             review.save()
 
+            logger.info(
+                f"Review {review_id} updated: user={request.user.username}, course={review.course.title}, rating={review.rating}"
+            )
+
             return JsonResponse(
                 {
                     "success": True,
@@ -235,6 +255,7 @@ def update_review(request, review_id):
                 }
             )
         except Exception as e:
+            logger.error(f"Review update error: {str(e)}")
             return JsonResponse(
                 {"success": False, "message": f"오류가 발생했습니다: {str(e)}"},
                 status=500,

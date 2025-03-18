@@ -29,7 +29,7 @@ from payments.models import Payment
 from payments.payment_client import payment_client
 from .models import DailyStatistics
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 
 @login_required
@@ -37,13 +37,19 @@ def admin_dashboard(request):
     """관리자 대시보드 메인 뷰"""
     # 관리자만 접근 가능하도록 체크
     if not request.user.is_admin:
+        logger.warning(
+            f"Non-admin user {request.user.username} attempted to access admin dashboard"
+        )
         return redirect("learning_dashboard")  # 일반 사용자 대시보드로 리디렉션
 
     # 오늘 날짜
     today = timezone.now().date()
 
     # 통계 업데이트 (또는 cron job으로 자동화할 수 있음)
-    DailyStatistics.update_daily_statistics()
+    stats = DailyStatistics.update_daily_statistics()
+    logger.info(
+        f"Daily statistics updated for {today}: new_users={stats.new_users}, active_users={stats.active_users}"
+    )
 
     # 전체 통계 데이터
     total_students = User.objects.filter(is_admin=False).count()
@@ -228,6 +234,9 @@ def project_detail(request, project_id):
 def evaluate_project(request, project_id):
     """프로젝트 평가 페이지"""
     if not request.user.is_admin:
+        logger.warning(
+            f"Non-admin user {request.user.username} attempted to access evaluate_project"
+        )
         return redirect("learning_dashboard")
 
     project = get_object_or_404(ProjectSubmission, id=project_id)
@@ -243,6 +252,9 @@ def evaluate_project(request, project_id):
         project.reviewed_by = request.user
         project.save()
 
+        logger.info(
+            f"Project {project_id} evaluated by {request.user.username}, result: {'pass' if is_passed else 'fail'}"
+        )
         messages.success(request, "프로젝트 평가가 완료되었습니다.")
 
         # 학생이 이 프로젝트를 통과했다면 해당 과목의 진행 상태 업데이트
@@ -254,15 +266,24 @@ def evaluate_project(request, project_id):
                 )
 
                 # 과정 완료 여부 확인
-                enrollment.check_completion()
+                completion_result = enrollment.check_completion()
+                logger.info(
+                    f"Course completion check for user {project.user.username}: {completion_result}"
+                )
 
                 # 만약 이 프로젝트로 인해 과정이 완료되었다면
                 if enrollment.status == "completed":
+                    logger.info(
+                        f"User {project.user.username} completed course {project.subject.course.title}"
+                    )
                     messages.info(
                         request,
                         f"{project.user.username}님의 과정 완료 처리가 되었습니다.",
                     )
             except Enrollment.DoesNotExist:
+                logger.error(
+                    f"Enrollment not found for user {project.user.username} and course {project.subject.course.id}"
+                )
                 pass
 
         return redirect("admin_portal_project_detail", project_id=project.id)
@@ -1387,6 +1408,9 @@ def user_learning_records(request):
 def payment_management(request):
     """결제 내역 관리 페이지"""
     if not request.user.is_admin:
+        logger.warning(
+            f"Non-admin user {request.user.username} attempted to access payment management"
+        )
         return redirect("learning_dashboard")
 
     # 검색 및 필터링
@@ -1394,6 +1418,10 @@ def payment_management(request):
     status_filter = request.GET.get("status", "all")
     date_from = request.GET.get("date_from", "")
     date_to = request.GET.get("date_to", "")
+
+    logger.info(
+        f"Admin {request.user.username} accessing payment records with filters: status={status_filter}, search={search_query}"
+    )
 
     # 기본 쿼리셋 생성
     payments = Payment.objects.all().select_related("user", "course")
@@ -1559,6 +1587,9 @@ def payment_detail_admin(request, payment_id):
 def manage_student_enrollment(request):
     """관리자가 학생의 과정 등록/취소 관리"""
     if not request.user.is_admin:
+        logger.warning(
+            f"Non-admin user {request.user.username} attempted to access enrollment management"
+        )
         return redirect("learning_dashboard")
 
     if request.method == "POST":
@@ -1579,11 +1610,17 @@ def manage_student_enrollment(request):
                 )
 
                 if created:
+                    logger.info(
+                        f"Admin {request.user.username} enrolled user {user.username} in course {course.title}"
+                    )
                     messages.success(
                         request,
                         f"{user.username}님을 {course.title} 과정에 성공적으로 등록했습니다.",
                     )
                 else:
+                    logger.info(
+                        f"Admin {request.user.username} attempted to enroll user {user.username} who is already enrolled in course {course.title}"
+                    )
                     messages.info(
                         request,
                         f"{user.username}님은 이미 {course.title} 과정에 등록되어 있습니다.",
@@ -1595,17 +1632,26 @@ def manage_student_enrollment(request):
                     user=user, course=course
                 ).delete()
                 if deleted:
+                    logger.info(
+                        f"Admin {request.user.username} unenrolled user {user.username} from course {course.title}"
+                    )
                     messages.success(
                         request,
                         f"{user.username}님의 {course.title} 과정 등록이 취소되었습니다.",
                     )
                 else:
+                    logger.warning(
+                        f"Admin {request.user.username} attempted to unenroll user {user.username} who is not enrolled in course {course.title}"
+                    )
                     messages.info(
                         request,
                         f"{user.username}님은 {course.title} 과정에 등록되어 있지 않습니다.",
                     )
 
         except (User.DoesNotExist, Course.DoesNotExist):
+            logger.error(
+                f"Enrollment management error: user_id={user_id}, course_id={course_id} not found"
+            )
             messages.error(request, "사용자 또는 과정을 찾을 수 없습니다.")
 
         return redirect("admin_portal_manage_enrollment")
