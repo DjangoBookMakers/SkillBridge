@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load humanize %}
 
 {% block title %}장바구니 | 스킬브릿지{% endblock %}
 
@@ -36,7 +37,7 @@
                     </div>
                   </div>
                 </td>
-                <td class="py-4 px-4 text-right">{{ item.course.price|floatformat:0 }}원</td>
+                <td class="py-4 px-4 text-right">{{ item.course.price|intcomma}}원</td>
                 <td class="py-4 px-4 text-center">
                   <form method="post" action="{% url 'payments:remove_from_cart' item.id %}" class="inline">
                     {% csrf_token %}
@@ -65,7 +66,7 @@
       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <div class="flex justify-between mb-2">
           <span class="text-gray-700">상품 금액</span>
-          <span class="font-medium">{{ total_price|floatformat:0 }}원</span>
+          <span class="font-medium">{{ total_price|intcomma }}원</span>
         </div>
         <div class="flex justify-between mb-4">
           <span class="text-gray-700">할인 금액</span>
@@ -74,7 +75,7 @@
         <div class="border-t pt-4 border-gray-200">
           <div class="flex justify-between">
             <span class="text-gray-900 font-bold">총 결제 금액</span>
-            <span class="text-xl font-bold text-blue-600">{{ total_price|floatformat:0 }}원</span>
+            <span class="text-xl font-bold text-blue-600">{{ total_price|intcomma }}원</span>
           </div>
         </div>
         <div class="mt-6">
