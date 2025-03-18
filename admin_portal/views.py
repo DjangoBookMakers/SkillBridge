@@ -1146,9 +1146,10 @@ def lecture_create(request, course_id, subject_id):
             questions_data = json.loads(request.POST.get("questions"))
 
             for i, q_data in enumerate(questions_data):
+                question_text = q_data.get("question_text", q_data.get("text", ""))
                 question = MissionQuestion(
                     lecture=lecture,
-                    question_text=q_data["text"],
+                    question_text=question_text,
                     option1=q_data["options"][0],
                     option2=q_data["options"][1],
                     option3=q_data["options"][2],
@@ -1214,9 +1215,10 @@ def lecture_detail(request, course_id, subject_id, lecture_id):
                 questions_data = json.loads(request.POST.get("questions"))
 
                 for i, q_data in enumerate(questions_data):
+                    question_text = q_data.get("question_text", q_data.get("text", ""))
                     question = MissionQuestion(
                         lecture=lecture,
-                        question_text=q_data["text"],
+                        question_text=question_text,
                         option1=q_data["options"][0],
                         option2=q_data["options"][1],
                         option3=q_data["options"][2],
