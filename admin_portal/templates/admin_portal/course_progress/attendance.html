@@ -7,7 +7,7 @@
 {% block content %}
   <div class="container mx-auto px-4 py-6">
     <div class="flex items-center mb-4">
-      <a href="{% url 'admin_portal_course_progress_detail' course.id %}" class="text-blue-600 hover:underline mr-2">
+      <a href="{% url 'admin_portal:course_progress_detail' course.id %}" class="text-blue-600 hover:underline mr-2">
         <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
@@ -36,7 +36,7 @@
         </form>
 
         <!-- PDF 다운로드 링크 -->
-        <a href="{% url 'admin_portal_course_attendance_pdf' course.id %}?period={{ selected_period }}" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200 flex items-center text-sm">
+        <a href="{% url 'admin_portal:course_attendance_pdf' course.id %}?period={{ selected_period }}" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200 flex items-center text-sm">
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
           </svg>

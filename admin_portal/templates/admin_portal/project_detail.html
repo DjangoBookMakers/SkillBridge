@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 py-6">
     <div class="mb-6">
         <div class="flex items-center mb-4">
-            <a href="{% url 'admin_portal_pending_projects' %}" class="text-blue-600 hover:underline mr-2">
+            <a href="{% url 'admin_portal:pending_projects' %}" class="text-blue-600 hover:underline mr-2">
                 <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -54,7 +54,7 @@
 
             <div>
                 {% if not project.reviewed_at %}
-                <a href="{% url 'admin_portal_evaluate_project' project.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition">
+                <a href="{% url 'admin_portal:evaluate_project' project.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition">
                     평가하기
                 </a>
                 {% endif %}

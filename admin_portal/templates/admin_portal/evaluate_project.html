@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 py-6">
     <div class="mb-6">
         <div class="flex items-center mb-4">
-            <a href="{% url 'admin_portal_project_detail' project.id %}" class="text-blue-600 hover:underline mr-2">
+            <a href="{% url 'admin_portal:project_detail' project.id %}" class="text-blue-600 hover:underline mr-2">
                 <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -57,7 +57,7 @@
     <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">평가 작성</h2>
 
-        <form method="post" action="{% url 'admin_portal_evaluate_project' project.id %}">
+        <form method="post" action="{% url 'admin_portal:evaluate_project' project.id %}">
             {% csrf_token %}
 
             <div class="mb-6">
@@ -81,7 +81,7 @@
             </div>
 
             <div class="flex justify-end space-x-4">
-                <a href="{% url 'admin_portal_project_detail' project.id %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition">
+                <a href="{% url 'admin_portal:project_detail' project.id %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition">
                     취소
                 </a>
                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition">
