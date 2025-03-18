@@ -905,6 +905,7 @@ def course_create(request):
         # 폼 데이터 처리
         title = request.POST.get("title")
         description = request.POST.get("description")
+        short_description = request.POST.get("short_description")
         difficulty_level = request.POST.get("difficulty_level")
         target_audience = request.POST.get("target_audience")
         estimated_time = request.POST.get("estimated_time")
@@ -919,6 +920,7 @@ def course_create(request):
         course = Course(
             title=title,
             description=description,
+            short_description=short_description,
             difficulty_level=difficulty_level,
             target_audience=target_audience,
             estimated_time=estimated_time,
@@ -950,6 +952,7 @@ def course_detail(request, course_id):
         # 과정 업데이트
         course.title = request.POST.get("title")
         course.description = request.POST.get("description")
+        course.short_description = request.POST.get("short_description")
         course.difficulty_level = request.POST.get("difficulty_level")
         course.target_audience = request.POST.get("target_audience")
         course.estimated_time = request.POST.get("estimated_time")
