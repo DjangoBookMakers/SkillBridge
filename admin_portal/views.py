@@ -976,7 +976,11 @@ class SubjectManagementView(AdminRequiredMixin, ListView):
 
         # 각 과목의 강의 수 가져오기
         for subject in context["subjects"]:
-            subject.lecture_count = Lecture.objects.filter(subject=subject).count()
+            subject.lecture_count = (
+                Lecture.objects.filter(subject=subject).count()
+                if subject.subject_type == "normal"
+                else 0
+            )
 
         return context
 
