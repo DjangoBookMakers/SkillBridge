@@ -204,7 +204,7 @@ def add_review(request, course_id):
                 f"New review created: user={request.user.username}, course={course.title}, rating={rating}, id={review.id}"
             )
 
-    return redirect("course_detail", course_id=course_id)
+    return redirect("courses:course_detail", course_id=course_id)
 
 
 @login_required

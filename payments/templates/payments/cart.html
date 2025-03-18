@@ -29,7 +29,7 @@
                       </div>
                     {% endif %}
                     <div>
-                      <a href="{% url 'course_detail' item.course.id %}" class="text-blue-600 hover:text-blue-800 font-medium">{{ item.course.title }}</a>
+                      <a href="{% url 'courses:course_detail' item.course.id %}" class="text-blue-600 hover:text-blue-800 font-medium">{{ item.course.title }}</a>
                       <p class="text-xs text-gray-500">{{ item.course.get_difficulty_level_display }}
                         ·
                         {{ item.course.estimated_time }}시간</p>
@@ -57,7 +57,7 @@
         <a href="{% url 'payments:clear_cart' %}" class="text-red-600 hover:text-red-800 text-sm font-medium" onclick="return confirm('장바구니를 비우시겠습니까?')">
           장바구니 비우기
         </a>
-        <a href="{% url 'course_list' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+        <a href="{% url 'courses:course_list' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
           계속 쇼핑하기
         </a>
       </div>
@@ -93,7 +93,7 @@
         </div>
         <h2 class="text-xl font-semibold text-gray-600 mb-3">장바구니가 비어있습니다</h2>
         <p class="text-gray-500 mb-6">관심 있는 과정을 장바구니에 추가해보세요.</p>
-        <a href="{% url 'course_list' %}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
+        <a href="{% url 'courses:course_list' %}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
           과정 둘러보기
         </a>
       </div>

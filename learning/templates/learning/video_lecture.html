@@ -8,7 +8,7 @@
     <div class="max-w-6xl mx-auto">
       <!-- 상단 내비게이션 -->
       <div class="flex items-center text-sm mb-4">
-        <a href="{% url 'course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'courses:course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
           {{ course.title }}
         </a>
         <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -74,7 +74,7 @@
                 </svg>
               </a>
             {% else %}
-              <a href="{% url 'course_detail' course.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
+              <a href="{% url 'courses:course_detail' course.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
                 과정으로 돌아가기
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
@@ -144,7 +144,7 @@
             <h2 class="text-lg font-semibold text-gray-900 mb-4">질문 & 답변</h2>
 
             <!-- 질문 폼 -->
-            <form method="post" action="{% url 'course_add_question' lecture.id %}" class="mb-6">
+            <form method="post" action="{% url 'courses:add_question' lecture.id %}" class="mb-6">
               {% csrf_token %}
               <div class="mb-3">
                 <label for="question" class="block text-sm font-medium text-gray-700 mb-1">질문하기</label>
@@ -182,7 +182,7 @@
 
                   <!-- 관리자만 볼 수 있는 답변 폼 -->
                   {% if request.user.is_admin %}
-                    <form method="post" action="{% url 'course_add_answer' question.id %}" class="mt-2">
+                    <form method="post" action="{% url 'courses:add_answer' question.id %}" class="mt-2">
                       {% csrf_token %}
                       <div class="flex">
                         <input type="text" name="content" class="flex-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-l-md" placeholder="답변 작성..." required="required">
