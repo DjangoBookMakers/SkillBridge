@@ -286,7 +286,7 @@ def evaluate_project(request, project_id):
                 )
                 pass
 
-        return redirect("admin_portal_project_detail", project_id=project.id)
+        return redirect("admin_portal:project_detail", project_id=project.id)
 
     context = {
         "project": project,
@@ -933,7 +933,7 @@ def course_create(request):
 
         course.save()
         messages.success(request, f'과정 "{title}"이(가) 성공적으로 생성되었습니다.')
-        return redirect("admin_portal_course_management")
+        return redirect("admin_portal:course_management")
 
     return render(request, "admin_portal/course_management/course_create.html")
 
@@ -966,7 +966,7 @@ def course_detail(request, course_id):
         messages.success(
             request, f'과정 "{course.title}"이(가) 성공적으로 업데이트되었습니다.'
         )
-        return redirect("admin_portal_course_management")
+        return redirect("admin_portal:course_management")
 
     # 과정에 등록된 학생 수 및 과목 수
     student_count = Enrollment.objects.filter(course=course).count()
@@ -993,10 +993,10 @@ def course_delete(request, course_id):
         title = course.title
         course.delete()
         messages.success(request, f'과정 "{title}"이(가) 성공적으로 삭제되었습니다.')
-        return redirect("admin_portal_course_management")
+        return redirect("admin_portal:course_management")
 
     # GET 요청은 허용하지 않음
-    return redirect("admin_portal_course_detail", course_id=course.id)
+    return redirect("admin_portal:course_detail", course_id=course.id)
 
 
 # 과목 관리 관련 뷰 함수
@@ -1047,7 +1047,7 @@ def subject_create(request, course_id):
         subject.save()
 
         messages.success(request, f'과목 "{title}"이(가) 성공적으로 생성되었습니다.')
-        return redirect("admin_portal_subject_management", course_id=course.id)
+        return redirect("admin_portal:subject_management", course_id=course.id)
 
     # 현재 과목 수 가져오기 (기본 순서 인덱스 설정용)
     current_subject_count = Subject.objects.filter(course=course).count()
@@ -1093,9 +1093,9 @@ def subject_detail(request, course_id, subject_id):
             messages.success(
                 request, f'과목 "{title}"이(가) 성공적으로 삭제되었습니다.'
             )
-            return redirect("admin_portal_subject_management", course_id=course.id)
+            return redirect("admin_portal:subject_management", course_id=course.id)
 
-        return redirect("admin_portal_subject_management", course_id=course.id)
+        return redirect("admin_portal:subject_management", course_id=course.id)
 
     # 과목의 강의 수 가져오기
     lecture_count = Lecture.objects.filter(subject=subject).count()
@@ -1183,7 +1183,7 @@ def lecture_create(request, course_id, subject_id):
 
         messages.success(request, f'강의 "{title}"이(가) 성공적으로 생성되었습니다.')
         return redirect(
-            "admin_portal_lecture_management",
+            "admin_portal:lecture_management",
             course_id=course.id,
             subject_id=subject.id,
         )
@@ -1262,13 +1262,13 @@ def lecture_detail(request, course_id, subject_id, lecture_id):
                 request, f'강의 "{title}"이(가) 성공적으로 삭제되었습니다.'
             )
             return redirect(
-                "admin_portal_lecture_management",
+                "admin_portal:lecture_management",
                 course_id=course.id,
                 subject_id=subject.id,
             )
 
         return redirect(
-            "admin_portal_lecture_management",
+            "admin_portal:lecture_management",
             course_id=course.id,
             subject_id=subject.id,
         )
@@ -1654,7 +1654,7 @@ def manage_student_enrollment(request):
             )
             messages.error(request, "사용자 또는 과정을 찾을 수 없습니다.")
 
-        return redirect("admin_portal_manage_enrollment")
+        return redirect("admin_portal:manage_enrollment")
 
     # 현재 등록된 내역 가져오기
     enrollments = (

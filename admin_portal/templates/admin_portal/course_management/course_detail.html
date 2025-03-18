@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container mx-auto px-4 py-6">
     <div class="flex items-center mb-4">
-        <a href="{% url 'admin_portal_course_management' %}" class="text-blue-600 hover:underline mr-2">
+        <a href="{% url 'admin_portal:course_management' %}" class="text-blue-600 hover:underline mr-2">
             <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
@@ -18,7 +18,7 @@
         <h1 class="text-3xl font-bold text-gray-900">{{ course.title }} 관리</h1>
 
         <div class="flex space-x-2">
-            <a href="{% url 'admin_portal_subject_management' course.id %}"
+            <a href="{% url 'admin_portal:subject_management' course.id %}"
                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
                 과목 관리
             </a>
@@ -190,7 +190,7 @@
                 <button id="cancel-delete" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
                     취소
                 </button>
-                <form method="post" action="{% url 'admin_portal_course_delete' course.id %}">
+                <form method="post" action="{% url 'admin_portal:course_delete' course.id %}">
                     {% csrf_token %}
                     <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
                         삭제

@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 py-6">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900">평가 대기 중인 프로젝트</h1>
-        <a href="{% url 'admin_portal_dashboard' %}" class="text-blue-600 hover:underline">대시보드로 돌아가기</a>
+        <a href="{% url 'admin_portal:dashboard' %}" class="text-blue-600 hover:underline">대시보드로 돌아가기</a>
     </div>
 
     <!-- 필터링 및 검색 -->
@@ -103,11 +103,11 @@
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{% url 'admin_portal_project_detail' project.id %}" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <a href="{% url 'admin_portal:project_detail' project.id %}" class="text-blue-600 hover:text-blue-900 mr-3">
                                 상세보기
                             </a>
                             {% if not project.reviewed_at %}
-                            <a href="{% url 'admin_portal_evaluate_project' project.id %}" class="text-indigo-600 hover:text-indigo-900">
+                            <a href="{% url 'admin_portal:evaluate_project' project.id %}" class="text-indigo-600 hover:text-indigo-900">
                                 평가하기
                             </a>
                             {% endif %}
