@@ -86,7 +86,7 @@ def add_to_cart(request, course_id):
         )
 
     # 일반 요청인 경우 리다이렉트
-    return redirect("cart_view")
+    return redirect("payments:cart_view")
 
 
 @login_required
@@ -97,7 +97,7 @@ def remove_from_cart(request, item_id):
     # 해당 항목이 사용자의 장바구니에 있는지 확인
     if cart_item.cart.user != request.user:
         messages.error(request, "해당 항목을 삭제할 권한이 없습니다.")
-        return redirect("cart_view")
+        return redirect("payments:cart_view")
 
     course_title = cart_item.course.title
     cart_item.delete()
@@ -115,7 +115,7 @@ def remove_from_cart(request, item_id):
         )
 
     # 일반 요청인 경우 리다이렉트
-    return redirect("cart_view")
+    return redirect("payments:cart_view")
 
 
 @login_required
@@ -138,7 +138,7 @@ def clear_cart(request):
         )
 
     # 일반 요청인 경우 리다이렉트
-    return redirect("cart_view")
+    return redirect("payments:cart_view")
 
 
 @login_required
@@ -156,7 +156,7 @@ def checkout(request):
             f"User {request.user.username} attempted checkout with empty cart"
         )
         messages.warning(request, "장바구니가 비어있습니다.")
-        return redirect("cart_view")
+        return redirect("payments:cart_view")
 
     # 장바구니 합계 계산
     total_price = cart.get_total_price()
@@ -266,7 +266,7 @@ def validate_payment(request):
                 )
 
             # 결제 완료 페이지 URL
-            redirect_url = reverse("payment_complete")
+            redirect_url = reverse("payments:payment_complete")
 
             return JsonResponse(
                 {
@@ -338,7 +338,7 @@ def refund_request(request, payment_id):
             f"User {request.user.username} attempted to refund already refunded payment: {payment_id}"
         )
         messages.error(request, "이미 환불된 결제입니다.")
-        return redirect("payment_detail", payment_id=payment.id)
+        return redirect("payments:payment_detail", payment_id=payment.id)
 
     if request.method == "POST":
         refund_reason = request.POST.get("refund_reason", "").strip()
@@ -348,7 +348,7 @@ def refund_request(request, payment_id):
                 f"Refund request missing reason: user={request.user.username}, payment={payment_id}"
             )
             messages.error(request, "환불 사유를 입력해주세요.")
-            return redirect("payment_detail", payment_id=payment.id)
+            return redirect("payments:payment_detail", payment_id=payment.id)
 
         try:
             logger.info(
@@ -383,14 +383,14 @@ def refund_request(request, payment_id):
                     messages.error(
                         request, f"환불 처리 중 오류가 발생했습니다: {result}"
                     )
-                    return redirect("payment_detail", payment_id=payment.id)
+                    return redirect("payments:payment_detail", payment_id=payment.id)
 
-                return redirect("payment_history")
+                return redirect("payments:payment_history")
 
         except Exception as e:
             logger.exception("환불 처리 중 오류 발생")
             messages.error(request, f"환불 처리 중 오류가 발생했습니다: {str(e)}")
-            return redirect("payment_detail", payment_id=payment.id)
+            return redirect("payments:payment_detail", payment_id=payment.id)
 
     # GET 요청은 결제 상세 페이지로 리다이렉트
-    return redirect("payment_detail", payment_id=payment.id)
+    return redirect("payments:payment_detail", payment_id=payment.id)

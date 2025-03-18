@@ -53,7 +53,7 @@
                   </td>
                   <td class="py-4 px-4 text-center text-sm">{{ payment.created_at|date:"Y.m.d H:i" }}</td>
                   <td class="py-4 px-4 text-center">
-                    <a href="{% url 'payment_detail' payment.id %}" class="text-blue-600 hover:text-blue-800 text-sm">
+                    <a href="{% url 'payments:payment_detail' payment.id %}" class="text-blue-600 hover:text-blue-800 text-sm">
                       상세보기
                     </a>
                   </td>
