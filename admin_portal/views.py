@@ -43,7 +43,12 @@ logger = logging.getLogger("django")
 
 
 class AdminDashboardView(AdminRequiredMixin, TemplateView):
-    """관리자 대시보드 메인 뷰"""
+    """관리자 대시보드 메인 뷰
+
+    플랫폼의 주요 통계 데이터를 시각화하고 보여주는 대시보드 페이지입니다.
+    사용자 수, 과정 수, 수강신청 수, 수료증 발급 수 등의 통계와
+    차트 데이터를 포함합니다.
+    """
 
     template_name = "admin_portal/dashboard.html"
 
@@ -123,7 +128,11 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
 
 
 class AdminStatisticsAPIView(AdminRequiredMixin, View):
-    """대시보드 통계 데이터 API (AJAX 요청용)"""
+    """대시보드 통계 데이터 API (AJAX 요청용)
+
+    대시보드의 차트에 표시할 통계 데이터를 JSON 형식으로 반환합니다.
+    기간(7일, 30일, 90일)을 받아서 해당 기간의 통계 데이터를 제공합니다.
+    """
 
     def get(self, request, *args, **kwargs):
         period = request.GET.get("period", "30")  # 기본값은 30일
@@ -154,7 +163,11 @@ class AdminStatisticsAPIView(AdminRequiredMixin, View):
 
 
 class PendingProjectsListView(AdminRequiredMixin, ListView):
-    """평가 대기 중인 프로젝트 목록 페이지"""
+    """평가 대기 중인 프로젝트 목록 페이지
+
+    학생들이 제출한 프로젝트 목록을 보여주고, 평가 상태별로 필터링할 수 있습니다.
+    검색 기능을 통해 특정 학생이나 과목의 프로젝트를 찾을 수 있습니다.
+    """
 
     model = ProjectSubmission
     template_name = "admin_portal/pending_projects.html"
@@ -200,7 +213,11 @@ class PendingProjectsListView(AdminRequiredMixin, ListView):
 
 
 class ProjectDetailView(AdminRequiredMixin, DetailView):
-    """프로젝트 제출 상세 보기"""
+    """프로젝트 제출 상세 보기
+
+    학생이 제출한 프로젝트의 상세 정보를 보여줍니다.
+    프로젝트 파일, 제출자 정보, 평가 상태, 피드백 등을 포함합니다.
+    """
 
     model = ProjectSubmission
     template_name = "admin_portal/project_detail.html"
@@ -215,7 +232,12 @@ class ProjectDetailView(AdminRequiredMixin, DetailView):
 
 
 class EvaluateProjectView(AdminRequiredMixin, DetailView):
-    """프로젝트 평가 페이지"""
+    """프로젝트 평가 페이지
+
+    관리자가 학생이 제출한 프로젝트를 평가하는 페이지입니다.
+    통과 여부를 선택하고 피드백을 작성할 수 있습니다.
+    평가 결과는 학생의 과정 진행 상황에 반영됩니다.
+    """
 
     model = ProjectSubmission
     template_name = "admin_portal/evaluate_project.html"
@@ -271,7 +293,12 @@ class EvaluateProjectView(AdminRequiredMixin, DetailView):
 
 
 class CourseProgressOverviewView(AdminRequiredMixin, TemplateView):
-    """과정 진행 상황 개요 페이지"""
+    """과정 진행 상황 개요 페이지
+
+    모든 과정의 진행 상황을 한눈에 볼 수 있는 개요 페이지입니다.
+    과정별 평균 진행률, 수강생 수, 수료증 발급 현황 등의 정보를 제공합니다.
+    주간 수료증 발급 횟수 차트와 수강생별 평균 진행률 정보도 포함합니다.
+    """
 
     template_name = "admin_portal/course_progress/overview.html"
 
@@ -397,7 +424,12 @@ class CourseProgressOverviewView(AdminRequiredMixin, TemplateView):
 
 
 class CourseProgressDetailView(AdminRequiredMixin, DetailView):
-    """특정 과정의 상세 진행 상황 페이지"""
+    """특정 과정의 상세 진행 상황 페이지
+
+    특정 과정에 대한 상세 진행 상황을 보여주는 페이지입니다.
+    과정의 구성(과목, 강의)과 각 수강생별 진행 상황을 표시합니다.
+    수강생의 과목별 완료 상태, 진행률, 수료증 발급 여부 등을 확인할 수 있습니다.
+    """
 
     model = Course
     template_name = "admin_portal/course_progress/detail.html"
@@ -495,7 +527,12 @@ class CourseProgressDetailView(AdminRequiredMixin, DetailView):
 
 
 class CourseAttendanceView(AdminRequiredMixin, DetailView):
-    """특정 과정의 출석부 페이지"""
+    """특정 과정의 출석부 페이지
+
+    특정 과정의 출석부를 보여주는 페이지입니다.
+    수강생별로 특정 기간 동안의 일별 학습 활동을 표시합니다.
+    기간을 선택하여 다른 주의 출석 현황을 확인할 수 있습니다.
+    """
 
     model = Course
     template_name = "admin_portal/course_progress/attendance.html"
@@ -591,7 +628,12 @@ class CourseAttendanceView(AdminRequiredMixin, DetailView):
 
 
 class CourseAttendancePDFView(AdminRequiredMixin, View):
-    """특정 과정의 출석부 PDF 생성 - 시작일부터 현재까지의 전체 기간 포함"""
+    """특정 과정의 출석부 PDF 생성
+
+    특정 과정의 출석부를 PDF 파일로 생성하여 다운로드할 수 있게 합니다.
+    과정의 시작일부터 현재까지의 전체 기간 데이터를 포함합니다.
+    수강생별로 각 날짜의 활동을 보여주며 현재 화면에 표시된 기간은 강조 표시됩니다.
+    """
 
     def get(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, id=course_id)
@@ -838,7 +880,11 @@ class CourseAttendancePDFView(AdminRequiredMixin, View):
 
 
 class CourseManagementView(AdminRequiredMixin, ListView):
-    """과정 관리 메인 페이지"""
+    """과정 관리 메인 페이지
+
+    모든 과정의 목록을 보여주고 검색, 수정, 삭제 기능을 제공합니다.
+    각 과정의 수강생 수와 과목 수도 함께 표시합니다.
+    """
 
     model = Course
     template_name = "admin_portal/course_management/course_list.html"
@@ -865,7 +911,12 @@ class CourseManagementView(AdminRequiredMixin, ListView):
 
 
 class CourseCreateView(AdminRequiredMixin, CreateView):
-    """과정 생성 페이지"""
+    """과정 생성 페이지
+
+    새로운 과정을 생성하는 페이지입니다.
+    과정 제목, 설명, 난이도, 대상 학생, 학점, 가격 등의 정보를 입력받습니다.
+    현재 로그인한 관리자가 자동으로 강사로 설정됩니다.
+    """
 
     model = Course
     template_name = "admin_portal/course_management/course_create.html"
@@ -900,7 +951,11 @@ class CourseCreateView(AdminRequiredMixin, CreateView):
 
 
 class CourseDetailView(AdminRequiredMixin, UpdateView):
-    """과정 상세 및 수정 페이지"""
+    """과정 상세 및 수정 페이지
+
+    기존 과정의 상세 정보를 보고 수정할 수 있는 페이지입니다.
+    과정 정보 외에도 수강생 수, 과목 수 등의 통계도 함께 보여줍니다.
+    """
 
     model = Course
     template_name = "admin_portal/course_management/course_detail.html"
@@ -938,7 +993,11 @@ class CourseDetailView(AdminRequiredMixin, UpdateView):
 
 
 class CourseDeleteView(AdminRequiredMixin, DeleteView):
-    """과정 삭제 처리"""
+    """과정 삭제 처리를 담당하는 뷰
+
+    특정 Course 인스턴스를 삭제하며, 성공 시 과정 관리 목록 페이지로 리다이렉트합니다.
+    GET 요청은 허용하지 않고 POST 요청만 처리합니다.
+    """
 
     model = Course
     pk_url_kwarg = "course_id"
@@ -959,7 +1018,11 @@ class CourseDeleteView(AdminRequiredMixin, DeleteView):
 
 
 class SubjectManagementView(AdminRequiredMixin, ListView):
-    """과목 관리 페이지"""
+    """과목 관리 페이지
+
+    특정 과정에 포함된 과목 목록을 보여주고 관리할 수 있는 페이지입니다.
+    각 과목의 유형(일반, 중간고사, 기말고사)과 강의 수를 표시합니다.
+    """
 
     model = Subject
     template_name = "admin_portal/course_management/subject_list.html"
@@ -986,7 +1049,12 @@ class SubjectManagementView(AdminRequiredMixin, ListView):
 
 
 class SubjectCreateView(AdminRequiredMixin, CreateView):
-    """과목 생성 페이지"""
+    """과목 생성 페이지 뷰
+
+    특정 과정에 새로운 과목을 생성하는 페이지입니다.
+    과목 제목, 설명, 유형(일반, 중간고사, 기말고사), 순서 등을 입력받습니다.
+    기본 순서 인덱스는 현재 과목 수 + 1로 설정됩니다.
+    """
 
     model = Subject
     template_name = "admin_portal/course_management/subject_create.html"
@@ -1020,7 +1088,12 @@ class SubjectCreateView(AdminRequiredMixin, CreateView):
 
 
 class SubjectDetailView(AdminRequiredMixin, UpdateView):
-    """과목 상세 및 수정 페이지"""
+    """과목 상세 및 수정 페이지
+
+    기존 과목의 상세 정보를 보고 수정할 수 있는 페이지입니다.
+    과목 정보를 업데이트하거나 삭제할 수 있는 기능을 제공합니다.
+    과목에 포함된 강의 수도 표시합니다.
+    """
 
     model = Subject
     template_name = "admin_portal/course_management/subject_detail.html"
@@ -1068,7 +1141,11 @@ class SubjectDetailView(AdminRequiredMixin, UpdateView):
 
 
 class LectureManagementView(AdminRequiredMixin, ListView):
-    """강의 관리 페이지"""
+    """강의 관리 페이지
+
+    특정 과목에 포함된 강의 목록을 보여주고 관리할 수 있는 페이지입니다.
+    각 강의의 유형(동영상, 미션), 순서, 내용 등을 확인할 수 있습니다.
+    """
 
     model = Lecture
     template_name = "admin_portal/course_management/lecture_list.html"
@@ -1092,7 +1169,12 @@ class LectureManagementView(AdminRequiredMixin, ListView):
 
 
 class LectureCreateView(AdminRequiredMixin, CreateView):
-    """강의 생성 페이지"""
+    """강의 생성 페이지
+
+    특정 과목에 새로운 강의를 생성하는 페이지입니다.
+    강의 제목, 설명, 유형(동영상 또는 미션), 순서 등을 입력받습니다.
+    미션 강의인 경우 퀴즈 문제를 추가할 수 있습니다.
+    """
 
     model = Lecture
     template_name = "admin_portal/course_management/lecture_create.html"
@@ -1157,7 +1239,12 @@ class LectureCreateView(AdminRequiredMixin, CreateView):
 
 
 class LectureDetailView(AdminRequiredMixin, UpdateView):
-    """강의 상세 및 수정 페이지"""
+    """강의 상세 및 수정 페이지
+
+    기존 강의의 상세 정보를 보고 수정할 수 있는 페이지입니다.
+    강의 정보를 업데이트하거나 삭제할 수 있는 기능을 제공합니다.
+    미션 강의인 경우 퀴즈 문제를 관리할 수 있습니다.
+    """
 
     model = Lecture
     template_name = "admin_portal/course_management/lecture_detail.html"
@@ -1245,7 +1332,12 @@ class LectureDetailView(AdminRequiredMixin, UpdateView):
 
 
 class UserLearningRecordsView(AdminRequiredMixin, TemplateView):
-    """사용자 학습 기록 페이지"""
+    """사용자 학습 기록 페이지
+
+    사용자별 학습 기록을 볼 수 있는 페이지입니다.
+    특정 날짜의 학습 활동, 각 사용자의 과정별 진행 상황을 확인할 수 있습니다.
+    사용자 필터링과 날짜 필터링 기능을 제공합니다.
+    """
 
     template_name = "admin_portal/user_learning_records.html"
 
@@ -1360,7 +1452,12 @@ class UserLearningRecordsView(AdminRequiredMixin, TemplateView):
 
 
 class PaymentManagementView(AdminRequiredMixin, ListView):
-    """결제 내역 관리 페이지"""
+    """결제 내역 관리 페이지
+
+    결제 내역을 조회하고 관리할 수 있는 페이지입니다.
+    결제 상태, 기간, 사용자 등으로 필터링할 수 있으며,
+    매출 통계 및 결제 방법별 비율 차트를 제공합니다.
+    """
 
     model = Payment
     template_name = "admin_portal/payments/payment_list.html"
@@ -1484,7 +1581,12 @@ class PaymentManagementView(AdminRequiredMixin, ListView):
 
 
 class PaymentDetailAdminView(AdminRequiredMixin, DetailView):
-    """결제 상세 관리 페이지"""
+    """결제 상세 관리 페이지
+
+    특정 결제 내역의 상세 정보를 보여주는 페이지입니다.
+    결제 정보, 구매 상품 정보, 구매자 정보 등을 확인할 수 있으며,
+    완료된 결제의 경우 환불 처리를 할 수 있습니다.
+    """
 
     model = Payment
     template_name = "admin_portal/payments/payment_detail.html"
@@ -1536,7 +1638,11 @@ class PaymentDetailAdminView(AdminRequiredMixin, DetailView):
 
 
 class ManageStudentEnrollmentView(AdminRequiredMixin, TemplateView):
-    """관리자가 학생의 과정 등록/취소 관리"""
+    """관리자가 학생의 과정 등록/취소 관리
+
+    관리자가 학생들의 과정 등록 및 취소를 관리할 수 있는 페이지입니다.
+    특정 학생을 특정 과정에 수동으로 등록하거나 등록을 취소할 수 있습니다.
+    """
 
     template_name = "admin_portal/manage_enrollment.html"
 
