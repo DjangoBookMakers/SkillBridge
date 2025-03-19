@@ -16,6 +16,13 @@ logger = logging.getLogger("django")
 
 
 class LoginView(auth_views.LoginView):
+    """사용자 로그인 뷰
+
+    사용자가 아이디와 비밀번호로 로그인할 수 있는 기능을 제공합니다.
+    로그인 성공 시 사용자의 로그인 시간을 기록하고,
+    실패 시 오류 메시지를 표시합니다.
+    """
+
     template_name = "accounts/login.html"
     form_class = LoginForm
     redirect_authenticated_user = True
@@ -36,6 +43,13 @@ class LoginView(auth_views.LoginView):
 
 
 class LogoutView(auth_views.LogoutView):
+    """사용자 로그아웃 뷰
+
+    사용자가 로그아웃할 수 있는 기능을 제공합니다.
+    로그아웃 시 사용자의 로그아웃 시간을 기록하고,
+    메인 페이지로 리다이렉트합니다.
+    """
+
     next_page = "/"
 
     def dispatch(self, request, *args, **kwargs):
@@ -48,6 +62,13 @@ class LogoutView(auth_views.LogoutView):
 
 
 class SignupView(CreateView):
+    """회원가입 뷰
+
+    새로운 사용자가 계정을 생성할 수 있는 기능을 제공합니다.
+    필요한 정보를 입력받아 새 사용자를 생성하고,
+    성공 시 로그인 페이지로 리다이렉트합니다.
+    """
+
     model = User
     form_class = SignupForm
     template_name = "accounts/signup.html"
@@ -61,6 +82,12 @@ class SignupView(CreateView):
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
+    """사용자 프로필 페이지 뷰
+
+    로그인한 사용자의 프로필 정보와 구매 내역을 보여주는 페이지입니다.
+    개인 정보, 계정 설정, 구매한 과정 목록 등을 확인할 수 있습니다.
+    """
+
     template_name = "accounts/profile.html"
 
     def get_context_data(self, **kwargs):
@@ -92,6 +119,12 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
 
 class ProfileEditView(LoginRequiredMixin, UpdateView):
+    """사용자 프로필 수정 뷰
+
+    로그인한 사용자가 자신의 프로필 정보를 수정할 수 있는 기능을 제공합니다.
+    이메일, 이름, 프로필 이미지, 전화번호 등을 업데이트할 수 있습니다.
+    """
+
     model = User
     template_name = "accounts/profile_edit.html"
     form_class = ProfileEditForm
@@ -108,6 +141,13 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
 
 
 class ChangePasswordView(auth_views.PasswordChangeView):
+    """비밀번호 변경 뷰
+
+    로그인한 사용자가 자신의 비밀번호를 변경할 수 있는 기능을 제공합니다.
+    현재 비밀번호 확인 후 새 비밀번호로 변경하며,
+    성공 시 프로필 페이지로 리다이렉트합니다.
+    """
+
     template_name = "accounts/change_password.html"
     form_class = CustomPasswordChangeForm
     success_url = reverse_lazy("accounts:profile")
@@ -118,6 +158,12 @@ class ChangePasswordView(auth_views.PasswordChangeView):
 
 
 class DeleteAccountView(LoginRequiredMixin, View):
+    """계정 삭제 뷰
+
+    로그인한 사용자가 자신의 계정을 삭제할 수 있는 기능을 제공합니다.
+    계정 삭제 시 프로필 이미지와 소셜 계정 연결 정보도 함께 삭제됩니다.
+    """
+
     template_name = "accounts/delete_account.html"
 
     def get(self, request):
