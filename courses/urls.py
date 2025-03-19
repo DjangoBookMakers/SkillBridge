@@ -38,4 +38,16 @@ urlpatterns = [
         views.AddAnswerView.as_view(),
         name="add_answer",
     ),
+    # 답변 수정 - 기존 답변 내용 변경
+    path(
+        "answer/<int:answer_id>/update/",
+        views.UpdateAnswerView.as_view(),
+        name="update_answer",
+    ),
+    # 답변 삭제 - 작성한 답변 삭제
+    path(
+        "answer/<int:answer_id>/delete/",
+        views.DeleteAnswerView.as_view(),
+        name="delete_answer",
+    ),
 ]
