@@ -28,6 +28,3 @@ EXPOSE 8000
 
 # 환경변수 설정
 ENV DJANGO_SETTINGS_MODULE=config.settings.prod
-
-# 실행 명령
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi:application"]
