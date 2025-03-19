@@ -32,17 +32,17 @@ jobs:
             cd ~/skillbridge &&
             git pull origin main &&
             echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env.prod &&
-            echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" > .env.prod &&
-            echo "PORTONE_PG_PROVIDER=${{ secrets.PORTONE_PG_PROVIDER }}" > .env.prod &&
-            echo "PORTONE_SHOP_ID=${{ secrets.PORTONE_SHOP_ID }}" > .env.prod &&
-            echo "PORTONE_API_KEY=${{ secrets.PORTONE_API_KEY }}" > .env.prod &&
-            echo "PORTONE_API_SECRET=${{ secrets.PORTONE_API_SECRET }}" > .env.prod &&
-            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" > .env.prod &&
-            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" > .env.prod &&
-            echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" > .env.prod &&
-            echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" > .env.prod &&
+            echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env.prod &&
+            echo "PORTONE_PG_PROVIDER=${{ secrets.PORTONE_PG_PROVIDER }}" >> .env.prod &&
+            echo "PORTONE_SHOP_ID=${{ secrets.PORTONE_SHOP_ID }}" >> .env.prod &&
+            echo "PORTONE_API_KEY=${{ secrets.PORTONE_API_KEY }}" >> .env.prod &&
+            echo "PORTONE_API_SECRET=${{ secrets.PORTONE_API_SECRET }}" >> .env.prod &&
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env.prod &&
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env.prod &&
+            echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env.prod &&
+            echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" >> .env.prod &&
 
-            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env.prod-db &&
+            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" > .env.prod-db &&
             echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.prod-db &&
             echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.prod-db &&
             echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env.prod-db &&
