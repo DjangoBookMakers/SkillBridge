@@ -16,6 +16,37 @@
     <!-- 네비게이션 바 -->
     {% include 'navbar.html' %}
 
+    <!-- 상단 광고 배너 - 네비게이션 바 바로 아래 -->
+    {% if request.path == '/' or request.path == '/courses/' or request.resolver_match.url_name == 'courses' %}
+    <div class="bg-blue-900 text-white py-16 px-4 relative">
+      <div class="container mx-auto">
+        <div class="max-w-xl mx-auto text-left">
+          <div class="h-32 flex flex-col justify-center">
+          <h2 class="text-4xl md:text-5xl font-bold mb-3 text-left">
+            <span class="text-white">웹 개발 여정을</span><br>
+            <span class="text-indigo-300">나노 디그리로 완성하세요</span>
+          </h2>
+          </div>
+          <div class="h-20 flex items-center">
+            <p class="text-sm text-gray-300 mb-6 text-left">7개 기술 분야 학습을 통해 나만의 웹 개발 포트폴리오를 만들어보세요.</p>
+          </div>
+          <div class="mt-4 flex justify-center space-x-3">
+            <a href="#" class="px-5 py-2 bg-white hover:bg-gray-100 text-gray-800 rounded-md text-sm font-medium transition-colors">
+              더 알아보기
+            </a>
+          </div>
+        </div>
+      </div>
+
+       <!-- 페이지 인디케이터 (클릭 가능) -->
+       <div class="absolute bottom-3 left-0 right-0 flex justify-center space-x-2">
+        <button class="w-2 h-2 rounded-full bg-white focus:outline-none" data-slide-index="0"></button>
+        <button class="w-2 h-2 rounded-full bg-white opacity-50 focus:outline-none" data-slide-index="1"></button>
+        <button class="w-2 h-2 rounded-full bg-white opacity-50 focus:outline-none" data-slide-index="2"></button>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- 메인 콘텐츠 영역 -->
     <main class="container mx-auto px-4 py-8 flex-grow">
       {% block content %}
@@ -30,6 +61,80 @@
 
     <!-- 공통 JS -->
     {% block extra_js %}{% endblock %}
+
+  <!-- 배너 슬라이드 스크립트 -->
+  {% if request.path == '/' or request.path == '/courses/' or request.resolver_match.url_name == 'courses' %}
+  <script>
+    // 배너 슬라이드 관련 스크립트
+    const slides = [
+      {
+        titleLine1: "Django 백엔드 개발",
+        titleLine2: "나노 디그리로 완성하세요",
+        description: "7개 기술 분야 학습을 통해 나만의 웹 개발 포트폴리오를 만들어보세요.",
+        courseDetailUrl: "/courses/detail/4/"
+      },
+      {
+        titleLine1: "웹 기초",
+        titleLine2: "나만의 웹 만들기",
+        description: "현업 개발자의 피드백으로 실무에 필요한 기술을 습득하세요.",
+        courseDetailUrl: "/courses/detail/1/"
+      },
+      {
+        titleLine1: "백엔드 개발",
+        titleLine2: "강력한 서버 사이드 애플리케이션",
+        description: "Python, node.js, Java 등 다양한 백엔드 언어를 배워보세요.",
+        courseDetailUrl: "/courses/detail/2/"
+      }
+    ];
+
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+
+      currentSlide = index;
+      const banner = document.querySelector('.bg-blue-900');
+      const title = banner.querySelector('h2');
+      const description = banner.querySelector('p');
+      const indicators = banner.querySelectorAll('.rounded-full');
+      const moreInfoLink = banner.querySelector('a');
+
+      // 내용 업데이트
+      title.innerHTML = `
+      <span class="text-white">${slides[index].titleLine1}</span><br>
+      <span class="text-indigo-300">${slides[index].titleLine2}</span>
+      `;
+
+      description.textContent = slides[index].description;
+
+      // 더 알아보기 링크 업데이트
+      moreInfoLink.href = slides[index].courseDetailUrl;
+
+      // 인디케이터 상태 업데이트
+      indicators.forEach((dot, i) => {
+        if (i === index) {
+          dot.classList.remove('opacity-50');
+        } else {
+          dot.classList.add('opacity-50');
+          }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const indicators = document.querySelectorAll('[data-slide-index]');
+
+        indicators.forEach(indicator => {
+          indicator.addEventListener('click', function() {
+            const slideIndex = parseInt(this.getAttribute('data-slide-index'), 10);
+            showSlide(slideIndex);
+      });
+    });
+
+    // 초기 슬라이드 설정
+    showSlide(0);
+  });
+  </script>
+  {% endif %}
   </body>
 
 </html>
