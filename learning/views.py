@@ -126,23 +126,42 @@ class VideoLectureView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         lecture = self.get_object()
+        user = self.request.user
+        is_admin = user.is_admin
 
-        # 수강 신청 여부 확인
-        enrollment = get_object_or_404(
-            Enrollment, user=self.request.user, course=lecture.subject.course
+        # 기본 컨텍스트 설정
+        context.update(
+            {
+                "subject": lecture.subject,
+                "course": lecture.subject.course,
+            }
         )
 
-        # 강의 시청 기록 생성 또는 업데이트
-        lecture_progress, created = LectureProgress.objects.get_or_create(
-            user=self.request.user, lecture=lecture
-        )
-
-        # 시청 완료 처리 (강의에 접근하는 것만으로도 완료 처리)
-        if not lecture_progress.is_completed:
-            logger.info(
-                f"User {self.request.user.username} completed lecture: {lecture.title} (id: {lecture.id})"
+        # 관리자와 수강생에 따라 다른 처리
+        if is_admin:
+            # 관리자는 진행 상황 추적 없이 강의 내용과 질문만 확인
+            context["is_admin_view"] = True
+            # 빈 enrollment 컨텍스트 (템플릿에서 사용됨)
+            context["enrollment"] = {"progress_percentage": 0}
+        else:
+            # 수강 신청 여부 확인
+            enrollment = get_object_or_404(
+                Enrollment, user=user, course=lecture.subject.course
             )
-            lecture_progress.mark_as_completed()
+
+            # 강의 시청 기록 생성 또는 업데이트
+            lecture_progress, created = LectureProgress.objects.get_or_create(
+                user=user, lecture=lecture
+            )
+
+            # 시청 완료 처리 (강의에 접근하는 것만으로도 완료 처리)
+            if not lecture_progress.is_completed:
+                logger.info(
+                    f"User {user.username} completed lecture: {lecture.title} (id: {lecture.id})"
+                )
+                lecture_progress.mark_as_completed()
+
+            context["enrollment"] = enrollment
 
         # 이전/다음 강의 찾기
         subject_lectures = Lecture.objects.filter(subject=lecture.subject).order_by(
@@ -167,14 +186,12 @@ class VideoLectureView(LoginRequiredMixin, DetailView):
 
         context.update(
             {
-                "subject": lecture.subject,
-                "course": lecture.subject.course,
                 "prev_lecture": prev_lecture,
                 "next_lecture": next_lecture,
                 "questions": questions,
-                "enrollment": enrollment,
             }
         )
+
         return context
 
 
