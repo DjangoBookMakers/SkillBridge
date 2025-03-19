@@ -9,6 +9,12 @@ logger = logging.getLogger("django")
 
 
 class PortOneClient:
+    """
+    포트원(구 아임포트) 결제 서비스 연동 클라이언트
+
+    결제 관련 API 호출을 담당하는 클래스입니다.
+    """
+
     def __init__(self):
         # 환경 변수에서 API 키와 시크릿 가져오기
         self.api_key = settings.PORTONE_API_KEY
@@ -18,7 +24,10 @@ class PortOneClient:
         self.iamport = Iamport(imp_key=self.api_key, imp_secret=self.api_secret)
 
     def generate_merchant_uid(self):
-        """고유한 주문번호 생성"""
+        """고유한 주문번호 생성
+
+        주문번호는 'ORD-{날짜}-{UUID}' 형식의 고유 주문번호 형태로 생성됩니다.
+        """
         return (
             f"ORD-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:12].upper()}"
         )
