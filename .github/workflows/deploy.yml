@@ -28,9 +28,20 @@ jobs:
           USER: ${{ secrets.EC2_USER }}
         run: |
           ssh -i ~/.ssh/aws.pem -o StrictHostKeyChecking=no $USER@$HOST '
-            mkdir -p ~/skillbridge &&
-            cd ~/skillbridge &&
-            git pull origin main &&
+            # 저장소 확인 및 클론/업데이트
+            if [ -d ~/SkillBridge/.git ]; then
+              # 기존 저장소가 있는 경우 업데이트
+              cd ~/SkillBridge &&
+              git fetch --all &&
+              git reset --hard origin/main
+            else
+              # 저장소가 없는 경우 새로 클론
+              mkdir -p ~/SkillBridge &&
+              git clone https://github.com/DjangoBookMakers/SkillBridge.git ~/SkillBridge &&
+              cd ~/SkillBridge
+            fi
+
+            # 환경 설정
             echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env.prod &&
             echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env.prod &&
             echo "PORTONE_PG_PROVIDER=${{ secrets.PORTONE_PG_PROVIDER }}" >> .env.prod &&
@@ -47,6 +58,8 @@ jobs:
             echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.prod-db &&
             echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env.prod-db &&
             echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> .env.prod-db &&
+
+            # Docker 컨테이너 재시작
             docker compose down &&
             docker compose up -d --build
           '
