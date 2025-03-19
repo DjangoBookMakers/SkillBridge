@@ -89,13 +89,19 @@
           <!-- 진행 상황 -->
           <div class="bg-white rounded-lg shadow-md p-4 mb-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">과정 진행 상황</h2>
-            <div class="flex items-center mb-2">
-              <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ enrollment.progress_percentage }}%"></div>
+            {% if is_admin_view %}
+              <div class="text-sm text-gray-600 p-3 bg-blue-50 rounded">
+                <p>관리자 모드로 보고 있습니다. 진행 상황은 추적되지 않습니다.</p>
               </div>
-              <span class="text-sm font-medium text-gray-700">{{ enrollment.progress_percentage }}%</span>
-            </div>
-            <p class="text-sm text-gray-600">{{ course.title }}</p>
+            {% else %}
+              <div class="flex items-center mb-2">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                  <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ enrollment.progress_percentage }}%"></div>
+                </div>
+                <span class="text-sm font-medium text-gray-700">{{ enrollment.progress_percentage }}%</span>
+              </div>
+              <p class="text-sm text-gray-600">{{ course.title }}</p>
+            {% endif %}
           </div>
 
           <!-- 강의 목록 -->
