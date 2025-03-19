@@ -929,7 +929,7 @@ class CourseCreateView(AdminRequiredMixin, CreateView):
         "estimated_time",
         "credit",
         "price",
-        "thumbnail",
+        "thumbnail_image",
     ]
 
     def form_valid(self, form):
