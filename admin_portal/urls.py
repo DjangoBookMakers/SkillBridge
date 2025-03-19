@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_qna
 
 app_name = "admin_portal"
 
@@ -106,5 +107,27 @@ urlpatterns = [
         "enrollments/manage/",
         views.ManageStudentEnrollmentView.as_view(),
         name="manage_enrollment",
+    ),
+    # Q&A 관리 관련
+    path("qna/", views_qna.QnAManagementView.as_view(), name="qna_management"),
+    path(
+        "qna/<int:question_id>/",
+        views_qna.QnADetailView.as_view(),
+        name="qna_detail",
+    ),
+    path(
+        "qna/<int:question_id>/answer/add/",
+        views_qna.AddAnswerView.as_view(),
+        name="add_answer",
+    ),
+    path(
+        "answers/<int:answer_id>/update/",
+        views_qna.UpdateAnswerView.as_view(),
+        name="update_answer",
+    ),
+    path(
+        "answers/<int:answer_id>/delete/",
+        views_qna.DeleteAnswerView.as_view(),
+        name="delete_answer",
     ),
 ]
