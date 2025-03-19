@@ -2,6 +2,9 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
+# 환경변수 설정
+ENV DJANGO_SETTINGS_MODULE=config.settings.prod
+
 # 시스템 패키지 설치
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc libpq-dev \
@@ -25,6 +28,3 @@ RUN pdm add gunicorn
 
 # 포트 설정
 EXPOSE 8000
-
-# 환경변수 설정
-ENV DJANGO_SETTINGS_MODULE=config.settings.prod
