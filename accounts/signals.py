@@ -1,10 +1,15 @@
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from allauth.socialaccount.models import SocialAccount
+from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
+from django.db.models.signals import post_save, post_migrate
+from django.dispatch import receiver
 from allauth.account.signals import user_logged_in
+from allauth.socialaccount.models import SocialAccount
 import requests
 from pathlib import Path
+import logging
+
+logger = logging.getLogger("django")
+User = get_user_model()
 
 
 @receiver(post_save, sender=SocialAccount)
@@ -63,10 +68,36 @@ def save_social_profile_image(social_account, force_update=False):
                 user.profile_image.save(
                     file_name, ContentFile(response.content), save=True
                 )
-                print(
+                logger.info(
                     f"프로필 이미지 {'업데이트' if force_update else '저장'} 완료: {user.username}"
                 )
             else:
-                print(f"이미지 다운로드 실패: {response.status_code}")
+                logger.warning(f"이미지 다운로드 실패: {response.status_code}")
         except Exception as e:
-            print(f"프로필 이미지 저장 오류: {e}")
+            logger.error(f"프로필 이미지 저장 오류: {e}")
+
+
+@receiver(post_migrate)
+def create_admin_user(sender, **kwargs):
+    """마이그레이션 후 관리자 계정 자동 생성
+
+    accounts 앱이 마이그레이션될 때만 실행
+    """
+    # accounts 앱 마이그레이션에만 응답
+    if sender.name == "accounts":
+        # 관리자 계정이 없는지 확인
+        if not User.objects.filter(is_admin=True).exists():
+            try:
+                admin_user = User.objects.create_user(
+                    username="admin",
+                    email="admin@example.com",
+                    password="admin123",
+                    first_name="관리자",
+                    last_name="시스템",
+                    is_admin=True,
+                    is_staff=True,
+                    is_superuser=True,
+                )
+                logger.info(f"관리자 계정이 자동 생성되었습니다: {admin_user.username}")
+            except Exception as e:
+                logger.error(f"관리자 계정 생성 실패: {e}")
