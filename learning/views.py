@@ -21,7 +21,10 @@ logger = logging.getLogger("django")
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
-    """학습 대시보드"""
+    """학습 대시보드
+
+    진행 중인 강의와 완료된 강의, 수료증 정보를 확인합니다.
+    """
 
     template_name = "learning/dashboard.html"
 
@@ -53,7 +56,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 
 class ResumeCourseView(LoginRequiredMixin, View):
-    """이어서 학습하기"""
+    """이어서 학습하기
+
+    현재 수강 중인 과정의 다음 학습 항목으로 이동합니다.
+    학습 항목은 동영상 강의, 미션, 프로젝트 중 하나입니다.
+    """
 
     def get(self, request, course_id):
         # 과정 정보 가져오기
@@ -101,7 +108,11 @@ class NextItemView(LoginRequiredMixin, View):
 
 
 class VideoLectureView(LoginRequiredMixin, DetailView):
-    """동영상 강의 시청"""
+    """동영상 강의 시청
+
+    비디오 콘텐츠와 관련 Q&A를 표시합니다.
+    강의에 접근하는 것만으로도 완료 처리됩니다.
+    """
 
     model = Lecture
     template_name = "learning/video_lecture.html"
@@ -168,7 +179,11 @@ class VideoLectureView(LoginRequiredMixin, DetailView):
 
 
 class MissionView(LoginRequiredMixin, View):
-    """미션(쪽지시험) 수행"""
+    """미션(쪽지시험) 수행
+
+    강의 관련 퀴즈 문제를 풀 수 있는 페이지입니다.
+    이미 통과한 미션은 바로 결과 페이지로 리다이렉트됩니다.
+    """
 
     template_name = "learning/mission.html"
 
@@ -291,7 +306,10 @@ class MissionResultView(LoginRequiredMixin, DetailView):
 
 
 class SubmitProjectView(LoginRequiredMixin, FormView):
-    """프로젝트 제출 (중간/기말고사)"""
+    """프로젝트 제출 (중간/기말고사)
+
+    중간/기말고사 프로젝트를 제출합니다.
+    """
 
     template_name = "learning/submit_project.html"
     form_class = ProjectSubmissionForm
@@ -344,7 +362,10 @@ class SubmitProjectView(LoginRequiredMixin, FormView):
 
 
 class ProjectDetailView(LoginRequiredMixin, DetailView):
-    """프로젝트 상세 보기"""
+    """프로젝트 상세 보기
+
+    제출된 프로젝트 정보와 피드백을 확인합니다.
+    """
 
     model = ProjectSubmission
     template_name = "learning/project_detail.html"
@@ -375,7 +396,11 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
 
 
 class IssueCertificateView(LoginRequiredMixin, View):
-    """수료증 발급"""
+    """수료증 발급
+
+    과정 완료 후 수료증을 발급합니다.
+    모든 과정을 완료한 경우에만 발급 가능합니다.
+    """
 
     def get(self, request, enrollment_id):
         enrollment = get_object_or_404(Enrollment, id=enrollment_id, user=request.user)
@@ -427,7 +452,10 @@ class IssueCertificateView(LoginRequiredMixin, View):
 
 
 class ViewCertificateView(LoginRequiredMixin, DetailView):
-    """수료증 보기"""
+    """수료증 보기
+
+    발급된 수료증을 웹 페이지로 확인합니다.
+    """
 
     model = Certificate
     template_name = "learning/view_certificate.html"
