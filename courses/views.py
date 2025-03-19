@@ -17,7 +17,10 @@ logger = logging.getLogger("django")
 
 
 class CourseListView(ListView):
-    """과정 목록 페이지"""
+    """과정 목록 페이지
+
+    모든 강의 과정과 인기 과정을 표시합니다.
+    """
 
     model = Course
     template_name = "courses/course_list.html"
@@ -41,7 +44,10 @@ class CourseListView(ListView):
 
 
 class CourseDetailView(DetailView):
-    """과정 상세 페이지"""
+    """과정 상세 페이지
+
+    특정 과정의 정보, 커리큘럼, 리뷰를 표시합니다.
+    """
 
     model = Course
     template_name = "courses/course_detail.html"
@@ -126,7 +132,10 @@ class CourseDetailView(DetailView):
 
 
 class AddReviewView(LoginRequiredMixin, View):
-    """수강평 추가"""
+    """수강평 추가
+
+    이미 리뷰가 있으면 수정하고, 없으면 새로 생성합니다.
+    """
 
     def post(self, request, course_id):
         course = get_object_or_404(Course, id=course_id)
@@ -158,7 +167,11 @@ class AddReviewView(LoginRequiredMixin, View):
 
 
 class UpdateReviewView(LoginRequiredMixin, View):
-    """수강평 수정"""
+    """수강평 수정
+
+    기존 작성한 리뷰 내용과 평점을 변경합니다.
+    사용자 본인의 리뷰만 수정할 수 있습니다.
+    """
 
     def post(self, request, review_id):
         review = get_object_or_404(CourseReview, id=review_id)
@@ -213,7 +226,11 @@ class UpdateReviewView(LoginRequiredMixin, View):
 
 
 class DeleteReviewView(LoginRequiredMixin, View):
-    """수강평 삭제"""
+    """수강평 삭제
+
+    작성한 리뷰를 삭제합니다.
+    사용자 본인의 리뷰만 삭제할 수 있습니다.
+    """
 
     def post(self, request, review_id):
         review = get_object_or_404(CourseReview, id=review_id)
@@ -242,7 +259,10 @@ class DeleteReviewView(LoginRequiredMixin, View):
 
 
 class AddQuestionView(LoginRequiredMixin, View):
-    """강의에 질문 추가"""
+    """강의에 질문 추가
+
+    특정 강의에 대한 질문을 작성합니다.
+    """
 
     def post(self, request, lecture_id):
         lecture = get_object_or_404(Lecture, id=lecture_id)
@@ -267,7 +287,11 @@ class AddQuestionView(LoginRequiredMixin, View):
 
 
 class AddAnswerView(AdminRequiredMixin, View):
-    """질문에 답변 추가 (관리자 전용)"""
+    """질문에 답변 추가 (관리자 전용)
+
+    관리자가 강의 질문에 대한 답변을 작성합니다.
+    관리자 권한이 필요합니다.
+    """
 
     def post(self, request, question_id):
         question = get_object_or_404(QnAQuestion, id=question_id)
