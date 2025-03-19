@@ -313,3 +313,51 @@ class AddAnswerView(AdminRequiredMixin, View):
 
         # 기본적으로 강의 비디오 페이지로 리다이렉트
         return redirect("learning:video_lecture", lecture_id=question.lecture.id)
+
+
+class UpdateAnswerView(AdminRequiredMixin, View):
+    """답변 수정"""
+
+    def post(self, request, answer_id):
+        answer = get_object_or_404(QnAAnswer, id=answer_id)
+        content = request.POST.get("content", "").strip()
+
+        # 권한 확인 (원래는 본인이 작성한 답변만 수정할 수 있지만, 관리자는 모든 답변 수정 가능)
+
+        if content:
+            # 답변 내용 업데이트
+            answer.content = content
+            answer.save()
+
+            logger.info(f"Admin {request.user.username} updated answer {answer_id}")
+            messages.success(request, "답변이 성공적으로 수정되었습니다.")
+        else:
+            messages.error(request, "답변 내용을 입력해주세요.")
+
+        # 이전 페이지로 리다이렉트
+        referer = request.META.get("HTTP_REFERER")
+        if referer:
+            return redirect(referer)
+
+        return redirect("learning:video_lecture", lecture_id=answer.question.lecture.id)
+
+
+class DeleteAnswerView(AdminRequiredMixin, View):
+    """답변 삭제"""
+
+    def post(self, request, answer_id):
+        answer = get_object_or_404(QnAAnswer, id=answer_id)
+        lecture_id = answer.question.lecture.id
+
+        # 답변 삭제
+        answer.delete()
+
+        logger.info(f"Admin {request.user.username} deleted answer {answer_id}")
+        messages.success(request, "답변이 성공적으로 삭제되었습니다.")
+
+        # 이전 페이지로 리다이렉트
+        referer = request.META.get("HTTP_REFERER")
+        if referer:
+            return redirect(referer)
+
+        return redirect("learning:video_lecture", lecture_id=lecture_id)
