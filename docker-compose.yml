@@ -13,8 +13,8 @@ services:
       - skillbridge_network
     command: >
       bash -c "
-        python manage.py migrate --noinput &&
-        gunicorn --bind 0.0.0.0:8000 config.wsgi:application
+        pdm run python manage.py migrate --noinput &&
+        pdm run gunicorn --bind 0.0.0.0:8000 config.wsgi:application
       "
 
   db:

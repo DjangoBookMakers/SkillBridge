@@ -18,10 +18,10 @@ RUN pip install --upgrade pip \
 COPY . .
 
 # 정적 파일 수집
-RUN python manage.py collectstatic --noinput
+RUN pdm run python manage.py collectstatic --noinput
 
 # gunicorn 설치
-RUN pip install gunicorn
+RUN pdm add gunicorn
 
 # 포트 설정
 EXPOSE 8000
