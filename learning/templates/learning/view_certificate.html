@@ -98,9 +98,10 @@
             </div>
 
             <div class="space-y-4">
-              <a href="{% url 'learning_download_certificate' certificate.id %}" class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center rounded-md transition duration-200">
+              <!-- <a href="{% url 'learning_download_certificate' certificate.id %}" class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center rounded-md transition duration-200">
                 PDF 다운로드
-              </a>
+              </a> -->
+              <button class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center rounded-md transition duration-200" id="download-exact-preview-btn">PDF 다운로드</button>
 
               <a href="{% url 'learning_dashboard' %}" class="block w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 text-center rounded-md transition duration-200">
                 대시보드로 돌아가기
@@ -120,4 +121,47 @@
       background-position: 0 0, 10px 10px;
     }
   </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// 먼저 라이브러리를 추가하세요 (CDN 방식)
+
+function downloadExactPreviewPdf() {
+  // 변환할 요소 선택
+  const certificateElement = document.querySelector('.certificate-container');
+
+  // HTML을 캔버스로 변환
+  html2canvas(certificateElement, {
+    scale: 2, // 고해상도
+    useCORS: true, // 외부 이미지 허용
+    allowTaint: true,
+    backgroundColor: '#ffffff' // 배경색 설정
+  }).then(canvas => {
+    // 캔버스 크기 가져오기
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+
+    // 캔버스를 이미지로 변환
+    const imgData = canvas.toDataURL('image/png');
+
+    // PDF 생성 (캔버스 크기에 맞게)
+    const pdf = new jspdf.jsPDF({
+      orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+      unit: 'px',
+      format: [imgWidth, imgHeight]
+    });
+
+    // 이미지를 PDF에 추가
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+    // PDF 다운로드
+    const fileName = `수료증_{{ certificate.certificate_number }}.pdf`;
+
+    pdf.save(fileName);
+  });
+}
+
+// 버튼에 이벤트 리스너 추가하기 (예시)
+document.getElementById('download-exact-preview-btn').addEventListener('click', downloadExactPreviewPdf);
+</script>
 {% endblock %}
