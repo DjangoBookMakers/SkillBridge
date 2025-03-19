@@ -20,7 +20,10 @@ logger = logging.getLogger("django")
 
 
 class CartView(LoginRequiredMixin, View):
-    """장바구니 조회 페이지"""
+    """장바구니 조회 페이지
+
+    사용자의 장바구니 항목과 총 금액을 표시합니다.
+    """
 
     template_name = "payments/cart.html"
 
@@ -50,7 +53,11 @@ class CartView(LoginRequiredMixin, View):
 
 
 class AddToCartView(LoginRequiredMixin, View):
-    """장바구니에 과정 추가"""
+    """장바구니에 과정 추가
+
+    선택한 과정을 사용자 장바구니에 추가합니다.
+    이미 수강 중인 과정은 추가할 수 없습니다.
+    """
 
     def get(self, request, course_id):
         course = get_object_or_404(Course, id=course_id)
@@ -326,7 +333,10 @@ class PaymentCompleteView(LoginRequiredMixin, TemplateView):
 
 
 class PaymentHistoryView(LoginRequiredMixin, ListView):
-    """결제 내역 페이지"""
+    """결제 내역 페이지
+
+    사용자의 모든 결제 기록을 최신순으로 조회합니다.
+    """
 
     model = Payment
     template_name = "payments/payment_history.html"

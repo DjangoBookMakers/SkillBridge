@@ -4,7 +4,10 @@ from courses.models import Course
 
 
 class Cart(models.Model):
-    """장바구니 모델"""
+    """장바구니 모델
+
+    사용자의 장바구니 정보를 저장합니다.
+    """
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cart"
@@ -25,7 +28,10 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
-    """장바구니 아이템 모델"""
+    """장바구니 아이템 모델
+
+    장바구니에 담긴 개별 과정 정보를 저장합니다.
+    """
 
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     course = models.ForeignKey(
@@ -41,7 +47,10 @@ class CartItem(models.Model):
 
 
 class Payment(models.Model):
-    """결제 모델"""
+    """결제 모델
+
+    과정 구매에 대한 결제 정보를 저장합니다.
+    """
 
     PAYMENT_STATUS_CHOICES = [
         ("pending", "결제 대기"),
