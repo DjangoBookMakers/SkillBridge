@@ -5,7 +5,10 @@ from courses.models import Course, Subject, Lecture, MissionQuestion
 
 
 class Enrollment(models.Model):
-    """수강 신청 및 진행 상황 모델"""
+    """수강 신청 및 진행 상황 모델
+
+    사용자가 과정을 수강하는 상태와 진행 상황을 관리합니다.
+    """
 
     STATUS_CHOICES = [
         ("enrolled", "수강 중"),
@@ -19,14 +22,16 @@ class Enrollment(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name="enrollments"
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="enrolled")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="enrolled", db_index=True
+    )
     progress_percentage = models.IntegerField(
         default=0, help_text="과정 전체 진행률(%)"
     )
     certificate_number = models.CharField(max_length=50, blank=True, null=True)
     certificate_issued_at = models.DateTimeField(blank=True, null=True)
-    enrolled_at = models.DateTimeField(auto_now_add=True)
-    last_activity_at = models.DateTimeField(auto_now=True)
+    enrolled_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    last_activity_at = models.DateTimeField(auto_now=True, db_index=True)
     completed_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
@@ -36,7 +41,11 @@ class Enrollment(models.Model):
         return f"{self.user.username}의 {self.course.title} 수강"
 
     def update_progress(self):
-        """수강 진행률 업데이트"""
+        """수강 진행률 업데이트
+
+        과정에 포함된 모든 강의 중 완료한 강의의 비율을 계산하여
+        progress_percentage 필드를 업데이트합니다.
+        """
         # 전체 강의 수
         total_lectures = Lecture.objects.filter(subject__course=self.course).count()
         if total_lectures == 0:
@@ -55,7 +64,11 @@ class Enrollment(models.Model):
         return progress
 
     def get_next_lecture(self):
-        """다음에 학습할 강의 찾기"""
+        """다음에 학습할 강의 찾기
+
+        사용자가 아직 완료하지 않은 가장 처음 강의를 반환합니다.
+        모든 강의를 완료한 경우 첫 번째 강의를 반환합니다(복습용).
+        """
         # 현재 과정의 모든 과목을 순서대로 가져오기
         subjects = Subject.objects.filter(course=self.course).order_by("order_index")
 
@@ -123,7 +136,11 @@ class Enrollment(models.Model):
         return ("completed", self.course)
 
     def check_completion(self):
-        """과정 수료 조건 확인 (최적화 버전)"""
+        """과정 수료 조건 확인 (최적화 버전)
+
+        모든 강의와 미션, 중간/기말고사를 완료했는지 확인하고,
+        조건 충족 시 상태를 'completed'로 업데이트합니다.
+        """
         # 이미 완료된 과정이면 즉시 True 반환
         if self.status == "completed":
             return True
@@ -186,7 +203,10 @@ class Enrollment(models.Model):
 
 
 class LectureProgress(models.Model):
-    """강의 진행 상태 모델"""
+    """강의 진행 상태 모델
+
+    특정 사용자의 특정 강의 진행 상태를 관리합니다.
+    """
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -196,8 +216,8 @@ class LectureProgress(models.Model):
     lecture = models.ForeignKey(
         Lecture, on_delete=models.CASCADE, related_name="progresses"
     )
-    is_completed = models.BooleanField(default=False)
-    completed_at = models.DateTimeField(blank=True, null=True)
+    is_completed = models.BooleanField(default=False, db_index=True)
+    completed_at = models.DateTimeField(blank=True, null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -222,7 +242,10 @@ class LectureProgress(models.Model):
 
 
 class MissionAttempt(models.Model):
-    """미션(쪽지시험) 시도 모델"""
+    """미션(쪽지시험) 시도 모델
+
+    미션 타입 강의에 대한 사용자의 응시 정보를 저장합니다.
+    """
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -245,7 +268,12 @@ class MissionAttempt(models.Model):
         return f"{self.user.username}의 {self.lecture.title} 시도"
 
     def calculate_score(self):
-        """점수 계산 및 통과 여부 판단"""
+        """점수 계산 및 통과 여부 판단
+
+        사용자 답변과 정답을 비교하여 점수를 계산하고,
+        80% 이상 정답인 경우 통과 처리합니다.
+        통과한 경우 해당 강의의 진행 상태도 완료로 표시합니다.
+        """
         total_questions = MissionQuestion.objects.filter(lecture=self.lecture).count()
         if total_questions == 0:
             return 0
@@ -279,7 +307,10 @@ class MissionAttempt(models.Model):
 
 
 class ProjectSubmission(models.Model):
-    """중간/기말고사 프로젝트 제출 모델"""
+    """중간/기말고사 프로젝트 제출 모델
+
+    중간고사나 기말고사 과목에 대한 프로젝트 제출 정보를 저장합니다.
+    """
 
     def project_file_upload_path(self, filename):
         """중간/기말고사 제출 파일 저장 경로 설정"""
@@ -299,10 +330,10 @@ class ProjectSubmission(models.Model):
         Subject, on_delete=models.CASCADE, related_name="submissions"
     )
     project_file = models.FileField(upload_to=project_file_upload_path)
-    is_passed = models.BooleanField(default=False)
+    is_passed = models.BooleanField(default=False, db_index=True)
     feedback = models.TextField(blank=True)
-    submitted_at = models.DateTimeField(auto_now_add=True)
-    reviewed_at = models.DateTimeField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    reviewed_at = models.DateTimeField(blank=True, null=True, db_index=True)
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -319,7 +350,10 @@ class ProjectSubmission(models.Model):
 
 
 class Certificate(models.Model):
-    """수료증 모델"""
+    """수료증 모델
+
+    과정 완료 후 발급되는 수료증 정보를 저장합니다.
+    """
 
     def certificate_upload_path(self, filename):
         """수료증 파일 저장 경로 설정"""
@@ -332,8 +366,8 @@ class Certificate(models.Model):
     enrollment = models.OneToOneField(
         Enrollment, on_delete=models.CASCADE, related_name="certificate"
     )
-    certificate_number = models.CharField(max_length=50, unique=True)
-    issued_at = models.DateTimeField(auto_now_add=True)
+    certificate_number = models.CharField(max_length=50, unique=True, db_index=True)
+    issued_at = models.DateTimeField(auto_now_add=True, db_index=True)
     pdf_file = models.FileField(
         upload_to=certificate_upload_path, blank=True, null=True
     )
@@ -342,11 +376,14 @@ class Certificate(models.Model):
         return f"{self.user.username}의 {self.enrollment.course.title} 수료증"
 
     def generate_certificate_number(self):
-        """고유한 수료증 번호 생성"""
+        """고유한 수료증 번호 생성
+
+        현재 날짜와 UUID를 조합하여 'SB-{date_str}-{unique_id}' 형식의
+        고유 수료증 번호를 생성합니다.
+        """
         import uuid
         from datetime import datetime
 
-        # 현재 날짜와 UUID를 조합하여 고유 번호 생성
         date_str = datetime.now().strftime("%Y%m%d")
         unique_id = str(uuid.uuid4().hex)[:8].upper()
 
@@ -354,7 +391,11 @@ class Certificate(models.Model):
         return self.certificate_number
 
     def generate_pdf(self):
-        """수료증 PDF 생성 - 웹 버전과 동일한 디자인"""
+        """수료증 PDF 생성 - 웹 버전과 동일한 디자인
+
+        ReportLab을 사용하여 수료증 PDF 파일을 생성하고,
+        파일 객체를 pdf_file 필드에 저장합니다.
+        """
         from reportlab.lib.pagesizes import A4
         from reportlab.lib import colors
         from reportlab.platypus import (

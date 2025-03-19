@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mx-auto px-4 py-6">
     <div class="flex items-center mb-4">
-        <a href="{% url 'admin_portal_course_detail' course.id %}" class="text-blue-600 hover:underline mr-2">
+        <a href="{% url 'admin_portal:course_detail' course.id %}" class="text-blue-600 hover:underline mr-2">
             <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
@@ -19,7 +19,7 @@
             <p class="text-gray-600 mt-1">총 {{ subjects|length }}개의 과목이 등록되어 있습니다.</p>
         </div>
 
-        <a href="{% url 'admin_portal_subject_create' course.id %}"
+        <a href="{% url 'admin_portal:subject_create' course.id %}"
            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -77,19 +77,33 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                        {{ subject.lecture_count }}개
+                        {% if subject.subject_type == 'normal' %}{{ subject.lecture_count }}개{% else %}-{% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                        <div class="flex justify-center space-x-3">
-                            <a href="{% url 'admin_portal_subject_detail' course.id subject.id %}" class="text-indigo-600 hover:text-indigo-900">
-                                수정
-                            </a>
-                            <a href="{% url 'admin_portal_lecture_management' course.id subject.id %}" class="text-green-600 hover:text-green-900">
-                                강의 관리
-                            </a>
-                        </div>
+                        {% if subject.subject_type == 'normal' %}
+                            <div class="flex justify-center space-x-3">
+                                <a href="{% url 'admin_portal:subject_detail' course.id subject.id %}" class="text-indigo-600 hover:text-indigo-900">
+                                    수정
+                                </a>
+                                <a href="{% url 'admin_portal:lecture_management' course.id subject.id %}" class="text-green-600 hover:text-green-900">
+                                    강의 관리
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="flex justify-center">
+                                <a href="{% url 'admin_portal:subject_detail' course.id subject.id %}" class="text-indigo-600 hover:text-indigo-900">
+                                    수정
+                                </a>
+                            </div>
+                            {% endif %}
                     </td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        등록된 과목이 없습니다.
+                        </td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -101,7 +115,7 @@
             <h3 class="mt-2 text-sm font-medium text-gray-900">등록된 과목이 없습니다.</h3>
             <p class="mt-1 text-sm text-gray-500">이 과정에 대한 과목을 추가해주세요.</p>
             <div class="mt-6">
-                <a href="{% url 'admin_portal_subject_create' course.id %}"
+                <a href="{% url 'admin_portal:subject_create' course.id %}"
                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

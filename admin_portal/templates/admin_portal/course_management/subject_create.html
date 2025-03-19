@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mx-auto px-4 py-6">
     <div class="flex items-center mb-4">
-        <a href="{% url 'admin_portal_subject_management' course.id %}" class="text-blue-600 hover:underline mr-2">
+        <a href="{% url 'admin_portal:subject_management' course.id %}" class="text-blue-600 hover:underline mr-2">
             <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
@@ -82,7 +82,7 @@
             </div>
 
             <div class="mt-8 flex justify-end">
-                <a href="{% url 'admin_portal_subject_management' course.id %}"
+                <a href="{% url 'admin_portal:subject_management' course.id %}"
                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md mr-2 hover:bg-gray-300 transition">
                     취소
                 </a>

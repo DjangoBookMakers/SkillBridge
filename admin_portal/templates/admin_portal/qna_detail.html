@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}질문 상세 | 스킬브릿지 관리자{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-6">
+    <div class="flex items-center mb-6">
+      <a href="{% url 'admin_portal:qna_management' %}" class="text-blue-600 hover:underline mr-2">
+        <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Q&A 관리로 돌아가기
+      </a>
+    </div>
+
+    <!-- 질문 정보 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="flex justify-between items-start mb-4">
+        <h1 class="text-2xl font-bold text-gray-900">질문 상세</h1>
+        <a href="{% url 'learning:video_lecture' question.lecture.id %}" class="text-blue-600 hover:text-blue-800 inline-flex items-center text-sm" target="_blank">
+          <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+          </svg>
+          강의 페이지로 이동
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 mb-2">질문 정보</h2>
+          <div class="bg-gray-50 p-4 rounded-md">
+            <div class="mb-3">
+              <span class="text-sm font-semibold text-gray-600">작성자:</span>
+              <span class="ml-1">{{ question.user.username }}</span>
+            </div>
+            <div class="mb-3">
+              <span class="text-sm font-semibold text-gray-600">작성일:</span>
+              <span class="ml-1">{{ question.created_at|date:"Y년 m월 d일 H:i" }}</span>
+            </div>
+            <div class="mb-3">
+              <span class="text-sm font-semibold text-gray-600">상태:</span>
+              <span class="ml-1">
+                {% if question.answers.exists %}
+                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    답변 완료
+                  </span>
+                {% else %}
+                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    미답변
+                  </span>
+                {% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 mb-2">관련 강의</h2>
+          <div class="bg-gray-50 p-4 rounded-md">
+            <div class="mb-3">
+              <span class="text-sm font-semibold text-gray-600">과정:</span>
+              <span class="ml-1">{{ question.lecture.subject.course.title }}</span>
+            </div>
+            <div class="mb-3">
+              <span class="text-sm font-semibold text-gray-600">과목:</span>
+              <span class="ml-1">{{ question.lecture.subject.title }}</span>
+            </div>
+            <div class="mb-3">
+              <span class="text-sm font-semibold text-gray-600">강의:</span>
+              <span class="ml-1">{{ question.lecture.title }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 질문 내용 -->
+      <div class="mt-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">질문 내용</h2>
+        <div class="bg-blue-50 p-4 rounded-md border border-blue-200">
+          <p class="text-gray-800">{{ question.content }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 답변 목록 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">답변</h2>
+
+      {% if answers %}
+        <div class="space-y-4">
+          {% for answer in answers %}
+            <div class="bg-gray-50 p-4 rounded-md relative">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <span class="font-semibold">{{ answer.user.username }}</span>
+                  <span class="text-sm text-gray-500 ml-2">{{ answer.created_at|date:"Y년 m월 d일 H:i" }}</span>
+                </div>
+                <div class="flex space-x-2">
+                  <button type="button" class="edit-answer-btn text-blue-600 hover:text-blue-800 text-sm" data-answer-id="{{ answer.id }}">수정</button>
+                  <form method="post" action="{% url 'admin_portal:delete_answer' answer.id %}" class="inline" onsubmit="return confirm('정말로 이 답변을 삭제하시겠습니까?');">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">삭제</button>
+                  </form>
+                </div>
+              </div>
+              <p class="text-gray-800 answer-content-{{ answer.id }}">{{ answer.content }}</p>
+
+              <!-- 답변 수정 폼 (처음에는 숨김) -->
+              <div class="edit-form-{{ answer.id }} hidden mt-2">
+                <form method="post" action="{% url 'admin_portal:update_answer' answer.id %}">
+                  {% csrf_token %}
+                  <textarea name="content" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2" rows="3" required>{{ answer.content }}</textarea>
+                  <div class="flex justify-end space-x-2">
+                    <button type="button" class="cancel-edit-btn px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded text-sm">취소</button>
+                    <button type="submit" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">저장</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="bg-gray-50 p-4 rounded-md text-center text-gray-500">
+          <p>아직 등록된 답변이 없습니다.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 새 답변 작성 -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">답변 작성</h2>
+      <form method="post" action="{% url 'admin_portal:add_answer' question.id %}">
+        {% csrf_token %}
+        <div class="mb-4">
+          <textarea name="content" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="답변을 작성해주세요..." required></textarea>
+        </div>
+        <div class="flex justify-end">
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+            답변 등록
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 답변 수정 버튼 이벤트 리스너
+    const editButtons = document.querySelectorAll('.edit-answer-btn');
+    editButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const answerId = this.dataset.answerId;
+        // 답변 내용 숨기기
+        document.querySelector(`.answer-content-${answerId}`).style.display = 'none';
+        // 수정 폼 표시
+        document.querySelector(`.edit-form-${answerId}`).classList.remove('hidden');
+      });
+    });
+
+    // 수정 취소 버튼 이벤트 리스너
+    const cancelButtons = document.querySelectorAll('.cancel-edit-btn');
+    cancelButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // 가장 가까운 수정 폼 찾기
+        const editForm = this.closest('[class^="edit-form-"]');
+        const answerId = editForm.className.match(/edit-form-(\d+)/)[1];
+
+        // 수정 폼 숨기기
+        editForm.classList.add('hidden');
+        // 답변 내용 다시 표시
+        document.querySelector(`.answer-content-${answerId}`).style.display = 'block';
+      });
+    });
+  });
+</script>
+{% endblock %}

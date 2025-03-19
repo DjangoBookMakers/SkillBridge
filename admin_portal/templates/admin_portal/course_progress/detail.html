@@ -6,7 +6,7 @@
 {% block content %}
   <div class="container mx-auto px-4 py-6">
     <div class="flex items-center mb-4">
-      <a href="{% url 'admin_portal_course_progress' %}" class="text-blue-600 hover:underline mr-2">
+      <a href="{% url 'admin_portal:course_progress' %}" class="text-blue-600 hover:underline mr-2">
         <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
@@ -17,7 +17,7 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-900">{{ course.title }}
         - 진행 상황 상세</h1>
-      <a href="{% url 'admin_portal_course_attendance' course.id %}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
+      <a href="{% url 'admin_portal:course_attendance' course.id %}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
         출석부 보기
       </a>
     </div>

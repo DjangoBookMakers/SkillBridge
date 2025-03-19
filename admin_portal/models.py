@@ -7,6 +7,9 @@ from learning.models import (
     Certificate,
 )
 import decimal
+import logging
+
+logger = logging.getLogger("django")
 
 
 class DailyStatistics(models.Model):
@@ -46,6 +49,11 @@ class DailyStatistics(models.Model):
         """오늘 날짜의 통계 업데이트"""
         today = timezone.now().date()
         stats, created = cls.objects.get_or_create(date=today)
+
+        if created:
+            logger.info(f"Created new daily statistics record for {today}")
+        else:
+            logger.info(f"Updating existing daily statistics for {today}")
 
         # 신규 가입자 수
         today_start = timezone.make_aware(

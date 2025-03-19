@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}결제하기 | 스킬브릿지{% endblock %}
+
+{% block extra_css %}
+  <style>
+    .spinner-border {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      vertical-align: text-bottom;
+      border: 0.2em solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spinner-border 0.75s linear infinite;
+    }
+
+    @keyframes spinner-border {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #payment-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+      flex-direction: column;
+    }
+
+    #payment-loader.hidden {
+      display: none !important;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">결제하기</h1>
+
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">주문 정보</h2>
+
+      <div class="space-y-4 mb-6">
+        {% for item in cart_items %}
+          <div class="flex justify-between items-center py-2 border-b border-gray-200">
+            <div class="flex items-center">
+              {% if item.course.thumbnail_image %}
+                <img src="{{ item.course.thumbnail_image.url }}" alt="{{ item.course.title }}" class="w-12 h-12 object-cover rounded mr-4">
+              {% else %}
+                <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center mr-4">
+                  <span class="text-gray-500 text-xs">이미지 없음</span>
+                </div>
+              {% endif %}
+              <div>
+                <p class="font-medium">{{ item.course.title }}</p>
+                <p class="text-xs text-gray-500">{{ item.course.get_difficulty_level_display }}
+                  ·
+                  {{ item.course.estimated_time }}시간</p>
+              </div>
+            </div>
+            <p class="font-medium">{{ item.course.price|intcomma }}원</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="flex justify-between text-gray-600 mb-2">
+        <span>상품 금액</span>
+        <span>{{ total_price|intcomma }}원</span>
+      </div>
+      <div class="flex justify-between text-gray-600 mb-4">
+        <span>할인 금액</span>
+        <span>0원</span>
+      </div>
+      <div class="flex justify-between font-bold text-lg pt-4 border-t border-gray-200">
+        <span>총 결제 금액</span>
+        <span class="text-blue-600">{{ total_price|intcomma }}원</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">결제자 정보</h2>
+
+      <div class="space-y-4">
+        <div>
+          <label for="buyer_name" class="block text-sm font-medium text-gray-700 mb-1">이름</label>
+          <input type="text" id="buyer_name" name="buyer_name" value="{{ user.get_full_name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label for="buyer_email" class="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+          <input type="email" id="buyer_email" name="buyer_email" value="{{ user.email }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label for="buyer_tel" class="block text-sm font-medium text-gray-700 mb-1">연락처</label>
+          <input type="tel" id="buyer_tel" name="buyer_tel" value="{{ user.phone_number }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">결제 수단</h2>
+
+      <div class="space-y-2">
+        <div class="flex items-center">
+          <input type="radio" id="pay_card" name="pay_method" value="card" checked="checked" class="mr-2">
+          <label for="pay_card" class="text-gray-700">신용카드</label>
+        </div>
+
+        <div class="flex items-center">
+          <input type="radio" id="pay_trans" name="pay_method" value="trans" class="mr-2">
+          <label for="pay_trans" class="text-gray-700">실시간 계좌이체</label>
+        </div>
+
+        <div class="flex items-center">
+          <input type="radio" id="pay_vbank" name="pay_method" value="vbank" class="mr-2">
+          <label for="pay_vbank" class="text-gray-700">가상계좌</label>
+        </div>
+
+        <div class="flex items-center">
+          <input type="radio" id="pay_phone" name="pay_method" value="phone" class="mr-2">
+          <label for="pay_phone" class="text-gray-700">휴대폰 소액결제</label>
+        </div>
+
+        <div class="flex items-center">
+          <input type="radio" id="pay_kakaopay" name="pay_method" value="kakaopay" class="mr-2">
+          <label for="pay_kakaopay" class="text-gray-700">카카오페이</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-8">
+      <div class="flex items-center mb-4">
+        <input type="checkbox" id="agree_terms" name="agree_terms" class="mr-2">
+        <label for="agree_terms" class="text-gray-700">이용약관 및 개인정보 처리방침에 동의합니다.</label>
+      </div>
+
+      <button id="payment-button" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled="disabled">
+        {{ total_price|intcomma }}원 결제하기
+      </button>
+    </div>
+  </div>
+
+  <!-- 결제 로딩 오버레이 -->
+  <div id="payment-loader" class="hidden">
+    <div class="spinner-border" role="status"></div>
+    <p class="mt-3">결제가 진행 중입니다. 잠시만 기다려주세요...</p>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <!-- 포트원 결제 SDK -->
+  <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const checkoutForm = {
+        paymentButton: document.getElementById('payment-button'),
+        agreeTerms: document.getElementById('agree_terms'),
+        payMethodInputs: document.querySelectorAll('input[name="pay_method"]'),
+        buyerName: document.getElementById('buyer_name'),
+        buyerEmail: document.getElementById('buyer_email'),
+        buyerTel: document.getElementById('buyer_tel'),
+        paymentLoader: document.getElementById('payment-loader')
+      };
+
+      // 약관 동의 체크 시 결제 버튼 활성화
+      checkoutForm
+        .agreeTerms
+        .addEventListener('change', function () {
+          checkoutForm.paymentButton.disabled = !this.checked;
+        });
+
+      // 결제 관련 정보
+      const paymentInfo = {
+        merchantUid: '{{ merchant_uid }}',
+        amount: {{ total_price }},
+        productName: '{{ payment_name }}',
+        csrfToken: '{{ csrf_token }}'
+      };
+
+      // 포트원 객체 초기화
+      const IMP = window.IMP;
+      IMP.init('{{ portone_shop_id }}');
+
+      // 결제 버튼 클릭 처리
+      checkoutForm
+        .paymentButton
+        .addEventListener('click', function () {
+          // 필드 유효성 검사
+          if (!checkoutForm.buyerName.value || !checkoutForm.buyerEmail.value || !checkoutForm.buyerTel.value) {
+            alert('결제자 정보를 모두 입력해주세요.');
+            return;
+          }
+
+          // 결제 방식 선택 가져오기
+          let selectedPayMethod = 'card'; // 기본값
+          checkoutForm
+            .payMethodInputs
+            .forEach(input => {
+              if (input.checked) {
+                selectedPayMethod = input.value;
+              }
+            });
+
+          // 로딩 화면 표시
+          checkoutForm
+            .paymentLoader
+            .classList
+            .remove('hidden');
+
+          // 결제 요청
+          IMP.request_pay({
+            pg: '{{ portone_pg }}',
+            pay_method: selectedPayMethod,
+            merchant_uid: paymentInfo.merchantUid,
+            name: paymentInfo.productName,
+            amount: paymentInfo.amount,
+            buyer_email: checkoutForm.buyerEmail.value,
+            buyer_name: checkoutForm.buyerName.value,
+            buyer_tel: checkoutForm.buyerTel.value,
+            m_redirect_url: window.location.origin + '/payments/complete/'
+          }, function (rsp) {
+            if (rsp.success) {
+              // 결제 성공 시 서버 검증 요청
+              fetch('/payments/validate/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': paymentInfo.csrfToken
+                },
+                body: JSON.stringify({imp_uid: rsp.imp_uid, merchant_uid: rsp.merchant_uid, amount: paymentInfo.amount})
+              })
+                .then(response => response.json())
+                .then(data => {
+                  checkoutForm
+                    .paymentLoader
+                    .classList
+                    .add('hidden');
+
+                  if (data.success) {
+                    // 결제 성공 페이지로 이동
+                    window.location.href = data.redirect_url;
+                  } else {
+                    // 서버 검증 실패 시
+                    alert('결제 처리 중 오류가 발생했습니다: ' + data.message);
+                    console.error('서버 검증 실패: ', data);
+                  }
+                })
+                .catch(error => {
+                  checkoutForm
+                    .paymentLoader
+                    .classList
+                    .add('hidden');
+                  console.error('결제 검증 오류:', error);
+                  alert('결제 검증 중 오류가 발생했습니다.');
+                });
+            } else {
+              // 결제 실패 시
+              checkoutForm
+                .paymentLoader
+                .classList
+                .add('hidden');
+              alert('결제에 실패했습니다: ' + rsp.error_msg);
+            }
+          });
+        });
+    });
+  </script>
+{% endblock %}

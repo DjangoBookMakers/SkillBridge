@@ -8,7 +8,7 @@
     <div class="max-w-6xl mx-auto">
       <!-- 상단 내비게이션 -->
       <div class="flex items-center text-sm mb-4">
-        <a href="{% url 'course_detail' course.id %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'courses:detail' course.id %}" class="text-blue-600 hover:text-blue-800">
           {{ course.title }}
         </a>
         <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -26,9 +26,9 @@
         <!-- 왼쪽: 비디오 플레이어 -->
         <div class="lg:w-2/3">
           <div class="bg-black rounded-lg overflow-hidden">
-            {% if lecture.video_url %}
+            {% if lecture.video_file %}
               <video id="lectureVideo" class="w-full aspect-video" controls="controls" poster="/static/images/video_poster.jpg" controlslist="nodownload">
-                <source src="{{ lecture.video_url.url }}" type="video/mp4">
+                <source src="{{ lecture.video_file.url }}" type="video/mp4">
                 브라우저가 비디오 태그를 지원하지 않습니다.
               </video>
             {% else %}
@@ -55,7 +55,7 @@
           <!-- 이전/다음 강의 버튼 -->
           <div class="mt-8 flex justify-between">
             {% if prev_lecture %}
-              <a href="{% url 'learning_video_lecture' prev_lecture.id %}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
+              <a href="{% url 'learning:video_lecture' prev_lecture.id %}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
@@ -67,14 +67,14 @@
             {% endif %}
 
             {% if next_lecture %}
-              <a href="{% if next_lecture.lecture_type == 'video' %}{% url 'learning_video_lecture' next_lecture.id %}{% else %}{% url 'learning_mission' next_lecture.id %}{% endif %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
+              <a href="{% if next_lecture.lecture_type == 'video' %}{% url 'learning:video_lecture' next_lecture.id %}{% else %}{% url 'learning:mission' next_lecture.id %}{% endif %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition duration-200">
                 다음 강의
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
               </a>
             {% else %}
-              <a href="{% url 'course_detail' course.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
+              <a href="{% url 'courses:detail' course.id %}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
                 과정으로 돌아가기
                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
@@ -89,13 +89,19 @@
           <!-- 진행 상황 -->
           <div class="bg-white rounded-lg shadow-md p-4 mb-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">과정 진행 상황</h2>
-            <div class="flex items-center mb-2">
-              <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ enrollment.progress_percentage }}%"></div>
+            {% if is_admin_view %}
+              <div class="text-sm text-gray-600 p-3 bg-blue-50 rounded">
+                <p>관리자 모드로 보고 있습니다. 진행 상황은 추적되지 않습니다.</p>
               </div>
-              <span class="text-sm font-medium text-gray-700">{{ enrollment.progress_percentage }}%</span>
-            </div>
-            <p class="text-sm text-gray-600">{{ course.title }}</p>
+            {% else %}
+              <div class="flex items-center mb-2">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                  <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ enrollment.progress_percentage }}%"></div>
+                </div>
+                <span class="text-sm font-medium text-gray-700">{{ enrollment.progress_percentage }}%</span>
+              </div>
+              <p class="text-sm text-gray-600">{{ course.title }}</p>
+            {% endif %}
           </div>
 
           <!-- 강의 목록 -->
@@ -108,7 +114,7 @@
                   <ul class="space-y-1 pl-2">
                     {% for lecture_item in subject_item.lectures.all %}
                       <li>
-                        <a href="{% if lecture_item.lecture_type == 'video' %}{% url 'learning_video_lecture' lecture_item.id %}{% else %}{% url 'learning_mission' lecture_item.id %}{% endif %}" class="flex items-center py-1 px-2 rounded text-sm {% if lecture_item.id == lecture.id %}bg-blue-100 text-blue-700{% else %}hover:bg-gray-100{% endif %}">
+                        <a href="{% if lecture_item.lecture_type == 'video' %}{% url 'learning:video_lecture' lecture_item.id %}{% else %}{% url 'learning:mission' lecture_item.id %}{% endif %}" class="flex items-center py-1 px-2 rounded text-sm {% if lecture_item.id == lecture.id %}bg-blue-100 text-blue-700{% else %}hover:bg-gray-100{% endif %}">
                           {% if lecture_item.lecture_type == 'video' %}
                             <svg class="w-4 h-4 mr-2 {% if lecture_item.id == lecture.id %}text-blue-600{% else %}text-gray-400{% endif %}" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
@@ -144,7 +150,7 @@
             <h2 class="text-lg font-semibold text-gray-900 mb-4">질문 & 답변</h2>
 
             <!-- 질문 폼 -->
-            <form method="post" action="{% url 'course_add_question' lecture.id %}" class="mb-6">
+            <form method="post" action="{% url 'courses:add_question' lecture.id %}" class="mb-6">
               {% csrf_token %}
               <div class="mb-3">
                 <label for="question" class="block text-sm font-medium text-gray-700 mb-1">질문하기</label>
@@ -174,15 +180,40 @@
                     <div class="bg-gray-50 p-3 rounded mt-2">
                       <div class="flex justify-between items-start mb-1">
                         <div class="font-medium text-sm">{{ answer.user.username }}</div>
-                        <div class="text-xs text-gray-500">{{ answer.created_at|date:"Y년 m월 d일 H:i" }}</div>
+                        <div class="flex items-center">
+                          <div class="text-xs text-gray-500 mr-2">{{ answer.created_at|date:"Y년 m월 d일 H:i" }}</div>
+                          {% if request.user.is_admin %}
+                            <div class="flex space-x-2">
+                              <button type="button" class="edit-answer-btn text-blue-600 hover:text-blue-800 text-xs" data-answer-id="{{ answer.id }}">수정</button>
+                              <form method="post" action="{% url 'courses:delete_answer' answer.id %}" class="inline" onsubmit="return confirm('정말로 이 답변을 삭제하시겠습니까?');">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-600 hover:text-red-800 text-xs">삭제</button>
+                              </form>
+                            </div>
+                          {% endif %}
+                        </div>
                       </div>
-                      <p class="text-gray-700 text-sm">{{ answer.content }}</p>
+                      <p class="text-gray-700 text-sm answer-content-{{ answer.id }}">{{ answer.content }}</p>
+
+                      <!-- 답변 수정 폼 (처음에는 숨김) -->
+                      {% if request.user.is_admin %}
+                        <div class="edit-form-{{ answer.id }} hidden mt-2">
+                          <form method="post" action="{% url 'courses:update_answer' answer.id %}">
+                            {% csrf_token %}
+                            <textarea name="content" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 text-sm" rows="2" required="required">{{ answer.content }}</textarea>
+                            <div class="flex justify-end space-x-2">
+                              <button type="button" class="cancel-edit-btn px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded text-xs">취소</button>
+                              <button type="submit" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs">저장</button>
+                            </div>
+                          </form>
+                        </div>
+                      {% endif %}
                     </div>
                   {% endfor %}
 
                   <!-- 관리자만 볼 수 있는 답변 폼 -->
                   {% if request.user.is_admin %}
-                    <form method="post" action="{% url 'course_add_answer' question.id %}" class="mt-2">
+                    <form method="post" action="{% url 'courses:add_answer' question.id %}" class="mt-2">
                       {% csrf_token %}
                       <div class="flex">
                         <input type="text" name="content" class="flex-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-l-md" placeholder="답변 작성..." required="required">
@@ -249,6 +280,46 @@
       // 네트워크 상태 감지
       window.addEventListener('offline', () => {
         showErrorMessage('네트워크 연결이 끊겼습니다. 페이지를 새로고침하면 학습 진행이 기록되지 않을 수 있습니다.');
+      });
+
+      // 답변 수정 관련 기능
+      const editButtons = document.querySelectorAll('.edit-answer-btn');
+      editButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          const answerId = this.dataset.answerId;
+          // 답변 내용 숨기기
+          document
+            .querySelector(`.answer-content-${answerId}`)
+            .style
+            .display = 'none';
+          // 수정 폼 표시
+          document
+            .querySelector(`.edit-form-${answerId}`)
+            .classList
+            .remove('hidden');
+        });
+      });
+
+      // 수정 취소 버튼 이벤트 리스너
+      const cancelButtons = document.querySelectorAll('.cancel-edit-btn');
+      cancelButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          // 가장 가까운 수정 폼 찾기
+          const editForm = this.closest('[class^="edit-form-"]');
+          const answerId = editForm
+            .className
+            .match(/edit-form-(\d+)/)[1];
+
+          // 수정 폼 숨기기
+          editForm
+            .classList
+            .add('hidden');
+          // 답변 내용 다시 표시
+          document
+            .querySelector(`.answer-content-${answerId}`)
+            .style
+            .display = 'block';
+        });
       });
     });
   </script>

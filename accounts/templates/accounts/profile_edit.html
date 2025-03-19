@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load form_utils %}
 
 {% block title %}프로필 수정 | 스킬브릿지{% endblock %}
 
@@ -6,10 +7,10 @@
 <div class="max-w-2xl mx-auto p-6">
     <div class="bg-white rounded-lg shadow-md p-6">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">프로필 수정</h1>
-        
+
         <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
-            
+
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2" for="{{ form.profile_image.id_for_label }}">
                     프로필 이미지
@@ -22,78 +23,78 @@
                             {{ user.username|first|upper }}
                         </div>
                     {% endif %}
-                    
+
                     <div class="flex-1">
-                        {{ form.profile_image }}
+                        {{ form.profile_image|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md" }}
                         {% if form.profile_image.errors %}
                             <p class="text-red-500 text-xs mt-1">{{ form.profile_image.errors }}</p>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2" for="{{ form.first_name.id_for_label }}">
                         이름
                     </label>
-                    {{ form.first_name }}
+                    {{ form.first_name|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md" }}
                     {% if form.first_name.errors %}
                         <p class="text-red-500 text-xs mt-1">{{ form.first_name.errors }}</p>
                     {% endif %}
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2" for="{{ form.last_name.id_for_label }}">
                         성
                     </label>
-                    {{ form.last_name }}
+                    {{ form.last_name|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md" }}
                     {% if form.last_name.errors %}
                         <p class="text-red-500 text-xs mt-1">{{ form.last_name.errors }}</p>
                     {% endif %}
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2" for="{{ form.email.id_for_label }}">
                         이메일
                     </label>
-                    {{ form.email }}
+                    {{ form.email|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md" }}
                     {% if form.email.errors %}
                         <p class="text-red-500 text-xs mt-1">{{ form.email.errors }}</p>
                     {% endif %}
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2" for="{{ form.phone_number.id_for_label }}">
                         전화번호
                     </label>
-                    {{ form.phone_number }}
+                    {{ form.phone_number|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md" }}
                     {% if form.phone_number.errors %}
                         <p class="text-red-500 text-xs mt-1">{{ form.phone_number.errors }}</p>
                     {% endif %}
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2" for="{{ form.birth_date.id_for_label }}">
                         생년월일
                     </label>
-                    {{ form.birth_date }}
+                    {{ form.birth_date|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md" }}
                     {% if form.birth_date.errors %}
                         <p class="text-red-500 text-xs mt-1">{{ form.birth_date.errors }}</p>
                     {% endif %}
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2" for="{{ form.gender.id_for_label }}">
                         성별
                     </label>
-                    {{ form.gender }}
+                    {{ form.gender|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md" }}
                     {% if form.gender.errors %}
                         <p class="text-red-500 text-xs mt-1">{{ form.gender.errors }}</p>
                     {% endif %}
                 </div>
             </div>
-            
+
             <div class="flex justify-end space-x-4 pt-4">
                 <a href="{% url 'accounts:profile' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
                     취소

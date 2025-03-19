@@ -4,7 +4,10 @@ from courses.models import Course
 
 
 class Cart(models.Model):
-    """장바구니 모델"""
+    """장바구니 모델
+
+    사용자의 장바구니 정보를 저장합니다.
+    """
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cart"
@@ -25,7 +28,10 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
-    """장바구니 아이템 모델"""
+    """장바구니 아이템 모델
+
+    장바구니에 담긴 개별 과정 정보를 저장합니다.
+    """
 
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     course = models.ForeignKey(
@@ -41,7 +47,10 @@ class CartItem(models.Model):
 
 
 class Payment(models.Model):
-    """결제 모델"""
+    """결제 모델
+
+    과정 구매에 대한 결제 정보를 저장합니다.
+    """
 
     PAYMENT_STATUS_CHOICES = [
         ("pending", "결제 대기"),
@@ -65,23 +74,27 @@ class Payment(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name="payments"
     )
-    amount = models.DecimalField(max_digits=10, decimal_places=0, help_text="결제 금액")
+    amount = models.PositiveIntegerField(help_text="결제 금액")
     payment_method = models.CharField(
-        max_length=20, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        null=True,
+        blank=True,
+        db_index=True,
     )
     payment_status = models.CharField(
-        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
+        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending", db_index=True
     )
-    merchant_uid = models.CharField(max_length=100, unique=True, help_text="주문번호")
+    merchant_uid = models.CharField(max_length=100, help_text="주문번호", db_index=True)
     imp_uid = models.CharField(
         max_length=100,
         null=True,
         blank=True,
-        unique=True,
         help_text="포트원 거래 고유번호",
+        db_index=True,
     )
     refund_reason = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

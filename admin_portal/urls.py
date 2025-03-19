@@ -1,95 +1,133 @@
 from django.urls import path
 from . import views
+from . import views_qna
+
+app_name = "admin_portal"
 
 urlpatterns = [
-    path("dashboard/", views.admin_dashboard, name="admin_portal_dashboard"),
+    # 관리자 대시보드 메인화면 관련
+    path("dashboard/", views.AdminDashboardView.as_view(), name="dashboard"),
     path(
         "api/statistics/",
-        views.admin_statistics_api,
-        name="admin_portal_statistics_api",
+        views.AdminStatisticsAPIView.as_view(),
+        name="statistics_api",
     ),
-    path(
-        "projects/", views.admin_pending_projects, name="admin_portal_pending_projects"
-    ),
+    # 프로젝트 관련
+    path("projects/", views.PendingProjectsListView.as_view(), name="pending_projects"),
     path(
         "projects/<int:project_id>/",
-        views.project_detail,
-        name="admin_portal_project_detail",
+        views.ProjectDetailView.as_view(),
+        name="project_detail",
     ),
     path(
         "projects/<int:project_id>/evaluate/",
-        views.evaluate_project,
-        name="admin_portal_evaluate_project",
+        views.EvaluateProjectView.as_view(),
+        name="evaluate_project",
     ),
     # 과정 진행 상황 모니터링 관련
     path(
         "courses/progress/",
-        views.course_progress_overview,
-        name="admin_portal_course_progress",
+        views.CourseProgressOverviewView.as_view(),
+        name="course_progress",
     ),
     path(
         "courses/<int:course_id>/progress/",
-        views.course_progress_detail,
-        name="admin_portal_course_progress_detail",
+        views.CourseProgressDetailView.as_view(),
+        name="course_progress_detail",
     ),
     path(
         "courses/<int:course_id>/attendance/",
-        views.course_attendance,
-        name="admin_portal_course_attendance",
+        views.CourseAttendanceView.as_view(),
+        name="course_attendance",
     ),
     path(
         "courses/<int:course_id>/attendance/pdf/",
-        views.course_attendance_pdf,
-        name="admin_portal_course_attendance_pdf",
+        views.CourseAttendancePDFView.as_view(),
+        name="course_attendance_pdf",
     ),
-    path("courses/", views.course_management, name="admin_portal_course_management"),
-    path("courses/create/", views.course_create, name="admin_portal_course_create"),
+    # 과정 관리 관련
+    path("courses/", views.CourseManagementView.as_view(), name="course_management"),
+    path("courses/create/", views.CourseCreateView.as_view(), name="course_create"),
     path(
         "courses/<int:course_id>/",
-        views.course_detail,
-        name="admin_portal_course_detail",
+        views.CourseDetailView.as_view(),
+        name="course_detail",
     ),
     path(
         "courses/<int:course_id>/delete/",
-        views.course_delete,
-        name="admin_portal_course_delete",
+        views.CourseDeleteView.as_view(),
+        name="course_delete",
     ),
-    # 과목 관리 URL
+    # 과목 관리 관련
     path(
         "courses/<int:course_id>/subjects/",
-        views.subject_management,
-        name="admin_portal_subject_management",
+        views.SubjectManagementView.as_view(),
+        name="subject_management",
     ),
     path(
         "courses/<int:course_id>/subjects/create/",
-        views.subject_create,
-        name="admin_portal_subject_create",
+        views.SubjectCreateView.as_view(),
+        name="subject_create",
     ),
     path(
         "courses/<int:course_id>/subjects/<int:subject_id>/",
-        views.subject_detail,
-        name="admin_portal_subject_detail",
+        views.SubjectDetailView.as_view(),
+        name="subject_detail",
     ),
-    # 강의 관리 URL
+    # 강의 관리 관련
     path(
         "courses/<int:course_id>/subjects/<int:subject_id>/lectures/",
-        views.lecture_management,
-        name="admin_portal_lecture_management",
+        views.LectureManagementView.as_view(),
+        name="lecture_management",
     ),
     path(
         "courses/<int:course_id>/subjects/<int:subject_id>/lectures/create/",
-        views.lecture_create,
-        name="admin_portal_lecture_create",
+        views.LectureCreateView.as_view(),
+        name="lecture_create",
     ),
     path(
         "courses/<int:course_id>/subjects/<int:subject_id>/lectures/<int:lecture_id>/",
-        views.lecture_detail,
-        name="admin_portal_lecture_detail",
+        views.LectureDetailView.as_view(),
+        name="lecture_detail",
     ),
     # 사용자 학습 기록 관련
     path(
         "users/learning-records/",
-        views.user_learning_records,
-        name="admin_portal_user_learning_records",
+        views.UserLearningRecordsView.as_view(),
+        name="user_learning_records",
+    ),
+    # 결제 관련
+    path("payments/", views.PaymentManagementView.as_view(), name="payments"),
+    path(
+        "payments/<int:payment_id>/",
+        views.PaymentDetailAdminView.as_view(),
+        name="payment_detail",
+    ),
+    path(
+        "enrollments/manage/",
+        views.ManageStudentEnrollmentView.as_view(),
+        name="manage_enrollment",
+    ),
+    # Q&A 관리 관련
+    path("qna/", views_qna.QnAManagementView.as_view(), name="qna_management"),
+    path(
+        "qna/<int:question_id>/",
+        views_qna.QnADetailView.as_view(),
+        name="qna_detail",
+    ),
+    path(
+        "qna/<int:question_id>/answer/add/",
+        views_qna.AddAnswerView.as_view(),
+        name="add_answer",
+    ),
+    path(
+        "answers/<int:answer_id>/update/",
+        views_qna.UpdateAnswerView.as_view(),
+        name="update_answer",
+    ),
+    path(
+        "answers/<int:answer_id>/delete/",
+        views_qna.DeleteAnswerView.as_view(),
+        name="delete_answer",
     ),
 ]

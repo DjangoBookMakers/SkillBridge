@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mx-auto px-4 py-6">
     <div class="flex items-center mb-4">
-        <a href="{% url 'admin_portal_subject_management' course.id %}" class="text-blue-600 hover:underline mr-2">
+        <a href="{% url 'admin_portal:subject_management' course.id %}" class="text-blue-600 hover:underline mr-2">
             <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        <a href="{% url 'admin_portal_lecture_create' course.id subject.id %}"
+        <a href="{% url 'admin_portal:lecture_create' course.id subject.id %}"
            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -81,7 +81,7 @@
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                             동영상
                         </span>
-                        {% elif lecture.lecture_type == 'quiz' %}
+                        {% elif lecture.lecture_type == 'mission' %}
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                             미션
                         </span>
@@ -95,7 +95,7 @@
                             <span class="text-red-600 text-sm">동영상 없음</span>
                             {% endif %}
                         {% else %}
-                            {% with question_count=lecture.question_set.count %}
+                            {% with question_count=lecture.mission_questions.count %}
                                 {% if question_count > 0 %}
                                 <span class="text-green-600 text-sm">문제 {{ question_count }}개</span>
                                 {% else %}
@@ -106,8 +106,17 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                         <div class="flex justify-center space-x-3">
-                            <a href="{% url 'admin_portal_lecture_detail' course.id subject.id lecture.id %}" class="text-indigo-600 hover:text-indigo-900">
+                            <a href="{% url 'admin_portal:lecture_detail' course.id subject.id lecture.id %}" class="text-indigo-600 hover:text-indigo-900">
                                 수정
+                            </a>
+                            <a href="{% url 'learning:video_lecture' lecture.id %}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    강의 보기
+                                </span>
                             </a>
                         </div>
                     </td>
@@ -123,7 +132,7 @@
             <h3 class="mt-2 text-sm font-medium text-gray-900">등록된 강의가 없습니다.</h3>
             <p class="mt-1 text-sm text-gray-500">이 과목에 대한 강의를 추가해주세요.</p>
             <div class="mt-6">
-                <a href="{% url 'admin_portal_lecture_create' course.id subject.id %}"
+                <a href="{% url 'admin_portal:lecture_create' course.id subject.id %}"
                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

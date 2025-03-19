@@ -18,17 +18,19 @@ class Course(models.Model):
     thumbnail_image = models.ImageField(
         upload_to="courses/thumbnails/", null=True, blank=True
     )
-    difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES)
+    difficulty_level = models.CharField(
+        max_length=20, choices=DIFFICULTY_CHOICES, db_index=True
+    )
     target_audience = models.TextField(blank=True)
     estimated_time = models.IntegerField(help_text="예상 학습시간(시간)")
     credit = models.IntegerField(help_text="학점")
     price = models.DecimalField(
-        max_digits=10, decimal_places=0, help_text="원 단위 가격"
+        max_digits=10, decimal_places=0, help_text="원 단위 가격", db_index=True
     )
     instructor = models.ForeignKey(
         InstructorProfile, on_delete=models.CASCADE, related_name="courses"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -46,7 +48,11 @@ class Course(models.Model):
 
 
 class Subject(models.Model):
-    """과목 모델"""
+    """과목 모델
+
+    과정(Course)을 구성하는 하위 단위로, 여러 강의(Lecture)로 구성됩니다.
+    일반 과목, 중간고사, 기말고사 타입이 있습니다.
+    """
 
     SUBJECT_TYPE_CHOICES = [
         ("normal", "일반"),
@@ -59,9 +65,9 @@ class Subject(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    order_index = models.IntegerField(help_text="과목 순서")
+    order_index = models.IntegerField(help_text="과목 순서", db_index=True)
     subject_type = models.CharField(
-        max_length=20, choices=SUBJECT_TYPE_CHOICES, default="normal"
+        max_length=20, choices=SUBJECT_TYPE_CHOICES, default="normal", db_index=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -71,7 +77,10 @@ class Subject(models.Model):
 
 
 class Lecture(models.Model):
-    """강의 모델"""
+    """강의 모델
+
+    과목(Subject)을 구성하는 개별 학습 단위로, 동영상 또는 미션(퀴즈) 형태가 있습니다.
+    """
 
     LECTURE_TYPE_CHOICES = [
         ("video", "동영상"),
@@ -83,9 +92,11 @@ class Lecture(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    order_index = models.IntegerField(help_text="강의 순서")
-    lecture_type = models.CharField(max_length=20, choices=LECTURE_TYPE_CHOICES)
-    video_url = models.FileField(upload_to="videos/", null=True, blank=True)
+    order_index = models.IntegerField(help_text="강의 순서", db_index=True)
+    lecture_type = models.CharField(
+        max_length=20, choices=LECTURE_TYPE_CHOICES, db_index=True
+    )
+    video_file = models.FileField(upload_to="videos/", null=True, blank=True)
     duration = models.IntegerField(help_text="동영상 길이(분)", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -150,7 +161,10 @@ class Lecture(models.Model):
 
 
 class MissionQuestion(models.Model):
-    """미션 문제(쪽지시험) 모델"""
+    """미션 문제(쪽지시험) 모델
+
+    미션 타입 강의에 포함되는 객관식 문제입니다.
+    """
 
     lecture = models.ForeignKey(
         Lecture, on_delete=models.CASCADE, related_name="mission_questions"
@@ -171,7 +185,10 @@ class MissionQuestion(models.Model):
 
 
 class QnAQuestion(models.Model):
-    """Q&A 질문 모델"""
+    """Q&A 질문 모델
+
+    강의에 대한 학습자의 질문을 저장합니다.
+    """
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="qna_questions"
@@ -188,7 +205,10 @@ class QnAQuestion(models.Model):
 
 
 class QnAAnswer(models.Model):
-    """Q&A 답변 모델"""
+    """Q&A 답변 모델
+
+    Q&A 질문에 대한 답변을 저장합니다.
+    """
 
     question = models.ForeignKey(
         QnAQuestion, on_delete=models.CASCADE, related_name="answers"
@@ -203,7 +223,10 @@ class QnAAnswer(models.Model):
 
 
 class CourseReview(models.Model):
-    """과정 리뷰 모델"""
+    """과정 리뷰 모델
+
+    과정에 대한 수강생의 평가 및 리뷰를 저장합니다.
+    """
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="course_reviews"

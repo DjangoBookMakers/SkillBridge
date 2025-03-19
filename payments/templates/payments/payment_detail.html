@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}결제 상세 정보 | 스킬브릿지{% endblock %}
+
+{% block content %}
+  <div class="max-w-3xl mx-auto">
+    <div class="flex items-center mb-6">
+      <a href="{% url 'payments:payment_history' %}" class="text-blue-600 hover:text-blue-800 flex items-center mr-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        결제 내역으로 돌아가기
+      </a>
+      <h1 class="text-2xl font-bold text-gray-900">결제 상세 정보</h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold text-gray-800">주문정보</h2>
+          <div>
+            {% if payment.payment_status == 'completed' %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                결제 완료
+              </span>
+            {% elif payment.payment_status == 'pending' %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                결제 대기
+              </span>
+            {% elif payment.payment_status == 'failed' %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                결제 실패
+              </span>
+            {% elif payment.payment_status == 'refunded' %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                환불 완료
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p class="text-sm text-gray-500 mb-1">주문번호</p>
+            <p class="font-medium">{{ payment.merchant_uid }}</p>
+          </div>
+
+          <div>
+            <p class="text-sm text-gray-500 mb-1">결제일시</p>
+            <p class="font-medium">{{ payment.created_at|date:"Y년 m월 d일 H:i:s" }}</p>
+          </div>
+
+          <div>
+            <p class="text-sm text-gray-500 mb-1">결제 방법</p>
+            <p class="font-medium">{{ payment.get_payment_method_display|default:"기타" }}</p>
+          </div>
+
+          <div>
+            <p class="text-sm text-gray-500 mb-1">결제 금액</p>
+            <p class="font-medium">{{ payment.amount|floatformat:0 }}원</p>
+          </div>
+
+          {% if payment.payment_status == 'refunded' %}
+            <div>
+              <p class="text-sm text-gray-500 mb-1">환불 사유</p>
+              <p class="font-medium">{{ payment.refund_reason|default:"환불 사유 없음" }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <h2 class="text-lg font-semibold text-gray-800">구매 상품 정보</h2>
+      </div>
+
+      <div class="p-6">
+        <div class="flex items-center">
+          {% if payment.course.thumbnail_image %}
+            <img src="{{ payment.course.thumbnail_image.url }}" alt="{{ payment.course.title }}" class="w-16 h-16 object-cover rounded mr-4">
+          {% else %}
+            <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center mr-4">
+              <span class="text-gray-500 text-xs">이미지 없음</span>
+            </div>
+          {% endif %}
+
+          <div>
+            <a href="{% url 'courses:detail' payment.course.id %}" class="text-lg font-medium text-blue-600 hover:text-blue-800">
+              {{ payment.course.title }}
+            </a>
+            <p class="text-sm text-gray-500">
+              {{ payment.course.get_difficulty_level_display }}
+              ·
+              {{ payment.course.estimated_time }}시간 ·
+              {{ payment.course.credit }}학점
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if payment.payment_status == 'completed' %}
+      <div class="mt-6 flex justify-center">
+        <a href="{% url 'learning:resume_course' payment.course.id %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200">
+          강의 바로가기
+        </a>
+      </div>
+    {% endif %}
+
+    {% if payment.payment_status == 'completed' %}
+      <div class="mt-6 text-center">
+        <button id="refund-button" class="text-red-600 hover:text-red-800 text-sm font-medium">
+          환불 요청
+        </button>
+
+        <div id="refund-form" class="hidden mt-4 bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">환불 요청</h3>
+          <form method="post" action="{% url 'payments:refund_request' payment.id %}">
+            {% csrf_token %}
+            <div class="mb-4">
+              <label for="refund_reason" class="block text-sm font-medium text-gray-700 mb-1">환불 사유</label>
+              <textarea id="refund_reason" name="refund_reason" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required="required"></textarea>
+            </div>
+            <div class="flex justify-end space-x-3">
+              <button type="button" id="cancel-refund" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition duration-200">
+                취소
+              </button>
+              <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition duration-200">
+                환불 요청하기
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  {% if payment.payment_status == 'completed' and not payment.refund_reason %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const refundButton = document.getElementById('refund-button');
+        const refundForm = document.getElementById('refund-form');
+        const cancelRefund = document.getElementById('cancel-refund');
+
+        refundButton.addEventListener('click', function () {
+          refundForm
+            .classList
+            .toggle('hidden');
+        });
+
+        cancelRefund.addEventListener('click', function () {
+          refundForm
+            .classList
+            .add('hidden');
+        });
+      });
+    </script>
+  {% endif %}
+{% endblock %}
