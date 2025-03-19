@@ -65,9 +65,9 @@
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            {% if course.thumbnail %}
+                            {% if course.thumbnail_image %}
                             <div class="flex-shrink-0 h-10 w-10 mr-3">
-                                <img class="h-10 w-10 rounded object-cover" src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                                <img class="h-10 w-10 rounded object-cover" src="{{ course.thumbnail_image.url }}" alt="{{ course.title }}">
                             </div>
                             {% else %}
                             <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded flex items-center justify-center mr-3">
