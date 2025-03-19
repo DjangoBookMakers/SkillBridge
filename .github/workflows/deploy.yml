@@ -1,0 +1,52 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: SSH 키 설정
+        env:
+          PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$PRIVATE_KEY" > ~/.ssh/aws.pem
+          sed -i 's/\\n/\n/g' ~/.ssh/aws.pem  # 줄바꿈 문자 처리
+          chmod 600 ~/.ssh/aws.pem
+
+      - name: EC2에 배포
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ~/.ssh/aws.pem -o StrictHostKeyChecking=no $USER@$HOST '
+            mkdir -p ~/skillbridge &&
+            cd ~/skillbridge &&
+            git pull origin main &&
+            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env.prod &&
+            echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" > .env.prod &&
+            echo "PORTONE_PG_PROVIDER=${{ secrets.PORTONE_PG_PROVIDER }}" > .env.prod &&
+            echo "PORTONE_SHOP_ID=${{ secrets.PORTONE_SHOP_ID }}" > .env.prod &&
+            echo "PORTONE_API_KEY=${{ secrets.PORTONE_API_KEY }}" > .env.prod &&
+            echo "PORTONE_API_SECRET=${{ secrets.PORTONE_API_SECRET }}" > .env.prod &&
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" > .env.prod &&
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" > .env.prod &&
+            echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" > .env.prod &&
+            echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" > .env.prod &&
+
+            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env.prod-db &&
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.prod-db &&
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.prod-db &&
+            echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env.prod-db &&
+            echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> .env.prod-db &&
+            docker compose down &&
+            docker compose up -d --build
+          '
