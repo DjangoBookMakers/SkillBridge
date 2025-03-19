@@ -8,6 +8,12 @@ from .models import User
 
 
 class LoginForm(AuthenticationForm):
+    """로그인 폼
+
+    사용자 로그인을 위한 커스텀 폼입니다.
+    아이디와 비밀번호 필드의 스타일과 라벨을 한국어로 설정합니다.
+    """
+
     username = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "아이디"}),
         label="아이디",
@@ -23,6 +29,12 @@ class LoginForm(AuthenticationForm):
 
 
 class SignupForm(UserCreationForm):
+    """회원가입 폼
+
+    새로운 사용자 계정 생성을 위한 커스텀 폼입니다.
+    기본 사용자 생성 폼에 이메일과 추가 필드들을 포함합니다.
+    """
+
     email = forms.EmailField(
         widget=forms.EmailInput(
             attrs={"class": "form-control", "placeholder": "이메일"}
@@ -58,6 +70,12 @@ class SignupForm(UserCreationForm):
 
 
 class ProfileEditForm(forms.ModelForm):
+    """프로필 수정 폼
+
+    사용자가 자신의 프로필 정보를 수정하기 위한 폼입니다.
+    이메일, 이름, 프로필 이미지 등 개인 정보 필드를 포함합니다.
+    """
+
     class Meta:
         model = User
         fields = [
@@ -83,5 +101,11 @@ class ProfileEditForm(forms.ModelForm):
 
 
 class CustomPasswordChangeForm(PasswordChangeForm):
+    """비밀번호 변경 폼
+
+    사용자가 자신의 비밀번호를 변경하기 위한 커스텀 폼입니다.
+    기본 PasswordChangeForm을 상속받아 커스터마이징합니다.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

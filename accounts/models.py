@@ -3,6 +3,13 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
+    """사용자 계정 모델
+
+    Django의 기본 User 모델을 확장하여 추가 필드를 포함합니다.
+    프로필 이미지, 전화번호, 생년월일, 성별 등의 추가 정보와
+    관리자 여부, 로그인/로그아웃 시간을 기록합니다.
+    """
+
     profile_image = models.ImageField(upload_to="profiles/", null=True, blank=True)
     phone_number = models.CharField(max_length=15, blank=True)
     birth_date = models.DateField(null=True, blank=True)
@@ -16,6 +23,12 @@ class User(AbstractUser):
 
 
 class InstructorProfile(models.Model):
+    """강사 프로필 모델
+
+    강사로 등록된 사용자의 추가 정보를 저장합니다.
+    강사 소개, 경력, 자격 등의 정보를 포함합니다.
+    """
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="instructor_profile"
     )
