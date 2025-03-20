@@ -111,6 +111,7 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         active_users_data = [stat.active_users for stat in daily_stats]
         new_enrollments_data = [stat.new_enrollments for stat in daily_stats]
         video_views_data = [stat.completed_lectures for stat in daily_stats]
+        revenue_data = [float(stat.revenue) for stat in daily_stats]
 
         # 차트 데이터 JSON 형식으로 변환
         chart_data = {
@@ -119,6 +120,7 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
             "active_users": active_users_data,
             "new_enrollments": new_enrollments_data,
             "completed_lectures": video_views_data,
+            "revenue": revenue_data,
         }
 
         context["chart_data"] = json.dumps(chart_data)
@@ -157,6 +159,7 @@ class AdminStatisticsAPIView(AdminRequiredMixin, View):
             "new_enrollments": [stat.new_enrollments for stat in stats],
             "completed_lectures": [stat.completed_lectures for stat in stats],
             "certificates_issued": [stat.certificates_issued for stat in stats],
+            "revenue": [float(stat.revenue) for stat in stats],
         }
 
         return JsonResponse(data)
