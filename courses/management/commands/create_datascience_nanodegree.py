@@ -64,7 +64,7 @@ class Command(BaseCommand):
                         "데이터 기반으로 해결하는 방법론을 학습합니다."
                     ),
                     "short_description": "통계부터 머신러닝, 딥러닝까지 데이터 사이언스 완전 정복",
-                    "difficulty_level": "intermediate",
+                    "difficulty_level": "basic",
                     "target_audience": "프로그래밍 기초 지식이 있는 초보자부터 데이터 분석 역량을 강화하려는 실무자까지",
                     "estimated_time": 90,  # 90시간
                     "credit": 9,

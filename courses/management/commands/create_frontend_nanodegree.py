@@ -63,7 +63,7 @@ class Command(BaseCommand):
                         "과정 수료 후에는 프론트엔드 개발자로 취업할 수 있는 포트폴리오를 갖추게 됩니다."
                     ),
                     "short_description": "프론트엔드 개발의 기초부터 심화까지, 실무에 필요한 모든 기술 학습",
-                    "difficulty_level": "intermediate",
+                    "difficulty_level": "beginner",
                     "target_audience": "웹 개발에 관심이 있는 초보자부터 이미 기초 지식이 있는 개발자까지",
                     "estimated_time": 80,  # 80시간
                     "credit": 8,
