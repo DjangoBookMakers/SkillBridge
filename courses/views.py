@@ -36,9 +36,35 @@ class CourseListView(ListView):
 
         # 인기 과정 (각 과정의 평균 평점으로 정렬)
         # 평점이 동일하거나 NULL인 경우, 최신 과정이 먼저 표시
-        context["popular_courses"] = Course.objects.annotate(
+        popular_courses = Course.objects.annotate(
             avg_rating=Avg("reviews__rating")
         ).order_by("-avg_rating", "-created_at")[:6]
+
+        context["popular_courses"] = popular_courses
+
+        # 배너에 표시할 인기 과정 상위 3개
+        banner_courses = popular_courses[:3]
+
+        # 배너 슬라이드 데이터 생성
+        banner_slides = []
+        for course in banner_courses:
+            # 제목을 두 줄로 분리 (가정: 첫 번째 공백을 기준으로 나눔)
+            title_parts = course.title.split(" ", 1)
+            title_line1 = title_parts[0] if len(title_parts) > 0 else course.title
+            title_line2 = (
+                title_parts[1] if len(title_parts) > 1 else "나노 디그리로 완성하세요"
+            )
+
+            slide = {
+                "titleLine1": title_line1,
+                "titleLine2": title_line2,
+                "description": course.short_description
+                or "실무에 필요한 기술을 습득하세요.",
+                "courseDetailUrl": f"/courses/detail/{course.id}/",
+            }
+            banner_slides.append(slide)
+
+        context["banner_slides"] = banner_slides
 
         return context
 
