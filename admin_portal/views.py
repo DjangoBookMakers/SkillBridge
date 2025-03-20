@@ -1538,6 +1538,7 @@ class PaymentManagementView(AdminRequiredMixin, ListView):
 
         # 통계 데이터
         payments = Payment.objects.all()
+        context["completed_count"] = payments.filter(payment_status="completed").count()
         context["total_sales"] = (
             payments.filter(payment_status="completed").aggregate(Sum("amount"))[
                 "amount__sum"
