@@ -29,8 +29,9 @@
 ### 프론트엔드
 
 - **프레임워크**: Django Templates
-- **스타일링**: TailwindCSS
+- **스타일링**: TailwindCSS v3.4.17
 - **자바스크립트**: Vanilla JS
+- **데이터 시각화**: Chart.js (관리자 대시보드)
 
 ### 결제 시스템
 
@@ -103,6 +104,183 @@
 
 ![관리자 포털 GIF](gifs/어드민페이지.gif)
 
+---
+
+## 📁 프로젝트 디렉토리 구조 (주요 내용만)
+
+```
+SkillBridge/
+├── .github/workflows/      # Github Actions 워크플로우
+├── accounts/               # 사용자 계정 관리 앱
+│   ├── templatetags/       # 커스텀 템플릿 태그 및 필터
+│   ├── templates/          # 계정 관련 템플릿
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── admin_portal/           # 관리자 포털 앱
+│   ├── templatetags/
+│   ├── templates/          # 관리자 대시보드 템플릿
+│   ├── apps.py
+│   ├── mixins.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   ├── views.py
+│   └── views_qna.py
+├── config/                 # 프로젝트 설정
+│   ├── settings/           # 환경별 설정
+│   │   ├── base.py         # 기본 설정
+│   │   ├── dev.py          # 개발 환경 설정
+│   │   └── prod.py         # 운영 환경 설정
+│   ├── urls.py             # 메인 URL 설정
+│   └── wsgi.py
+├── courses/                # 강의 과정 관리 앱
+│   ├── templates/          # 과정 관련 템플릿
+│   ├── apps.py
+│   ├── models.py           # 과정, 과목, 강의 모델 정의
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── docs/                   # 문서
+│   ├── ERD.md
+│   └── PRD.md
+├── gifs/                   # README.md용 gif 파일
+├── learning/               # 학습 관리 앱
+│   ├── templates/          # 학습 관련 템플릿
+│   ├── apps.py
+│   ├── forms.py            # 프로젝트 제출, 미션 폼 등
+│   ├── models.py           # 수강신청, 진도율, 수료증 모델 정의
+│   ├── signals.py          # 수강 상태 업데이트 신호 처리
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── media/                  # 사용자 업로드 파일 저장 디렉토리
+│   ├── profiles/           # 사용자 프로필 기본 이미지
+│   ├── thumbnails/         # 샘플 과정(나노디그리) 썸네일 이미지
+│   └── videos/             # 샘플 강의 비디오 파일
+├── nginx/                  # Nginx 설정
+│   ├── Dockerfile
+│   └── nginx.conf
+├── payments/               # 결제 처리 앱
+│   ├── templates/          # 결제 관련 템플릿
+│   ├── apps.py
+│   ├── models.py           # 장바구니, 결제 모델 정의
+│   ├── payment_client.py   # 포트원 결제 클라이언트
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── static/                 # 정적 파일 디렉토리
+│   ├── fonts/              # 폰트 파일 (수료증 PDF 생성용)
+│   └── images/
+├── templates/              # 전역 템플릿
+│   ├── base.html           # 기본 레이아웃 템플릿
+│   ├── footer.html         # 푸터 템플릿
+│   ├── home_intro.html     # 홈페이지 소개 템플릿
+│   └── navbar.html         # 네비게이션 바 템플릿
+├── .dockerignore
+├── .flake8                 # flake8 설정
+├── .gitignore
+├── .pre-commit-config.yaml # pre-commit 설정
+├── Dockerfile
+├── docker-compose.yml      # Docker Compose 설정
+├── manage.py
+├── pdm.lock
+├── pyproject.toml          # 프로젝트 의존성 정의
+└── README.md
+```
+
+---
+
+## 🔌 API 명세
+
+### 계정 관리 API
+
+| 엔드포인트                           | 메서드    | 설명               | 요청 본문                  | 응답                                  |
+| ------------------------------------ | --------- | ------------------ | -------------------------- | ------------------------------------- |
+| `/accounts/login/`                   | GET, POST | 사용자 로그인      | 아이디, 비밀번호           | 로그인 성공 시 대시보드 리다이렉트    |
+| `/accounts/logout/`                  | POST      | 사용자 로그아웃    | -                          | 로그아웃 후 메인 페이지 리다이렉트    |
+| `/accounts/signup/`                  | GET, POST | 회원가입           | 사용자 정보 폼             | 성공 시 로그인 페이지 리다이렉트      |
+| `/accounts/profile/`                 | GET       | 프로필 정보 조회   | -                          | 프로필 정보 및 구매 내역              |
+| `/accounts/profile/edit/`            | GET, POST | 프로필 수정        | 사용자 정보 폼             | 수정 성공 시 프로필 페이지 리다이렉트 |
+| `/accounts/profile/change-password/` | GET, POST | 비밀번호 변경      | 현재 비밀번호, 새 비밀번호 | 성공 시 프로필 페이지 리다이렉트      |
+| `/accounts/profile/delete/`          | GET, POST | 계정 삭제          | 확인                       | 성공 시 로그인 페이지 리다이렉트      |
+| `/social/google/login/`              | GET       | 구글 소셜 로그인   | -                          | 구글 OAuth 인증                       |
+| `/social/kakao/login/`               | GET       | 카카오 소셜 로그인 | -                          | 카카오 OAuth 인증                     |
+
+### 강의 과정 API
+
+| 엔드포인트                                        | 메서드 | 설명           | 요청 본문        | 응답                                |
+| ------------------------------------------------- | ------ | -------------- | ---------------- | ----------------------------------- |
+| `/courses/`                                       | GET    | 과정 목록 조회 | -                | 인기 과정 및 전체 과정 목록         |
+| `/courses/detail/<int:course_id>/`                | GET    | 과정 상세 정보 | -                | 과정 상세 정보, 커리큘럼, 리뷰      |
+| `/courses/detail/<int:course_id>/review/`         | POST   | 수강평 등록    | 평점, 내용       | 성공 시 과정 상세 페이지 리다이렉트 |
+| `/courses/review/<int:review_id>/update/`         | POST   | 수강평 수정    | 평점, 내용       | JSON 응답 (성공/실패)               |
+| `/courses/review/<int:review_id>/delete/`         | POST   | 수강평 삭제    | -                | JSON 응답 (성공/실패)               |
+| `/courses/lecture/<int:lecture_id>/question/add/` | POST   | 강의 질문 등록 | 질문 내용        | 강의 페이지로 리다이렉트            |
+| `/courses/question/<int:question_id>/answer/add/` | POST   | 질문 답변 등록 | 답변 내용        | 강의 페이지로 리다이렉트            |
+| `/courses/answer/<int:answer_id>/update/`         | POST   | 답변 수정      | 수정된 답변 내용 | 강의 페이지로 리다이렉트            |
+| `/courses/answer/<int:answer_id>/delete/`         | POST   | 답변 삭제      | -                | 강의 페이지로 리다이렉트            |
+
+### 학습 관리 API
+
+| 엔드포인트                                                    | 메서드    | 설명                    | 요청 본문     | 응답                               |
+| ------------------------------------------------------------- | --------- | ----------------------- | ------------- | ---------------------------------- |
+| `/learning/dashboard/`                                        | GET       | 학습 대시보드           | -             | 진행 중인 과정 및 완료된 과정 목록 |
+| `/learning/course/<int:course_id>/resume/`                    | GET       | 이어서 학습하기         | -             | 다음 학습 항목으로 리다이렉트      |
+| `/learning/lecture/<int:lecture_id>/next/`                    | GET       | 다음 학습 항목으로 이동 | -             | 다음 학습 항목으로 리다이렉트      |
+| `/learning/lecture/video/<int:lecture_id>/`                   | GET       | 동영상 강의 시청        | -             | 동영상 강의 및 Q&A 표시            |
+| `/learning/lecture/mission/<int:lecture_id>/`                 | GET, POST | 미션(퀴즈) 수행         | 퀴즈 답안     | 퀴즈 문제 표시 및 제출 처리        |
+| `/learning/mission/result/<int:attempt_id>/`                  | GET       | 미션 결과 확인          | -             | 퀴즈 결과 및 정답 표시             |
+| `/learning/subject/<int:subject_id>/project/submit/`          | GET, POST | 프로젝트 제출           | 프로젝트 파일 | 프로젝트 상세 페이지 리다이렉트    |
+| `/learning/project/<int:submission_id>/`                      | GET       | 프로젝트 상세 보기      | -             | 제출된 프로젝트 정보 및 피드백     |
+| `/learning/enrollment/<int:enrollment_id>/certificate/issue/` | GET       | 수료증 발급             | -             | 수료증 보기 페이지 리다이렉트      |
+| `/learning/certificate/<int:certificate_id>/`                 | GET       | 수료증 보기             | -             | 수료증 웹 페이지                   |
+| `/learning/certificate/<int:certificate_id>/download/`        | GET       | 수료증 다운로드         | -             | PDF 파일 다운로드                  |
+
+### 결제 API
+
+| 엔드포인트                             | 메서드 | 설명              | 요청 본문 | 응답                        |
+| -------------------------------------- | ------ | ----------------- | --------- | --------------------------- |
+| `/payments/cart/`                      | GET    | 장바구니 조회     | -         | 장바구니 항목 및 총 금액    |
+| `/payments/cart/add/<int:course_id>/`  | GET    | 장바구니에 추가   | -         | 장바구니 페이지 리다이렉트  |
+| `/payments/cart/remove/<int:item_id>/` | POST   | 장바구니에서 제거 | -         | 장바구니 페이지 리다이렉트  |
+| `/payments/cart/clear/`                | GET    | 장바구니 비우기   | -         | 장바구니 페이지 리다이렉트  |
+| `/payments/checkout/`                  | GET    | 결제 페이지       | -         | 결제 페이지 렌더링          |
+| `/payments/validate/`                  | POST   | 결제 검증         | 결제 정보 | JSON 응답 (성공/실패)       |
+| `/payments/complete/`                  | GET    | 결제 완료 페이지  | -         | 결제 완료 페이지 렌더링     |
+| `/payments/history/`                   | GET    | 결제 내역 페이지  | -         | 결제 내역 목록              |
+| `/payments/detail/<int:payment_id>/`   | GET    | 결제 상세 페이지  | -         | 결제 상세 정보              |
+| `/payments/refund/<int:payment_id>/`   | POST   | 환불 요청 처리    | 환불 사유 | 결제 내역 페이지 리다이렉트 |
+
+### 관리자 API (일부 항목 표기 제외)
+
+| 엔드포인트                                              | 메서드    | 설명                  | 요청 본문         | 응답                               |
+| ------------------------------------------------------- | --------- | --------------------- | ----------------- | ---------------------------------- |
+| `/admin-portal/dashboard/`                              | GET       | 관리자 대시보드       | -                 | 통계 정보 및 차트                  |
+| `/admin-portal/api/statistics/`                         | GET       | 통계 데이터 API       | 기간(7/30/90일)   | JSON 통계 데이터                   |
+| `/admin-portal/projects/`                               | GET       | 프로젝트 목록         | -                 | 평가 대기 중인 프로젝트 목록       |
+| `/admin-portal/projects/<int:project_id>/`              | GET       | 프로젝트 상세         | -                 | 프로젝트 상세 정보                 |
+| `/admin-portal/projects/<int:project_id>/evaluate/`     | GET, POST | 프로젝트 평가         | 통과 여부, 피드백 | 프로젝트 상세 페이지 리다이렉트    |
+| `/admin-portal/courses/progress/`                       | GET       | 과정 진행 상황 개요   | -                 | 모든 과정의 진행 상황              |
+| `/admin-portal/courses/<int:course_id>/progress/`       | GET       | 과정 상세 진행 상황   | -                 | 특정 과정의 상세 진행 상황         |
+| `/admin-portal/courses/<int:course_id>/attendance/`     | GET       | 과정 출석부           | -                 | 과정 수강생 출석 현황              |
+| `/admin-portal/courses/<int:course_id>/attendance/pdf/` | GET       | 과정 출석부 PDF       | -                 | PDF 파일 다운로드                  |
+| `/admin-portal/courses/`                                | GET       | 과정 관리             | -                 | 과정 목록                          |
+| `/admin-portal/courses/create/`                         | GET, POST | 과정 생성             | 과정 정보         | 과정 관리 페이지 리다이렉트        |
+| `/admin-portal/courses/<int:course_id>/`                | GET, POST | 과정 상세/수정        | 과정 정보         | 과정 관리 페이지 리다이렉트        |
+| `/admin-portal/qna/`                                    | GET       | Q&A 관리              | -                 | 질문 목록                          |
+| `/admin-portal/qna/<int:question_id>/`                  | GET       | 질문 상세             | -                 | 질문 상세 및 답변 목록             |
+| `/admin-portal/qna/<int:question_id>/answer/add/`       | POST      | 답변 등록             | 답변 내용         | 질문 상세 페이지 리다이렉트        |
+| `/admin-portal/answers/<int:answer_id>/update/`         | POST      | 답변 수정             | 수정된 답변 내용  | 질문 상세 페이지 리다이렉트        |
+| `/admin-portal/answers/<int:answer_id>/delete/`         | POST      | 답변 삭제             | -                 | 질문 상세 페이지 리다이렉트        |
+| `/admin-portal/users/learning-records/`                 | GET       | 사용자 학습 기록      | -                 | 일간 학습 활동 및 과정 진행 상황   |
+| `/admin-portal/payments/`                               | GET       | 결제 내역 관리        | -                 | 결제 내역 목록 및 통계             |
+| `/admin-portal/payments/<int:payment_id>/`              | GET       | 결제 상세 정보        | -                 | 결제 상세 정보                     |
+| `/admin-portal/enrollments/manage/`                     | GET, POST | 수강생 등록/취소 관리 | 사용자, 과정      | 수강생 등록/취소 페이지 리다이렉트 |
 
 ---
 
@@ -127,7 +305,7 @@ https://pdm-project.org/en/latest/ 참고
 pdm install -d
 ```
 
-4. 환경 변수 설정
+4. 환경 변수 설정 (.env 파일 생성)
 
 ```bash
 touch .env
@@ -189,30 +367,129 @@ docker-compose up -d --build
 
 ### 주요 모델 구조
 
-- **User**: 확장된 사용자 모델 (AbstractUser 상속)
-- **Course**: 과정 정보 및 메타데이터
-- **Subject**: 과정 내 과목 정보
-- **Lecture**: 과목 내 개별 강의 (비디오 또는 미션)
-- **Enrollment**: 사용자의 과정 등록 정보
-- **LectureProgress**: 강의별 진행 상황
-- **Certificate**: 수료증 정보
+프로젝트의 핵심 모델과 그 관계를 설명합니다:
+
+### 사용자 및 계정 모델
+
+- **User**: `AbstractUser`를 확장한 사용자 모델
+
+  - `profile_image`: 프로필 이미지
+  - `phone_number`: 전화번호
+  - `is_admin`: 관리자 여부 플래그
+  - `login_at`, `logout_at`: 로그인/로그아웃 시간 추적
+  - _관계_: 사용자는 여러 강의를 수강하고, 질문을 작성하고, 결제할 수 있음
+
+- **InstructorProfile**: 강사 프로필 정보
+  - `user`: User 모델과 1:1 관계
+  - `bio`, `experience`, `qualification`: 강사 정보
+  - _관계_: 강사는 여러 과정을 개설할 수 있음
+
+### 과정 관련 모델
+
+- **Course**: 강의 과정 정보
+
+  - `title`, `description`: 기본 정보
+  - `difficulty_level`: 난이도 수준 (입문, 초급, 중급, 고급)
+  - `price`: 가격
+  - `instructor`: InstructorProfile과 FK 관계
+  - _메서드_: `average_rating()` - 과정 평균 평점 계산
+  - _관계_: 여러 Subject를 포함하며, 여러 User가 수강 가능
+
+- **Subject**: 과목 정보 (과정의 하위 단위)
+
+  - `course`: 소속 과정 FK
+  - `subject_type`: 일반, 중간고사, 기말고사 구분
+  - `order_index`: 과목 순서
+  - _관계_: 하나의 Course에 속하며, 여러 Lecture 포함
+
+- **Lecture**: 개별 강의 정보
+
+  - `subject`: 소속 과목 FK
+  - `lecture_type`: 동영상 또는 미션(퀴즈) 구분
+  - `video_file`: 강의 비디오 파일
+  - `order_index`: 강의 순서
+  - _메서드_: `get_next_learning_item()` - 다음 학습 항목 결정
+  - _관계_: 하나의 Subject에 속함
+
+- **MissionQuestion**: 퀴즈 문제
+  - `lecture`: 소속 강의 FK
+  - `correct_answer`: 정답 번호 (1~5)
+  - `options`: 5개 선택지
+  - _관계_: 하나의 Lecture에 속함
+
+### 학습 관련 모델
+
+- **Enrollment**: 수강 신청 및 진행 상황
+
+  - `user`, `course`: 수강생과 과정 FK
+  - `status`: 수강 중, 수료 완료, 수료증 발급 상태
+  - `progress_percentage`: 전체 진행률
+  - _메서드_: `update_progress()`, `check_completion()`, `get_next_lecture()`
+  - _관계_: User와 Course 간 M:N 관계 구현
+
+- **LectureProgress**: 강의 진행 상태
+
+  - `user`, `lecture`: 수강생과 강의 FK
+  - `is_completed`: 완료 여부
+  - `completed_at`: 완료 시간
+  - _메서드_: `mark_as_completed()` - 강의 완료 처리
+  - _관계_: User와 Lecture 간 M:N 관계 구현
+
+- **MissionAttempt**: 미션(퀴즈) 시도 기록
+
+  - `user`, `lecture`: 수강생과 강의 FK
+  - `score`: 점수
+  - `is_passed`: 통과 여부 (80% 이상)
+  - `user_answers`: 사용자 답변 (JSON)
+  - _메서드_: `calculate_score()` - 점수 계산 및 통과 여부 판단
+
+- **ProjectSubmission**: 중간/기말고사 프로젝트 제출
+
+  - `user`, `subject`: 수강생과 과목 FK
+  - `project_file`: 제출 파일
+  - `is_passed`: 통과 여부
+  - `feedback`: 피드백 내용
+  - `reviewed_at`, `reviewed_by`: 평가 정보
+
+- **Certificate**: 수료증
+  - `user`, `enrollment`: 수강생과 수강신청 FK
+  - `certificate_number`: 고유 인증 번호
+  - `pdf_file`: 발급된 PDF 파일
+  - _메서드_: `generate_certificate_number()`, `generate_pdf()`
+
+### 커뮤니케이션 모델
+
+- **QnAQuestion**: 강의 질문
+
+  - `user`, `lecture`: 작성자와 강의 FK
+  - `content`: 질문 내용
+  - _관계_: 여러 QnAAnswer를 가질 수 있음
+
+- **QnAAnswer**: 질문 답변
+  - `question`, `user`: 질문과 작성자 FK
+  - `content`: 답변 내용
+
+### 결제 관련 모델
+
+- **Cart**: 장바구니
+
+  - `user`: 사용자 FK
+  - _메서드_: `get_total_price()`, `get_item_count()`
+  - _관계_: 여러 CartItem을 포함
+
+- **CartItem**: 장바구니 항목
+
+  - `cart`, `course`: 장바구니와 과정 FK
+
 - **Payment**: 결제 정보
+  - `user`, `course`: 결제자와 과정 FK
+  - `amount`: 결제 금액
+  - `payment_status`: 결제 대기, 완료, 실패, 환불 상태
+  - `payment_method`: 결제 방법
+  - `merchant_uid`, `imp_uid`: 결제 식별 정보
+  - `is_anonymized`: 사용자 탈퇴 시 익명화 여부
 
----
-
-## 🔍 주요 기술적 도전과 해결책
-
-### 1. 복잡한 학습 진행 상황 추적
-
-과정, 과목, 강의의 계층적 구조에서 사용자의 학습 진행 상황을 효율적으로 추적하는 것이 도전적이었습니다. 이를 해결하기 위해 Django 시그널을 활용하여 강의 완료, 미션 통과, 프로젝트 통과 시 자동으로 상위 항목의 진행 상황이 업데이트되도록 구현했습니다.
-
-### 2. 결제 시스템 통합
-
-포트원(구 아임포트) API를 이용한 결제 시스템 통합 과정에서, 안전한 결제 검증 및 환불 처리가 중요한 도전이었습니다. 클라이언트 측 결제 요청과 서버 측 검증을 분리하여 보안을 강화하고, 트랜잭션 관리를 통해 데이터 일관성을 유지했습니다.
-
-### 3. 성능 최적화
-
-대량의 학습 데이터와 통계 처리 시 성능 이슈가 발생했습니다. 이를 해결하기 위해 쿼리 최적화, 인덱싱, 캐싱 등의 기법을 적용했습니다.
+이 모델 구조를 통해 학습 플랫폼의 전체 워크플로우가 구현됩니다. 사용자가 과정을 등록하고, 강의를 수강하며, 진도를 추적하고, 최종적으로 수료증을 발급받는 전체 과정이 모델 간의 관계를 통해 유기적으로 연결되어 있습니다.
 
 ---
 
