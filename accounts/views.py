@@ -10,7 +10,7 @@ import logging
 
 from payments.models import Payment
 from .forms import LoginForm, SignupForm, ProfileEditForm, CustomPasswordChangeForm
-from .models import User
+from .models import User, DeletedUserData
 
 logger = logging.getLogger("django")
 
@@ -161,7 +161,8 @@ class DeleteAccountView(LoginRequiredMixin, View):
     """계정 삭제 뷰
 
     로그인한 사용자가 자신의 계정을 삭제할 수 있는 기능을 제공합니다.
-    계정 삭제 시 프로필 이미지와 소셜 계정 연결 정보도 함께 삭제됩니다.
+    계정 삭제 시 프로필 이미지와 소셜 계정 연결 정보도 함께 삭제합니다.
+    결제 기록은 익명화하여 보존됩니다.
     """
 
     template_name = "accounts/delete_account.html"
@@ -171,6 +172,7 @@ class DeleteAccountView(LoginRequiredMixin, View):
 
     def post(self, request):
         user = request.user
+        user_id = user.id
         username = user.username
 
         # 프로필 이미지 삭제
@@ -186,7 +188,21 @@ class DeleteAccountView(LoginRequiredMixin, View):
             )
             social_accounts.delete()
 
-        # 사용자 계정 삭제
+        # 탈퇴 사용자 데이터 기록
+        DeletedUserData.objects.create(
+            original_user_id=user_id,
+            username=f"deleted_user_{user_id}",
+            email=f"deleted_{user_id}@example.com",
+        )
+
+        # 사용자의 결제 내역 익명화
+        from payments.models import Payment
+
+        Payment.objects.filter(user=user).update(
+            is_anonymized=True, anonymized_user_id=user_id
+        )
+
+        # 사용자 계정 삭제 - 관련 결제 내역은 foreign key 제약 해제 후 보존됨
         logger.warning(f"User account deleted: {username}")
         user.delete()
 

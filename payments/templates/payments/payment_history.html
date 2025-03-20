@@ -15,6 +15,7 @@
               <tr class="bg-gray-100">
                 <th class="py-3 px-4 text-left">주문번호</th>
                 <th class="py-3 px-4 text-left">과정</th>
+                <th class="py-3 px-4 text-left">사용자</th>
                 <th class="py-3 px-4 text-right">금액</th>
                 <th class="py-3 px-4 text-center">결제 방법</th>
                 <th class="py-3 px-4 text-center">결제 상태</th>
@@ -30,6 +31,13 @@
                     <a href="{% url 'courses:detail' payment.course.id %}" class="text-blue-600 hover:text-blue-800">
                       {{ payment.course.title }}
                     </a>
+                  </td>
+                  <td class="py-4 px-4">
+                    {% if payment.is_anonymized %}
+                      <span class="text-gray-500">탈퇴회원 (ID: {{ payment.anonymized_user_id }})</span>
+                    {% else %}
+                      {{ payment.user.username }}
+                    {% endif %}
                   </td>
                   <td class="py-4 px-4 text-right">{{ payment.amount|intcomma }}원</td>
                   <td class="py-4 px-4 text-center">{{ payment.get_payment_method_display|default:"기타" }}</td>

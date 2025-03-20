@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from django.utils import timezone
 from accounts.models import User
 from learning.models import (
@@ -8,6 +9,8 @@ from learning.models import (
 )
 import decimal
 import logging
+
+from payments.models import Payment
 
 logger = logging.getLogger("django")
 
@@ -86,8 +89,14 @@ class DailyStatistics(models.Model):
             issued_at__range=(today_start, today_end)
         ).count()
 
-        # 일일 매출액 (실제 결제 시스템에 맞게 수정 필요)
-        # stats.revenue = Payment.objects.filter(created_at__range=(today_start, today_end), payment_status='completed').aggregate(Sum('amount'))['amount__sum'] or 0
+        # 일일 매출액 (익명화된 결제도 포함)
+        daily_sales = (
+            Payment.objects.filter(
+                created_at__range=(today_start, today_end), payment_status="completed"
+            ).aggregate(Sum("amount"))["amount__sum"]
+            or 0
+        )
+        stats.revenue = daily_sales
 
         stats.save()
         return stats

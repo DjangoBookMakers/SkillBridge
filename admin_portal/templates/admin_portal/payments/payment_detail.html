@@ -49,6 +49,20 @@
               <p class="font-medium">{{ payment.merchant_uid }}</p>
             </div>
             <div>
+              <p class="text-sm text-gray-500 mb-1">사용자</p>
+              <p class="font-medium">
+                {% if payment.is_anonymized %}
+                  {% if anonymized_user %}
+                    {{ anonymized_user.username }} (탈퇴회원)
+                  {% else %}
+                    탈퇴회원 (ID: {{ payment.anonymized_user_id }})
+                  {% endif %}
+                {% else %}
+                  {{ payment.user.username }}
+                {% endif %}
+              </p>
+            </div>
+            <div>
               <p class="text-sm text-gray-500 mb-1">결제 ID</p>
 			  <p class="font-medium">{{ payment.imp_uid|default:"없음" }}</p>
             </div>
