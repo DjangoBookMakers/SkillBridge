@@ -20,20 +20,34 @@
     {% if request.path == '/' or request.path == '/courses/' or request.resolver_match.url_name == 'courses' %}
     <div class="bg-blue-900 text-white py-16 px-4 relative">
       <div class="container mx-auto">
-        <div class="max-w-xl mx-auto text-left">
-          <div class="h-32 flex flex-col justify-center">
-          <h2 class="text-4xl md:text-5xl font-bold mb-3 text-left">
-            <span class="text-white">웹 개발 여정을</span><br>
-            <span class="text-indigo-300">나노 디그리로 완성하세요</span>
-          </h2>
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center">
+          <!-- 텍스트 영역 -->
+          <div class="md:w-1/2 text-left mb-6 md:mb-0">
+            <div class="h-32 flex flex-col justify-center">
+              <h2 class="text-4xl md:text-5xl font-bold mb-3 text-left">
+                <span class="text-white">웹 개발 여정을</span><br>
+                <span class="text-indigo-300">나노 디그리로 완성하세요</span>
+              </h2>
+            </div>
+            <div class="h-20 flex items-center">
+              <p class="text-sm text-gray-300 mb-6 text-left">7개 기술 분야 학습을 통해 나만의 웹 개발 포트폴리오를 만들어보세요.</p>
+            </div>
+            <div class="mt-4 flex justify-start space-x-3">
+              <a href="#" class="px-5 py-2 bg-white hover:bg-gray-100 text-gray-800 rounded-md text-sm font-medium transition-colors">
+                더 알아보기
+              </a>
+            </div>
           </div>
-          <div class="h-20 flex items-center">
-            <p class="text-sm text-gray-300 mb-6 text-left">7개 기술 분야 학습을 통해 나만의 웹 개발 포트폴리오를 만들어보세요.</p>
-          </div>
-          <div class="mt-4 flex justify-center space-x-3">
-            <a href="#" class="px-5 py-2 bg-white hover:bg-gray-100 text-gray-800 rounded-md text-sm font-medium transition-colors">
-              더 알아보기
-            </a>
+
+          <!-- 이미지 영역 -->
+          <div class="md:w-1/2 flex justify-center">
+            <div class="w-120 h-80 bg-gray-200 rounded-lg shadow-lg overflow-hidden flex items-center justify-center" id="banner-image-container">
+              {% if banner_course and banner_course.thumbnail_image %}
+                <img src="{{ banner_course.thumbnail_image.url }}" alt="{{ banner_course.title }}" class="w-full h-full object-cover">
+              {% else %}
+                <span class="text-gray-500">이미지 없음</span>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
@@ -65,14 +79,17 @@
   <!-- 배너 슬라이드 스크립트 -->
   {% if request.path == '/' or request.path == '/courses/' or request.resolver_match.url_name == 'courses' %}
   <script>
-
     const slides = [
       {% for slide in banner_slides %}
         {
           titleLine1: "{{ slide.titleLine1 }}",
           titleLine2: "{{ slide.titleLine2 }}",
           description: "{{ slide.description }}",
-          courseDetailUrl: "{{ slide.courseDetailUrl }}"
+          courseDetailUrl: "{{ slide.courseDetailUrl }}",
+          course: {
+            title: "{{ slide.course.title }}",
+            thumbnail_image: "{{ slide.course.thumbnail_image.url }}"
+          }
         }{% if not forloop.last %},{% endif %}
       {% endfor %}
     ];
@@ -88,6 +105,7 @@
       const description = banner.querySelector('p');
       const indicators = banner.querySelectorAll('.rounded-full');
       const moreInfoLink = banner.querySelector('a');
+      const imageContainer = document.getElementById('banner-image-container');
 
       // 내용 업데이트
       title.innerHTML = `
@@ -100,35 +118,47 @@
       // 더 알아보기 링크 업데이트
       moreInfoLink.href = slides[index].courseDetailUrl;
 
+      // 이미지 컨테이너 업데이트
+      if (imageContainer) {
+        if (slides[index].course && slides[index].course.thumbnail_image) {
+          imageContainer.innerHTML = `<img src="${slides[index].course.thumbnail_image}" alt="${slides[index].course.title}" class="w-full h-full object-cover">`;
+        } else {
+          imageContainer.innerHTML = `<span class="text-gray-500">이미지 없음</span>`;
+        }
+      }
+
       // 인디케이터 상태 업데이트
       indicators.forEach((dot, i) => {
         if (i === index) {
           dot.classList.remove('opacity-50');
         } else {
           dot.classList.add('opacity-50');
-          }
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const indicators = document.querySelectorAll('[data-slide-index]');
+
+      indicators.forEach(indicator => {
+        indicator.addEventListener('click', function() {
+          const slideIndex = parseInt(this.getAttribute('data-slide-index'), 10);
+          showSlide(slideIndex);
         });
+      });
+
+      // 초기 슬라이드 설정
+      if (slides.length > 0) {
+        showSlide(0);
       }
 
-      document.addEventListener('DOMContentLoaded', function() {
-        const indicators = document.querySelectorAll('[data-slide-index]');
-
-        indicators.forEach(indicator => {
-          indicator.addEventListener('click', function() {
-            const slideIndex = parseInt(this.getAttribute('data-slide-index'), 10);
-            showSlide(slideIndex);
-      });
+      let slideInterval = setInterval(() => {
+        if (slides.length > 1) {
+          let nextSlide = (currentSlide + 1) % slides.length;
+          showSlide(nextSlide);
+        }
+      }, 5000);
     });
-
-    // 초기 슬라이드 설정
-    showSlide(0);
-
-    let slideInterval = setInterval(() => {
-      let nextSlide = (currentSlide + 1) % slides.length;
-      showSlide(nextSlide);
-    }, 5000);
-
-  });
   </script>
   {% endif %}
   </body>
