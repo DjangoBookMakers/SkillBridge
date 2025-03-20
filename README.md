@@ -357,11 +357,14 @@ Docker와 Docker Compose를 사용한 배포:
 docker-compose up -d --build
 ```
 
+---
+
 ## 🚀 AWS 배포 아키텍처
 
 스킬브릿지는 AWS EC2 인스턴스에 Docker Compose를 사용하여 배포되어 있습니다. 아래 다이어그램은 전체 배포 아키텍처를 보여줍니다:
 
 ![스킬브릿지 AWS 배포 아키텍처](docs/deployment-architecture.svg)
+![스킬브릿지 Django 프로젝트 아키텍처](docs/project-architecture.svg)
 
 ### 배포 컴포넌트
 

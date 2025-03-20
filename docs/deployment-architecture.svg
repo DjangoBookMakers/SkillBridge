@@ -81,9 +81,4 @@
   <!-- 포트 정보 표시 -->
   <rect x="800" y="600" width="150" height="40" rx="5" ry="5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" />
   <text x="875" y="625" font-family="Arial" font-size="14" fill="#1b5e20" text-anchor="middle">Port: 80</text>
-
-  <!-- 범례 -->
-  <rect x="50" y="650" width="900" height="30" rx="5" ry="5" fill="#fafafa" stroke="#9e9e9e" stroke-width="1" />
-  <text x="500" y="670" font-family="Arial" font-size="14" fill="#424242" text-anchor="middle">© 2025 스킬브릿지 배포 아키텍처</text>
-
 </svg>
