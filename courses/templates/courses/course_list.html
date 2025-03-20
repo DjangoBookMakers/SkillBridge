@@ -71,15 +71,6 @@
         <p class="mt-2 text-lg text-gray-600">다양한 분야의 과정을 탐색해보세요</p>
       </div>
 
-      <!-- 필터링 옵션 -->
-      <div class="flex flex-wrap justify-center gap-4 mb-8">
-        <button class="px-4 py-2 bg-blue-600 text-white rounded-full">모든 과정</button>
-        <button class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-full">프로그래밍</button>
-        <button class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-full">웹개발</button>
-        <button class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-full">데이터분석</button>
-        <button class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-full">클라우드</button>
-      </div>
-
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {% for course in all_courses %}
           <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
