@@ -31,7 +31,7 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-from accounts.models import User, InstructorProfile
+from accounts.models import DeletedUserData, User, InstructorProfile
 from courses.models import Course, Subject, Lecture, MissionQuestion
 from learning.models import Enrollment, Certificate, LectureProgress, ProjectSubmission
 from payments.models import Payment
@@ -1593,6 +1593,22 @@ class PaymentDetailAdminView(AdminRequiredMixin, DetailView):
     context_object_name = "payment"
     pk_url_kwarg = "payment_id"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        payment = self.get_object()
+
+        # 익명화된 사용자 정보 처리
+        if payment.is_anonymized:
+            try:
+                deleted_user = DeletedUserData.objects.get(
+                    original_user_id=payment.anonymized_user_id
+                )
+                context["anonymized_user"] = deleted_user
+            except DeletedUserData.DoesNotExist:
+                context["anonymized_user"] = None
+
+        return context
+
     def post(self, request, *args, **kwargs):
         payment = self.get_object()
 
@@ -1635,6 +1651,20 @@ class PaymentDetailAdminView(AdminRequiredMixin, DetailView):
                 messages.error(request, f"환불 처리 중 오류가 발생했습니다: {str(e)}")
 
         return redirect("admin_portal:payment_detail", payment_id=payment.id)
+        context = super().get_context_data(**kwargs)
+        payment = self.get_object()
+
+        # 익명화된 사용자 정보 처리
+        if payment.is_anonymized:
+            try:
+                deleted_user = DeletedUserData.objects.get(
+                    original_user_id=payment.anonymized_user_id
+                )
+                context["anonymized_user"] = deleted_user
+            except DeletedUserData.DoesNotExist:
+                context["anonymized_user"] = None
+
+        return context
 
 
 class ManageStudentEnrollmentView(AdminRequiredMixin, TemplateView):

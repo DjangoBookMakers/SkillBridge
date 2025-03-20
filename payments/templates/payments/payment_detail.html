@@ -63,6 +63,17 @@
             <p class="font-medium">{{ payment.amount|intcomma }}원</p>
           </div>
 
+          <div>
+            <p class="text-sm text-gray-500 mb-1">사용자</p>
+            <p class="font-medium">
+              {% if payment.is_anonymized %}
+                <span class="text-gray-500">탈퇴회원 (ID: {{ payment.anonymized_user_id }})</span>
+              {% else %}
+                {{ payment.user.username }}
+              {% endif %}
+            </p>
+          </div>
+
           {% if payment.payment_status == 'refunded' %}
             <div>
               <p class="text-sm text-gray-500 mb-1">환불 사유</p>

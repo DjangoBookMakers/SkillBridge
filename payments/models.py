@@ -50,6 +50,7 @@ class Payment(models.Model):
     """결제 모델
 
     과정 구매에 대한 결제 정보를 저장합니다.
+    사용자 탈퇴 후에도 매출 통계를 위해 결제 정보는 보존됩니다.
     """
 
     PAYMENT_STATUS_CHOICES = [
@@ -69,7 +70,10 @@ class Payment(models.Model):
     ]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="payments"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="payments",
+        null=True,
     )
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name="payments"
@@ -96,6 +100,21 @@ class Payment(models.Model):
     refund_reason = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_anonymized = models.BooleanField(
+        default=False, help_text="사용자 탈퇴로 인한 익명화 여부"
+    )
+    anonymized_user_id = models.IntegerField(
+        null=True, blank=True, help_text="익명화된 원본 사용자 ID"
+    )
 
     def __str__(self):
-        return f"{self.user.username}의 {self.course.title} 결제 ({self.get_payment_status_display()})"
+        username = (
+            self.user.username if self.user else f"탈퇴회원({self.anonymized_user_id})"
+        )
+        return f"{username}의 {self.course.title} 결제 ({self.get_payment_status_display()})"
+
+    def get_username(self):
+        """사용자 이름 반환 (탈퇴한 경우 익명화된 표시)"""
+        if self.is_anonymized:
+            return f"탈퇴회원({self.anonymized_user_id})"
+        return self.user.username if self.user else "알 수 없음"

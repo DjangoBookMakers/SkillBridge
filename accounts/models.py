@@ -40,3 +40,15 @@ class InstructorProfile(models.Model):
 
     def __str__(self):
         return f"강사 프로필: {self.user.username}"
+
+
+class DeletedUserData(models.Model):
+    """탈퇴한 사용자의 데이터를 익명화하여 보관하는 모델"""
+
+    original_user_id = models.IntegerField(help_text="원래 사용자의 ID", db_index=True)
+    username = models.CharField(max_length=150, help_text="익명화된 사용자명")
+    email = models.EmailField(blank=True, null=True, help_text="익명화된 이메일")
+    deleted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return f"삭제된 사용자 {self.username} (ID: {self.original_user_id})"
