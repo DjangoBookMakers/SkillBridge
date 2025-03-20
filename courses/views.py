@@ -61,6 +61,7 @@ class CourseListView(ListView):
                 "description": course.short_description
                 or "실무에 필요한 기술을 습득하세요.",
                 "courseDetailUrl": f"/courses/detail/{course.id}/",
+                "course": course,
             }
             banner_slides.append(slide)
 
