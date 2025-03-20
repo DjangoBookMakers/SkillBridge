@@ -70,6 +70,8 @@
       {% include 'admin_portal/dashboard_components/chart_container.html' with title='수강신청 및 학습 통계' chart_id='enrollmentStatsChart' period_class='enrollment-period-btn' %}
 
       {% include 'admin_portal/dashboard_components/chart_container.html' with title='동영상 조회수 통계' chart_id='videoViewsChart' period_class='video-period-btn' %}
+
+      {% include 'admin_portal/dashboard_components/chart_container.html' with title='매출 통계' chart_id='revenueStatsChart' period_class='revenue-period-btn' %}
     </div>
 
     <!-- 인기 과정 및 최근 활동 영역 -->
@@ -158,9 +160,22 @@
         }
       ];
 
+      // 매출 통계 차트
+      const revenueDatasets = [
+        {
+          label: '일일 매출',
+          data: chartData.revenue,
+          borderColor: 'rgb(34, 197, 94)',
+          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+          tension: 0.4,
+          fill: true
+        }
+      ];
+
       const userChart = initChart('userStatsChart', chartData.dates, userDatasets);
       const enrollmentChart = initChart('enrollmentStatsChart', chartData.dates, enrollmentDatasets);
       const videoChart = initChart('videoViewsChart', chartData.dates, videoDatasets);
+      const revenueChart = initChart('revenueStatsChart', chartData.dates, revenueDatasets);
 
       // 기간 버튼 핸들러 설정
       function setupPeriodButtons(buttonClass, chart, datasetNames) {
@@ -208,6 +223,7 @@
       setupPeriodButtons('period-btn', userChart, ['new_users', 'active_users']);
       setupPeriodButtons('enrollment-period-btn', enrollmentChart, ['new_enrollments']);
       setupPeriodButtons('video-period-btn', videoChart, ['completed_lectures']);
+	  setupPeriodButtons('revenue-period-btn', revenueChart, ['revenue']);
     });
   </script>
 {% endblock %}
