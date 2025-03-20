@@ -65,26 +65,16 @@
   <!-- 배너 슬라이드 스크립트 -->
   {% if request.path == '/' or request.path == '/courses/' or request.resolver_match.url_name == 'courses' %}
   <script>
-    // 배너 슬라이드 관련 스크립트
+
     const slides = [
-      {
-        titleLine1: "Django 백엔드 개발",
-        titleLine2: "나노 디그리로 완성하세요",
-        description: "7개 기술 분야 학습을 통해 나만의 웹 개발 포트폴리오를 만들어보세요.",
-        courseDetailUrl: "/courses/detail/4/"
-      },
-      {
-        titleLine1: "웹 기초",
-        titleLine2: "나만의 웹 만들기",
-        description: "현업 개발자의 피드백으로 실무에 필요한 기술을 습득하세요.",
-        courseDetailUrl: "/courses/detail/1/"
-      },
-      {
-        titleLine1: "백엔드 개발",
-        titleLine2: "강력한 서버 사이드 애플리케이션",
-        description: "Python, node.js, Java 등 다양한 백엔드 언어를 배워보세요.",
-        courseDetailUrl: "/courses/detail/2/"
-      }
+      {% for slide in banner_slides %}
+        {
+          titleLine1: "{{ slide.titleLine1 }}",
+          titleLine2: "{{ slide.titleLine2 }}",
+          description: "{{ slide.description }}",
+          courseDetailUrl: "{{ slide.courseDetailUrl }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
     ];
 
     let currentSlide = 0;
@@ -132,6 +122,12 @@
 
     // 초기 슬라이드 설정
     showSlide(0);
+
+    let slideInterval = setInterval(() => {
+      let nextSlide = (currentSlide + 1) % slides.length;
+      showSlide(nextSlide);
+    }, 5000);
+
   });
   </script>
   {% endif %}
