@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700">
+  <!-- 배경 -->
+  <rect width="1000" height="700" fill="#f8f9fa" />
+
+  <!-- AWS 클라우드 영역 -->
+  <rect x="50" y="50" width="900" height="600" rx="20" ry="20" fill="#ffffff" stroke="#232f3e" stroke-width="2" />
+  <text x="80" y="90" font-family="Arial" font-size="24" fill="#232f3e" font-weight="bold">AWS Cloud</text>
+
+  <!-- VPC -->
+  <rect x="100" y="120" width="800" height="500" rx="10" ry="10" fill="#f1faff" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5" />
+  <text x="130" y="150" font-family="Arial" font-size="18" fill="#2196f3">VPC</text>
+
+  <!-- EC2 인스턴스 영역 -->
+  <rect x="150" y="180" width="700" height="400" rx="10" ry="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="2" />
+  <text x="180" y="210" font-family="Arial" font-size="18" fill="#1565c0">EC2 Instance</text>
+
+  <!-- Docker Compose 스택 -->
+  <rect x="200" y="230" width="600" height="320" rx="10" ry="10" fill="#ffffff" stroke="#0d47a1" stroke-width="2" />
+  <text x="220" y="260" font-family="Arial" font-size="18" fill="#0d47a1">Docker Compose Stack</text>
+
+  <!-- Nginx Container -->
+  <rect x="250" y="280" width="150" height="80" rx="5" ry="5" fill="#b3e5fc" stroke="#0288d1" stroke-width="2" />
+  <text x="280" y="325" font-family="Arial" font-size="16" fill="#01579b" text-anchor="middle">Nginx</text>
+
+  <!-- Django Web Container -->
+  <rect x="450" y="280" width="150" height="80" rx="5" ry="5" fill="#c8e6c9" stroke="#388e3c" stroke-width="2" />
+  <text x="525" y="325" font-family="Arial" font-size="16" fill="#1b5e20" text-anchor="middle">Django Web</text>
+
+  <!-- PostgreSQL Container -->
+  <rect x="650" y="280" width="150" height="80" rx="5" ry="5" fill="#e1bee7" stroke="#8e24aa" stroke-width="2" />
+  <text x="725" y="325" font-family="Arial" font-size="16" fill="#4a148c" text-anchor="middle">PostgreSQL</text>
+
+  <!-- 볼륨 영역 -->
+  <rect x="250" y="400" width="550" height="100" rx="5" ry="5" fill="#fff3e0" stroke="#ef6c00" stroke-width="2" />
+  <text x="270" y="425" font-family="Arial" font-size="16" fill="#e65100">Volumes</text>
+
+  <!-- 볼륨들 -->
+  <rect x="270" y="440" width="120" height="40" rx="3" ry="3" fill="#fff8e1" stroke="#ff8f00" stroke-width="1" />
+  <text x="330" y="465" font-family="Arial" font-size="14" fill="#ff6f00" text-anchor="middle">Static Files</text>
+
+  <rect x="410" y="440" width="120" height="40" rx="3" ry="3" fill="#fff8e1" stroke="#ff8f00" stroke-width="1" />
+  <text x="470" y="465" font-family="Arial" font-size="14" fill="#ff6f00" text-anchor="middle">Media Files</text>
+
+  <rect x="550" y="440" width="120" height="40" rx="3" ry="3" fill="#fff8e1" stroke="#ff8f00" stroke-width="1" />
+  <text x="610" y="465" font-family="Arial" font-size="14" fill="#ff6f00" text-anchor="middle">Postgres Data</text>
+
+  <!-- 연결선들 -->
+  <!-- Nginx에서 Django로 -->
+  <path d="M400 320 L450 320" stroke="#0277bd" stroke-width="2" />
+  <polygon points="450,320 442,315 442,325" fill="#0277bd" />
+
+  <!-- Django에서 PostgreSQL로 -->
+  <path d="M600 320 L650 320" stroke="#0277bd" stroke-width="2" />
+  <polygon points="650,320 642,315 642,325" fill="#0277bd" />
+
+  <!-- 서비스들과 볼륨 연결 -->
+  <path d="M300 360 L300 440" stroke="#e65100" stroke-width="2" stroke-dasharray="5,3" />
+  <path d="M525 360 L470 440" stroke="#e65100" stroke-width="2" stroke-dasharray="5,3" />
+  <path d="M725 360 L610 440" stroke="#e65100" stroke-width="2" stroke-dasharray="5,3" />
+
+  <!-- 외부 접속 -->
+  <rect x="300" y="30" width="150" height="60" rx="30" ry="30" fill="#f5f5f5" stroke="#616161" stroke-width="2" />
+  <text x="375" y="65" font-family="Arial" font-size="16" fill="#424242" text-anchor="middle">Internet Users</text>
+
+  <!-- 접속 연결선 -->
+  <path d="M375 90 L325 280" stroke="#424242" stroke-width="2" stroke-dasharray="10,5" />
+  <polygon points="325,280 320,272 330,272" fill="#424242" />
+
+  <!-- GitHub Actions -->
+  <rect x="600" y="30" width="150" height="60" rx="30" ry="30" fill="#f0f4f8" stroke="#2188ff" stroke-width="2" />
+  <text x="675" y="65" font-family="Arial" font-size="16" fill="#2188ff" text-anchor="middle">GitHub Actions</text>
+
+  <!-- GitHub Actions 연결선 -->
+  <path d="M675 90 L525 280" stroke="#2188ff" stroke-width="2" stroke-dasharray="10,5" />
+  <polygon points="525,280 520,272 530,272" fill="#2188ff" />
+
+  <!-- Security Groups -->
+  <rect x="50" y="600" width="200" height="40" rx="5" ry="5" fill="#ffebee" stroke="#c62828" stroke-width="2" />
+  <text x="150" y="625" font-family="Arial" font-size="14" fill="#b71c1c" text-anchor="middle">Security Groups</text>
+
+  <!-- 포트 정보 표시 -->
+  <rect x="800" y="600" width="150" height="40" rx="5" ry="5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" />
+  <text x="875" y="625" font-family="Arial" font-size="14" fill="#1b5e20" text-anchor="middle">Port: 80</text>
+
+  <!-- 범례 -->
+  <rect x="50" y="650" width="900" height="30" rx="5" ry="5" fill="#fafafa" stroke="#9e9e9e" stroke-width="1" />
+  <text x="500" y="670" font-family="Arial" font-size="14" fill="#424242" text-anchor="middle">© 2025 스킬브릿지 배포 아키텍처</text>
+
+</svg>
