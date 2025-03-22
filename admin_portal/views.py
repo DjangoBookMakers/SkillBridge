@@ -473,14 +473,19 @@ class CourseProgressDetailView(AdminRequiredMixin, DetailView):
 
                 # 완료된 강의 수
                 completed_lectures = LectureProgress.objects.filter(
-                    user=user, lecture__subject=subject, is_completed=True
+                    user=user,
+                    lecture__subject=subject,
+                    enrollment=enrollment,
+                    is_completed=True,
                 ).count()
 
                 # 프로젝트 제출물 (중간/기말고사인 경우)
                 project_submission = None
                 if subject.subject_type in ["midterm", "final"]:
                     project_submission = (
-                        ProjectSubmission.objects.filter(user=user, subject=subject)
+                        ProjectSubmission.objects.filter(
+                            user=user, subject=subject, enrollment=enrollment
+                        )
                         .order_by("-submitted_at")
                         .first()
                     )
@@ -605,6 +610,7 @@ class CourseAttendanceView(AdminRequiredMixin, DetailView):
                 completed_lectures = LectureProgress.objects.filter(
                     user=user,
                     lecture__subject__course=course,
+                    enrollment=enrollment,
                     completed_at__range=(day_start, day_end),
                 ).count()
 
@@ -706,6 +712,7 @@ class CourseAttendancePDFView(AdminRequiredMixin, View):
                 completed_lectures = LectureProgress.objects.filter(
                     user=user,
                     lecture__subject__course=course,
+                    enrollment=enrollment,
                     completed_at__range=(day_start, day_end),
                 ).count()
 

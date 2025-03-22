@@ -9,7 +9,7 @@ import json
 import logging
 
 from admin_portal.mixins import AdminRequiredMixin
-from learning.models import LectureProgress, ProjectSubmission
+from learning.models import Enrollment, LectureProgress, ProjectSubmission
 from payments.models import Cart, CartItem
 from .models import Course, Subject, Lecture, QnAQuestion, QnAAnswer, CourseReview
 
@@ -100,12 +100,13 @@ class CourseDetailView(DetailView):
         # 사용자가 이미 이 과정을 구매했는지 확인
         is_enrolled = False
         is_in_cart = False
+        enrollment = None
 
         if self.request.user.is_authenticated:
-            is_enrolled = (
-                hasattr(self.request.user, "enrollments")
-                and self.request.user.enrollments.filter(course=course).exists()
-            )
+            enrollment = Enrollment.objects.filter(
+                user=self.request.user, course=course
+            ).first()
+            is_enrolled = enrollment is not None
 
             logger.info(
                 f"User {self.request.user.username} viewing course detail: {course.title} (enrolled: {is_enrolled})"
@@ -120,8 +121,7 @@ class CourseDetailView(DetailView):
         completed_lectures = []
         if self.request.user.is_authenticated and is_enrolled:
             completed_lectures = LectureProgress.objects.filter(
-                user=self.request.user,
-                lecture__subject__course=course,
+                enrollment=enrollment,
                 is_completed=True,
             ).values_list("lecture_id", flat=True)
 
@@ -132,13 +132,12 @@ class CourseDetailView(DetailView):
         if self.request.user.is_authenticated and is_enrolled:
             # 통과한 프로젝트
             passed_projects = ProjectSubmission.objects.filter(
-                user=self.request.user, subject__course=course, is_passed=True
+                enrollment=enrollment, is_passed=True
             ).values_list("subject_id", flat=True)
 
             # 제출했지만 아직 검토 중인 프로젝트
             submitted_projects = ProjectSubmission.objects.filter(
-                user=self.request.user,
-                subject__course=course,
+                enrollment=enrollment,
                 is_passed=False,
                 reviewed_at__isnull=True,
             ).values_list("subject_id", flat=True)
