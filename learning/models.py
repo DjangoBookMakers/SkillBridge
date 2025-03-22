@@ -53,7 +53,7 @@ class Enrollment(models.Model):
 
         # 완료한 강의 수
         completed_lectures = LectureProgress.objects.filter(
-            user=self.user, lecture__subject__course=self.course, is_completed=True
+            enrollment=self, is_completed=True
         ).count()
 
         # 진행률 계산 및 업데이트
@@ -79,7 +79,7 @@ class Enrollment(models.Model):
             for lecture in lectures:
                 # 아직 완료하지 않은 강의가 있으면 반환
                 progress = LectureProgress.objects.filter(
-                    user=self.user, lecture=lecture, is_completed=True
+                    enrollment=self, lecture=lecture, is_completed=True
                 ).exists()
 
                 if not progress:
@@ -109,7 +109,7 @@ class Enrollment(models.Model):
             if subject.subject_type in ["midterm", "final"]:
                 # 이미 통과한 프로젝트가 있는지 확인
                 submission = ProjectSubmission.objects.filter(
-                    user=self.user, subject=subject, is_passed=True
+                    enrollment=self, subject=subject, is_passed=True
                 ).first()
 
                 # 아직 통과하지 않았다면 프로젝트 제출로 반환
@@ -122,7 +122,7 @@ class Enrollment(models.Model):
             for lecture in lectures:
                 # 강의 진행 상태 확인
                 progress = LectureProgress.objects.filter(
-                    user=self.user, lecture=lecture, is_completed=True
+                    enrollment=self, lecture=lecture, is_completed=True
                 ).exists()
 
                 # 완료하지 않은 강의가 있으면 해당 강의 반환
@@ -152,7 +152,7 @@ class Enrollment(models.Model):
         exam_subjects = subjects.filter(subject_type__in=["midterm", "final"])
         for subject in exam_subjects:
             if not ProjectSubmission.objects.filter(
-                user=self.user, subject=subject, is_passed=True
+                enrollment=self, subject=subject, is_passed=True
             ).exists():
                 return False
 
@@ -167,7 +167,7 @@ class Enrollment(models.Model):
         # completed_lectures: 일반 과목의 모든 강의 중 완료된 것들의 강의 id 목록
         completed_lectures = set(
             LectureProgress.objects.filter(
-                user=self.user, lecture_id__in=lecture_ids, is_completed=True
+                enrollment=self, lecture_id__in=lecture_ids, is_completed=True
             ).values_list("lecture_id", flat=True)
         )
 
@@ -175,7 +175,7 @@ class Enrollment(models.Model):
         # passed_missions: 일반 과목의 모든 강의 중 'mission' 타입인 것들의 MissionAttempt 중 통과한 것들의 강의 id 목록
         passed_missions = set(
             MissionAttempt.objects.filter(
-                user=self.user,
+                enrollment=self,
                 lecture__subject__in=normal_subjects,
                 lecture__lecture_type="mission",
                 is_passed=True,

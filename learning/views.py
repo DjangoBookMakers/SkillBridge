@@ -214,7 +214,7 @@ class MissionView(LoginRequiredMixin, View):
 
         # 이미 통과한 미션인지 확인
         passed_attempt = MissionAttempt.objects.filter(
-            user=request.user, lecture=lecture, is_passed=True
+            enrollment=enrollment, lecture=lecture, is_passed=True
         ).first()
 
         if passed_attempt:
@@ -362,9 +362,7 @@ class SubmitProjectView(LoginRequiredMixin, FormView):
 
         # 이미 제출한 프로젝트가 있는지 확인
         existing_submission = (
-            ProjectSubmission.objects.filter(
-                user=self.request.user, subject=self.subject
-            )
+            ProjectSubmission.objects.filter(enrollment=self.enrollment)
             .order_by("-submitted_at")
             .first()
         )
