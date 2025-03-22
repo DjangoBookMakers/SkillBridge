@@ -216,6 +216,9 @@ class LectureProgress(models.Model):
     lecture = models.ForeignKey(
         Lecture, on_delete=models.CASCADE, related_name="progresses"
     )
+    enrollment = models.ForeignKey(
+        Enrollment, on_delete=models.CASCADE, related_name="lecture_progresses"
+    )
     is_completed = models.BooleanField(default=False, db_index=True)
     completed_at = models.DateTimeField(blank=True, null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -254,6 +257,9 @@ class MissionAttempt(models.Model):
     )
     lecture = models.ForeignKey(
         Lecture, on_delete=models.CASCADE, related_name="attempts"
+    )
+    enrollment = models.ForeignKey(
+        Enrollment, on_delete=models.CASCADE, related_name="mission_attempts"
     )
     score = models.IntegerField(default=0)
     is_passed = models.BooleanField(default=False)
@@ -299,7 +305,7 @@ class MissionAttempt(models.Model):
         # 미션 강의 진행 상태 업데이트
         if self.is_passed:
             lecture_progress, _ = LectureProgress.objects.get_or_create(
-                user=self.user, lecture=self.lecture
+                user=self.user, lecture=self.lecture, enrollment=self.enrollment
             )
             lecture_progress.mark_as_completed()
 
@@ -328,6 +334,9 @@ class ProjectSubmission(models.Model):
     )
     subject = models.ForeignKey(
         Subject, on_delete=models.CASCADE, related_name="submissions"
+    )
+    enrollment = models.ForeignKey(
+        Enrollment, on_delete=models.CASCADE, related_name="project_submissions"
     )
     project_file = models.FileField(upload_to=project_file_upload_path)
     is_passed = models.BooleanField(default=False, db_index=True)

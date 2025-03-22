@@ -151,7 +151,7 @@ class VideoLectureView(LoginRequiredMixin, DetailView):
 
             # 강의 시청 기록 생성 또는 업데이트
             lecture_progress, created = LectureProgress.objects.get_or_create(
-                user=user, lecture=lecture
+                user=user, lecture=lecture, enrollment=enrollment
             )
 
             # 시청 완료 처리 (강의에 접근하는 것만으로도 완료 처리)
@@ -244,6 +244,11 @@ class MissionView(LoginRequiredMixin, View):
             f"User {request.user.username} submitted answers for mission: {lecture.title}"
         )
 
+        # 수강 신청 여부 확인
+        enrollment = get_object_or_404(
+            Enrollment, user=request.user, course=lecture.subject.course
+        )
+
         # POST 요청에서 사용자 답안 수집
         user_answers = {}
         for key, value in request.POST.items():
@@ -253,7 +258,10 @@ class MissionView(LoginRequiredMixin, View):
 
         # 시도 중인 미션이 있는지 확인
         active_attempt = MissionAttempt.objects.filter(
-            user=request.user, lecture=lecture, completed_at__isnull=True
+            user=request.user,
+            lecture=lecture,
+            enrollment=enrollment,
+            completed_at__isnull=True,
         ).first()
 
         # 기존 미션 시도가 있으면 업데이트, 없으면 새로 생성
@@ -262,7 +270,10 @@ class MissionView(LoginRequiredMixin, View):
             attempt.user_answers = user_answers
         else:
             attempt = MissionAttempt(
-                user=request.user, lecture=lecture, user_answers=user_answers
+                user=request.user,
+                lecture=lecture,
+                enrollment=enrollment,
+                user_answers=user_answers,
             )
 
         # 저장 및 점수 계산
@@ -372,6 +383,7 @@ class SubmitProjectView(LoginRequiredMixin, FormView):
         submission = form.save(commit=False)
         submission.user = self.request.user
         submission.subject = self.subject
+        submission.enrollment = self.enrollment
         submission.save()
 
         messages.success(self.request, "프로젝트가 성공적으로 제출되었습니다.")
